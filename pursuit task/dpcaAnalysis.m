@@ -1,14 +1,17 @@
 
 %% cue
-
+clear all
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.ID = [4000:5000];
+req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
+                                    4785,4802,4810,4841,4845,4862,4833,...
+                                    4907]);
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 
@@ -19,9 +22,7 @@ raster_params.time_after = 500;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
-
 ts = -raster_params.time_before:raster_params.time_after;
-
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -31,7 +32,7 @@ rateHigh = nan(length(cells),length(ts));
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
+     
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
@@ -39,6 +40,11 @@ for ii = 1:length(cells)
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     
+%     allInds = [indLow,indHigh];
+%     randomAssigments = randi([0, 1], [1, length(allInds )]);
+%     indLow = allInds(find(randomAssigments));
+%     indHigh = allInds(find(~randomAssigments));
+%     
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     
@@ -62,15 +68,48 @@ dpca_plot(firingRates, W, V, @dpca_plot_default, ...
     'marginalizationNames', margNames);
 
 
+%% pca
+X = [squeeze(firingRates(:,1,:)),squeeze(firingRates(:,2,:))];
+X = bsxfun(@minus, X, mean(X,2));
+
+[coeff,score,latent,tsquared,explained,mu] = pca(X);
+tot_var = sum(var(score,0,1));
+(var(score(:,1))/tot_var);
+
+vec = [ones(1,size(X,2)/2),-ones(1,size(X,2)/2)];
+vec = vec/norm(vec);
+
+proj = X*vec';
+var(proj)/tot_var %6.101543970350144e+06
+
+
+[W,~,~] = svd(X, 'econ');
+W = W(:,1:20);
+
+% minimal plotting
+dpca_plot(firingRates, W, W, @dpca_plot_default);
+
+% computing explained variance
+explVar = dpca_explainedVariance(firingRates, W, W, ...
+    'combinedParams', combinedParams);
+
+% a bit more informative plotting
+dpca_plot(firingRates, W, W, @dpca_plot_default, ...
+    'explainedVar', explVar, ...
+    'time', time,                        ...
+    'timeEvents', timeEvents,               ...
+    'marginalizationNames', margNames, ...
+    'marginalizationColours', margColours);
+
+
 %% movement
 
 clear all
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
@@ -127,7 +166,7 @@ explVar = dpca_explainedVariance(firingRates, W, V,'combinedParams', combinedPar
 
 % a bit more informative plotting
 
-margNames = {'Prob', 'Angle', 'Condition-independent', 'P/D Interaction'};
+margNames = { 'Angle', 'Prob', 'Condition-independent', 'P/D Interaction'};
 
 dpca_plot(firingRates, W, V, @dpca_plot_default, ...
     'explainedVar', explVar, ...
@@ -143,7 +182,7 @@ load ('C:\noga\TD complex spike analysis\task_info');
 MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
@@ -188,7 +227,7 @@ for ii = 1:length(cells)
 end
  
 
-%%
+
 [W, V, whichMarg] = dpca(firingRates, 20);
 
 % computing explained variance

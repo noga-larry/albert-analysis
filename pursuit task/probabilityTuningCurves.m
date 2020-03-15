@@ -4,7 +4,7 @@ supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
@@ -408,3 +408,62 @@ title('All cells')
 signrank(rateHigh(ind),rateLow(ind)) 
 scatter(rateHigh(ind),correctedLow(ind),'k'); refline(1,0)
 signrank(rateHigh(ind),correctedLow(ind)) 
+
+
+%%
+clear all
+
+supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
+load ('C:\noga\TD complex spike analysis\task_info');
+
+req_params.grade = 7;
+req_params.cell_type = 'PC cs';
+req_params.task = 'pursuit_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.num_trials = 50;
+req_params.remove_question_marks = 1;
+
+raster_params.allign_to = 'targetMovementOnset';
+raster_params.time_before = 300;
+raster_params.time_after = 500;
+raster_params.smoothing_margins = 50; % ms in each side
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+ts = -raster_params.time_before : raster_params.time_after;
+
+
+HighTail = nan(length(cells),length(ts));
+LowTail =nan(length(cells),length(ts));
+
+timeWindow = -raster_params.smoothing_margins:...
+    raster_params.smoothing_margins;
+
+for ii = 1:length(cells)
+    data = importdata(cells{ii});
+    
+    [~,match_p] = getProbabilities (data);
+    boolFail = [data.trials.fail];
+    
+    indLow = find (match_p == 25 & (~boolFail));
+    indHigh = find (match_p == 75 & (~boolFail));
+    rasterLow = getRaster(data,indLow,raster_params);
+    rasterHigh = getRaster(data,indHigh,raster_params);
+    
+    for t = 1:length(ts)
+        runningWindow = raster_params.smoothing_margins + t + timeWindow;
+        spksHigh = sum(rasterHigh(runningWindow,:));
+        spksLow = sum(rasterLow(runningWindow,:));
+        [~,HighTail(ii,t)] = ranksum(spksHigh,spksLow,'tail','right');
+        [~,LowTail(ii,t)] = ranksum(spksHigh,spksLow,'tail','left');
+    end
+end
+
+fracHighTail = mean(HighTail>0.05);
+fracLowTail = mean(LowTail>0.05);
+figure;
+plot(ts,fracHighTail,'b'); hold on
+plot(ts,fracLowTail,'r')
+xlabel('Time from movement')
+ylabel('Frac of cells')

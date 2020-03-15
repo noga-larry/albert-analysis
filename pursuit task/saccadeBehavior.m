@@ -67,7 +67,7 @@ figure;
 errorbar(windowEvent,aveLow,semLow,'r'); hold on
 errorbar(windowEvent,aveHigh,semHigh,'b')
 xlabel('Time from cue')
-ylabel('Fraction of trials with lick')
+ylabel('Fraction of trials with saccade')
 
 %% 
 MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';

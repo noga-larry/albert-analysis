@@ -18,7 +18,11 @@ for ii=1:length(task_info)
         trial_num = f_b:f_e;
     end
     task_info(ii).num_trials = length(trial_num);
+    
+    task_info(ii).save_name = erase(task_info(ii).save_name,'''');
 end
+
+
 save ('C:\noga\TD complex spike analysis\task_info','task_info')
 
 %% sup_dir_from
@@ -26,7 +30,7 @@ save ('C:\noga\TD complex spike analysis\task_info','task_info')
 load ('C:\noga\TD complex spike analysis\task_info')
 
 req_params.grade = 10;
-req_params.cell_type = 'CRB|PC';
+req_params.cell_type = 'PC|CRB|SNR';
 req_params.task = 'saccade_8_dir_75and25';
 req_params.remove_question_marks = 0;
 req_params.ID = 4000:5000;
@@ -37,7 +41,8 @@ lines = findLinesInDB (task_info, req_params);
 sup_dir_from = 'C:\Users\Owner\Desktop\DATA\';
 sup_dir_to = 'C:\noga\TD complex spike analysis\Data';
 
-task_info = getData(task_info, sup_dir_from, sup_dir_to , lines,1);
+task_info = getData(task_info, sup_dir_from, sup_dir_to , lines,...
+    'numElectrodes',10);
 
 save('C:\noga\TD complex spike analysis\task_info','task_info')
 
@@ -127,3 +132,4 @@ effect_window = (100:300) + raster_params.time_before; % time window to average 
 raster_params.include_failed = 1; % include failed trials
 raster_params.smoothing_margins = 100; % ms
 raster_params.SD = 10;
+

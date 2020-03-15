@@ -1,6 +1,6 @@
 
 %% Saccade task
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
+supPath = 'C:\noga\TD complex spike analysis\Data\saccade_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 
 req_params.grade = 7;
@@ -15,7 +15,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 raster_params.cue_time = 500;
 raster_params.time_before = 350;
-raster_params.time_after = 600;
+raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
@@ -140,4 +140,98 @@ for ii=1:length(cells)
     legend('0','45','90','125','180')
     pause
 end
+
+
+%% Single cell comparison of saccade ad saccade-back
+
+
+%% Saccade task
+supPath = 'C:\noga\TD complex spike analysis\Data\saccade_8_dir_75and25';
+load ('C:\noga\TD complex spike analysis\task_info');
+
+req_params.grade = 7;
+req_params.cell_type = 'CRB';
+req_params.task = 'saccade_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.num_trials = 20;
+req_params.remove_question_marks = 1;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+raster_params.cue_time = 500;
+raster_params.time_before = 350;
+raster_params.time_after = 1200;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 10;
+
+comparison_window = 100:300;
+directions = [0:45:315];
+ts = -raster_params.time_before:raster_params.time_after;
+
+for ii=1:length(cells)
+    
+  
+    
+    
+    data = importdata(cells{ii});
+    [match_o] = getOutcome (data);
+    [~,match_d] = getDirections(data);
+    boolFail = [data.trials.fail];
+ 
+   
+    % reward
+    raster_params.allign_to = 'reward';
+
+    indR = find (match_o & (~boolFail));
+    indNR = find ((~match_o) & (~boolFail));
+    
+    subplot(3,1,2)
+    for d = 1:length(directions)
+        
+        inx = find (match_d == directions(d));
+        
+        rasterR = getRaster(data,intersect(inx,indR), raster_params);
+        psthR = raster2psth(rasterR,raster_params);
+               
+        plot(ts,psthR); hold on
+        
+    end
+    
+    title('reward'); hold off
+        subplot(3,1,3)
+
+    for d = 1:length(directions)
+        
+        inx = find (match_d == directions(d));
+    
+        rasterNR = getRaster(data,intersect(inx,indNR), raster_params);
+        psthNR = raster2psth(rasterNR,raster_params);
+        
+        plot(ts,psthNR); hold on
+        
+    end
+    
+    title('no reward'); hold off
+    
+    raster_params.allign_to = 'targetMovementOnset';
+    subplot(3,1,1)
+
+     for d = 1:length(directions)
+        
+        inx = find (match_d == directions(d)&(~boolFail));
+    
+        raster = getRaster(data,inx, raster_params);
+        psth = raster2psth(raster,raster_params);
+        
+        plot(ts,psth); hold on
+        
+    end
+    
+    title('movement'); hold off
+
+    pause
+end
+
+
 

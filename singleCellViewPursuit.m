@@ -4,9 +4,9 @@ supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
      
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4610;
+req_params.ID = 4000:5000;
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 
@@ -32,7 +32,6 @@ for ii=1:length(cells)
     [match_o] = getOutcome (data);
     [~,match_d] = getDirections(data);
     boolFail = [data.trials.fail];
-    
     
     raster_params.allign_to = 'cue';
     indLow = find (match_p == 25 & (~boolFail));

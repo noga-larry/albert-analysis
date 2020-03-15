@@ -1,4 +1,5 @@
 % Probability Cue Response
+clear all
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 
@@ -24,7 +25,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells )
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
@@ -44,11 +45,6 @@ end
 save ('C:\noga\TD complex spike analysis\task_info','task_info');
 
 
-
-
-
-
-
 %% PSTHs
 
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
@@ -61,8 +57,6 @@ req_params.ID = 4000:5000;
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4243,4269,4575,4692,4718,4722]
-
-
 
 raster_params.allign_to = 'cue';
 raster_params.cue_time = 500;
@@ -84,7 +78,7 @@ h = nan(length(cells),1);
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
@@ -126,8 +120,6 @@ scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindo
 ind = find(~h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 refline (1,0)
-
-
 
 %% seperation to tails
 

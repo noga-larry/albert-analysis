@@ -22,6 +22,7 @@ lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
+    
     data = importdata(cells{ii});
     data = getBehavior(data,MaestroPath);
     [~,match_p] = getProbabilities (data);

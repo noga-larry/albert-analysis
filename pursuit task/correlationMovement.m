@@ -1,6 +1,6 @@
 clear all
 load ('C:\noga\TD complex spike analysis\task_info');
-tasks = {'pursuit_8_dir_75and25'}
+tasks = {'saccade_8_dir_75and25','pursuit_8_dir_75and25'}
 req_params.grade = 7;
 req_params.num_trials = 50;
 req_params.ID = 4000:5000;
@@ -96,9 +96,8 @@ for ii = 1:length(pairs)
         
         rasterHigh1 = getRaster(data1,intersect(inx,indHigh), raster_params);
         rasterLow1 = getRaster(data1, intersect(inx,indLow), raster_params);
-         rasterHigh2 = getRaster(data2,intersect(inx,indHigh), raster_params);
+        rasterHigh2 = getRaster(data2,intersect(inx,indHigh), raster_params);
         rasterLow2 = getRaster(data2, intersect(inx,indLow), raster_params);
-        
         
         spkHigh1 = [spkHigh1, mean(rasterHigh1)*1000 - TC1(d)];
         spkLow1 = [spkLow1, mean(rasterLow1)*1000 - TC1(d)];
@@ -119,8 +118,10 @@ intervals = 0.1;
 plot(centers, counts/length(cells),'r'); hold on
 [counts,centers] = hist(NoiseCorrHigh,-1:intervals:1);
 plot(centers, counts/length(cells),'b'); hold on
-
+xlabel('r'); ylabel('fraction of pairs') 
 signrank(NoiseCorrLow,NoiseCorrHigh)
+
+
 
 
 
@@ -159,15 +160,19 @@ for ii = 1:length(pairs)
 
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
+    indBoth = union(indLow,indHigh)
     
     TCLow1 = getTC(data1,  angles, indLow, comparison_window);
     TCLow2 = getTC(data2,  angles, indLow, comparison_window);
     TCHigh1 = getTC(data1,  angles, indHigh, comparison_window);
     TCHigh2 = getTC(data2,  angles, indHigh, comparison_window);
+    TC1 = getTC(data2,  angles, indBoth, comparison_window);
+    TC2 = getTC(data1,  angles, indBoth, comparison_window);
+    
     
     [SignalCorrLow(ii),SpLow(ii)] = corr(TCLow1, TCLow2 );
     [SignalCorrHigh(ii),SpHigh(ii)] = corr(TCHigh1,TCHigh2);
-    
+    [SignalCorr(ii),Sp(ii)] = corr(TC1,TC2);
     
     
 end
@@ -175,12 +180,18 @@ end
 
 figure;
 intervals = 0.1;
+subplot(2,1,1)
 [counts,centers] = hist(SignalCorrLow,-1:intervals:1);
 plot(centers, counts/length(cells),'r'); hold on
 [counts,centers] = hist(SignalCorrHigh,-1:intervals:1);
 plot(centers, counts/length(cells),'b'); hold on
+subplot(2,1,2)
+[counts,centers] = hist(SignalCorr,-1:intervals:1);
+plot(centers, counts/length(cells),'k'); hold on
 
 signrank(SignalCorrLow,SignalCorrHigh)
+signrank(SignalCorr)
+
 
 
 %% correlation between correlations
@@ -194,7 +205,7 @@ raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
 
 angles = 0:45:315;
-comparison_window = 100:300;
+comparison_window = 100:500;
 ts = -raster_params.time_before:raster_params.time_after;
 
 for ii = 1:length(pairs)
@@ -242,12 +253,13 @@ for ii = 1:length(pairs)
 end
 
 
-%%
+
 
 figure;
 scatter(SignalCorr, NoiseCorr,'filled'); hold on
 ylim([-1 1]);xlim([-1 1])
 [r,p] = corr(SignalCorr', NoiseCorr')
+xlabel('Signal Corr'); ylabel('Noise Corr');
 
 
 

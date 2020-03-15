@@ -2,21 +2,22 @@
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 
-%% Make list of significant cells
+% Make list of significant cells
 
 
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.remove_question_marks = 1;
-req_params.grade = 10;
+req_params.grade =10;
 req_params.cell_type = 'CRB|PC';
+req_params.num_trials = 20;
+
 
 raster_params.allign_to = 'cue';
 raster_params.cue_time = 500;
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
-req_params.num_trials = 20;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -28,6 +29,7 @@ for ii = 1:length(cells )
     
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
+    
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     
@@ -44,22 +46,21 @@ end
 save ('C:\noga\TD complex spike analysis\task_info','task_info');
 
 
-
-
-
-
-
 %% PSTHs
+
+supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
+load ('C:\noga\TD complex spike analysis\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC ss';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
+req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
+                                    4785,4802,4810,4841,4845,4862,4833,...
+                                    4907]);
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4243,4269,4575,4692,4718,4722]
-
-
 
 raster_params.allign_to = 'cue';
 raster_params.cue_time = 500;
@@ -69,6 +70,7 @@ raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
 comparisonWindow = raster_params.time_before + [100:300];
+
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
@@ -80,11 +82,9 @@ h = nan(length(cells),1);
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
-    
+   
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    
     
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
@@ -224,9 +224,8 @@ title (['Right, n = ' num2str(length(ind))])
 
 clear all
 
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
+supPath = 'C:\noga\TD complex spike analysis\Data\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
 
 req_params.grade = 7;
 req_params.cell_type = 'CRB';
@@ -235,7 +234,7 @@ req_params.ID = 4000:5000;
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 
-raster_params.allign_to = 'cue';
+raster_params.allign_to = 'targetMovementOnset';
 raster_params.cue_time = 500;
 raster_params.time_before = 300;
 raster_params.time_after = 500;
@@ -255,7 +254,6 @@ timeWindow = -raster_params.smoothing_margins:...
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[ data.trials.previous_completed];
@@ -320,7 +318,6 @@ timeWindow = -raster_params.smoothing_margins:...
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[ data.trials.previous_completed];

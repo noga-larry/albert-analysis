@@ -64,17 +64,17 @@ for ii = 1:length(cells)
         
         inxL = intersect(find (match_d == directions(d)),indLow);
         inxH = intersect(find (match_d == directions(d)),indHigh);
-        
-        subplot(8,2,2*d-1)
-        plot(Hbehavior(inxL,:)','r'); hold on
-        plot(Hbehavior(inxH,:)','b'); hold on
-        title (['d = ' num2str(directions(d)),' H'])
-        
-        
-        subplot(8,2,2*d)
-        plot(Vbehavior(inxL,:)','r'); hold on
-        plot(Vbehavior(inxH,:)','b'); hold on
-        title (['d = ' num2str(directions(d)),' V'])
+%         
+%         subplot(8,2,2*d-1)
+%         plot(Hbehavior(inxL,:)','r'); hold on
+%         plot(Hbehavior(inxH,:)','b'); hold on
+%         title (['d = ' num2str(directions(d)),' H'])
+%         
+%         
+%         subplot(8,2,2*d)
+%         plot(Vbehavior(inxL,:)','r'); hold on
+%         plot(Vbehavior(inxH,:)','b'); hold on
+%         title (['d = ' num2str(directions(d)),' V'])
         
     end
     

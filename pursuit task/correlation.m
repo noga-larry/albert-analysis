@@ -44,7 +44,7 @@ end
 [~,ind,~] = unique(cellIDs','rows');
 pairs = pairs(ind);
 
-%% Correlation during cue in eavh reward condition
+%% Correlation during cue in each reward condition
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\';
 
 
