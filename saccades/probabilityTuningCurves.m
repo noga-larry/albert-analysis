@@ -1,25 +1,24 @@
 % Probability Tuning curves
 clear all
-
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'saccade_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'targetMovementOnset';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.cue_time = 500;
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
-comparison_window = 100:500; % for TC
+comparison_window = 100:300; % for TC
 
 ts = -raster_params.time_before:raster_params.time_after;
 directions = 0:45:315;
@@ -27,8 +26,11 @@ angles = [0:45:180];
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
+cell_ID = [];
+
 for ii = 1:length(cells)
     data = importdata(cells{ii});
+    cell_ID  = [cell_ID,data.info.cell_ID];
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     
@@ -49,8 +51,15 @@ for ii = 1:length(cells)
     task_info(lines(ii)).directionally_tuned = h(ii);
     task_info(lines(ii)).PD = PD;
    % rotate tuning curves   
-    TC_High(ii,:) =  circshift(getTC(data, directions,inxHigh, comparison_window),5-indPD)-mean(TCpop(ii,:)); 
-    TC_Low(ii,:)= circshift(getTC(data, directions, inxLow, comparison_window),5-indPD)-mean(TCpop(ii,:));
+   
+   if ~strcmp(req_params.cell_type,'PC cs')
+       baseline = mean(TCpop(ii,:));
+   else
+       
+       baseline =0;
+   end
+   TC_High(ii,:) =  circshift(getTC(data, directions,inxHigh, comparison_window),5-indPD)-baseline;
+   TC_Low(ii,:)= circshift(getTC(data, directions, inxLow, comparison_window),5-indPD)-baseline;
 
     
     for d = 1:length(angles)
@@ -60,8 +69,8 @@ for ii = 1:length(cells)
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
         raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
         
-        psth_High(ii,d,:) = raster2psth(raster_High,raster_params)-mean(TCpop(ii,:));
-        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)-mean(TCpop(ii,:));
+        psth_High(ii,d,:) = raster2psth(raster_High,raster_params)-baseline;
+        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)-baseline;
 
     end
     
@@ -69,31 +78,45 @@ for ii = 1:length(cells)
 end
 
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info');
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
 figure;
+directions = [-180:45:180];
+figure;
 ind = find(~h);
-subplot(2,1,1)
-aveHigh = nanmean(TC_High(ind,:));
-semHigh = nanstd(TC_High(ind,:))/sqrt(length(ind));
-aveLow = nanmean(TC_Low(ind,:));
-semLow = nanstd(TC_Low(ind,:))/sqrt(length(ind));
+subplot(3,1,1)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Untuned, n = ' num2str(length(ind))]);
 
 ind = find(h);
-subplot(2,1,2)
-aveHigh = nanmean(TC_High(ind,:));
-semHigh = nanstd(TC_High(ind,:))/sqrt(length(ind));
-aveLow = nanmean(TC_Low(ind,:));
-semLow = nanstd(TC_Low(ind,:))/sqrt(length(ind));
+subplot(3,1,2)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Significantly tuned, n = ' num2str(sum(h))]);
 xlabel('direction')
-legend('25', '75')
+legend( '25','75')
+
+ind = 1:length(cells);
+subplot(3,1,3)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
+errorbar(directions,aveLow,semLow,'r'); hold on
+errorbar(directions,aveHigh,semHigh,'b'); hold on
+title(['All, n = ' num2str(length(cells))]);
+xlabel('direction')
+legend( '25','75')
 
 
 figure; 
@@ -110,11 +133,11 @@ for d = 1:length(angles)
         ylimits = get(gca,'YLim') 
     end
     ylim([ylimits])
-    
+    legend('25','75')
 end
 title(['Not Tuned, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
-legend('PD, High','PD, Low', 'Null, High','Null, Low')
+
 
 ind = find(h);
 for d = 1:length(angles)
@@ -129,11 +152,10 @@ for d = 1:length(angles)
         ylimits = get(gca,'YLim') 
     end
     ylim([ylimits])
-    
+    legend('25','75')
 end
 title([' Tuned, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
-legend('PD, High','PD, Low', 'Null, High','Null, Low')
 
 figure;
 ind = find(h);
@@ -175,7 +197,25 @@ ylim(limits)
 xlim(limits)
 refline(1,0)
 title('Not Tuned')
+angle_for_glm = -180:45:0;
 
+k = length(angle_for_glm);
+ind = find(h);
+
+for ii=1:length(ind)
+    cell_ID_for_GLM((2*k)*(ii-1)+1:(2*k)*ii) = cell_ID(ind(ii));
+    reward_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = 25;
+    reward_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = 75;
+    angle_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = angle_for_glm;
+    angle_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = angle_for_glm;
+    response_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = (TC_Low(ind(ii),1:5)+TC_Low(ind(ii),[1,8:-1:5]))/2;
+    response_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = (TC_High(ind(ii),1:5)+TC_High(ind(ii),[1,8:-1:5]))/2;
+end
+
+glm_tbl = table(cell_ID_for_GLM',reward_for_GLM',angle_for_GLM',...
+    response_for_GLM','VariableNames',{'ID','reward','angle_from_PD','response'});
+glme = fitglme(glm_tbl,...
+'response ~ 1 + angle_from_PD + reward  +  angle_from_PD *reward + (1|ID)')
 
 
 %%

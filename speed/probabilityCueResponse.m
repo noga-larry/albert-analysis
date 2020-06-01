@@ -1,8 +1,8 @@
 % Probability Cue Response
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
-%% Make list of significant cells
+% Make list of significant cells
 
 
 req_params.task = 'speed_2_dir_0,50,100';
@@ -12,15 +12,14 @@ req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
 req_params.num_trials = 30;
 
-raster_params.allign_to = 'cue';
-raster_params.cue_time = 500;
+raster_params.align_to = 'cue';
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
 
 ts = -raster_params.time_before:raster_params.time_after;
 lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,req_params);
+cells = findPathsToCells (supPath,task_info,lines);
 h = nan(length(cells),1);
 
 for ii = 1:length(cells)
@@ -52,7 +51,7 @@ for ii = 1:length(cells)
     
 end
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info');
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
 
@@ -63,7 +62,7 @@ save ('C:\noga\TD complex spike analysis\task_info','task_info');
 %% PSTHs
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = 'PC cs';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:5000;
 req_params.num_trials = 30;
@@ -71,9 +70,8 @@ req_params.remove_question_marks = 1;
 
 
 raster_params.allign_to = 'cue';
-raster_params.cue_time = 500;
-raster_params.time_before = 300;
-raster_params.time_after = 500;
+raster_params.time_before = 399;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
@@ -81,7 +79,7 @@ comparisonWindow = raster_params.time_before + [100:300];
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,req_params);
+cells = findPathsToCells (supPath,task_info,lines);
 psthLow = nan(length(cells),length(ts));
 psthMid = nan(length(cells),length(ts));
 psthHigh = nan(length(cells),length(ts));
@@ -109,9 +107,9 @@ for ii = 1:length(cells)
     
 end
 
-%%
+
 figure;
-subplot(2,1,1)
+subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
 semLow = std(psthLow(ind,:))/sqrt(length(ind));
@@ -125,7 +123,7 @@ errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
 title (['Significant, n = ' num2str(length(ind))])
 
-subplot(2,1,2)
+subplot(3,1,2)
 ind = find(~h);
 aveLow = mean(psthLow(ind,:));
 semLow = std(psthLow(ind,:))/sqrt(length(ind));
@@ -139,14 +137,29 @@ errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
 title (['Not Significant, n = ' num2str(length(ind))])
 
-%%
+subplot(3,1,3)
+aveLow = mean(psthLow);
+semLow = std(psthLow)/sqrt(length(cells));
+semMid = std(psthLow)/sqrt(length(cells));
+aveMid = mean(psthMid);
+aveHigh = mean(psthHigh);
+semHigh = std(psthHigh)/sqrt(length(cells));
+errorbar(ts,aveLow,semLow,'r'); hold on
+errorbar(ts,aveMid,semMid,'k'); hold on
+errorbar(ts,aveHigh,semHigh,'b'); hold on
+legend('0','50','100')
+xlabel('Time from cue (ms)')
+title (['All, n = ' num2str(length(cells))])
+
+
 figure;
 ind = find(h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 ind = find(~h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 refline (1,0)
-
+p = signrank(mean(psthHigh(:,comparisonWindow),2),mean(psthLow(:,comparisonWindow),2)); hold on
+title(['p = ' num2str(p) 'n = ' num2str(length(cells))])
 
 
 %% seperation to tails
