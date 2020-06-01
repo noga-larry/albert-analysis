@@ -1,21 +1,20 @@
 
 %% Pursuit task
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
      
 req_params.grade = 7;
 req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 20;
+req_params.ID = [4000:5000];
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-raster_params.cue_time = 500;
-raster_params.time_before = 350;
-raster_params.time_after = 600;
+raster_params.time_before = 399;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
@@ -33,15 +32,13 @@ for ii=1:length(cells)
     [~,match_d] = getDirections(data);
     boolFail = [data.trials.fail];
     
-    raster_params.allign_to = 'cue';
+    raster_params.align_to = 'cue';
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     psthLow = raster2psth(rasterLow,raster_params);
     psthHigh = raster2psth(rasterHigh,raster_params);
-    
-    
     
     subplot(4,4,1)
     plotRaster(rasterLow,raster_params,'r')
@@ -56,7 +53,7 @@ for ii=1:length(cells)
     xlabel('Time from cue')
     
     % reward
-    raster_params.allign_to = 'reward';
+    raster_params.align_to = 'reward';
 
     indLowR = find (match_p == 25 & match_o & (~boolFail));
     indLowNR = find (match_p == 25 & (~match_o) & (~boolFail));
@@ -78,13 +75,15 @@ for ii=1:length(cells)
     title ('Reward')
     subplot(8,4,21)
     plotRaster(rasterLowNR,raster_params,'r')
+    title ('No Reward')
     xlabel('Time from reward')
-    subplot(8,4,18)
+    subplot(8,4,22)
     plotRaster(rasterHighNR,raster_params,'b')
     title ('No reward')
-    subplot(8,4,22)
+    subplot(8,4,18)
     plotRaster(rasterHighR,raster_params,'b')
     xlabel('Time from reward')
+    title ('Reward')
     subplot(4,2,7)
     plot(ts,psthHighR,'b');  hold on
     plot(ts,psthHighNR,'--b')
@@ -95,7 +94,7 @@ for ii=1:length(cells)
     
     
     % direction
-    raster_params.allign_to = 'targetMovementOnset';
+    raster_params.align_to = 'targetMovementOnset';
 
     TC = getTC(data, 0:45:315,1:length(data.trials), comparison_window);
     [PD,indPD] = centerOfMass (TC, 0:45:315);
@@ -126,9 +125,6 @@ for ii=1:length(cells)
         plot(ts,psthLow,'Color',colors(d,:)); hold on
         title ('25')
         xlabel('Time from movement')
-        
-        
-        
         
     end
     

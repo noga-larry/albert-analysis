@@ -1,8 +1,7 @@
 clear all
 
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'CRB';
@@ -11,12 +10,13 @@ req_params.ID = 4000:5000;
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 
-raster_params.allign_to = 'cue';
+raster_params.align_to = 'cue';
 raster_params.cue_time = 500;
 raster_params.time_before = 300;
 raster_params.time_after = 700;
-raster_params.smoothing_margins = 50; % ms in each side
+raster_params.smoothing_margins = 100; % ms in each side
 raster_params.SD = 10; % ms in each side
+timeWindow = [-50:50];
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -26,7 +26,6 @@ ts = -raster_params.time_before : raster_params.time_after;
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[ data.trials.previous_completed];

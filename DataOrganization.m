@@ -1,7 +1,8 @@
 %% Get Data
 
-get_excel_info('C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx', 'C:\noga\TD complex spike analysis\')
-load ('C:\noga\TD complex spike analysis\task_info')
+get_excel_info('C:\Users\Noga\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
+    'C:\Users\Noga\Documents\Vermis Data')
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 for ii=1:length(task_info)
     str_date = regexp(task_info(ii).session,'[0-9]*','match');
     task_info(ii).date = str2num(str_date{1});
@@ -23,28 +24,30 @@ for ii=1:length(task_info)
 end
 
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info')
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info')
 
 %% sup_dir_from
 
-load ('C:\noga\TD complex spike analysis\task_info')
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 10;
-req_params.cell_type = 'PC|CRB|SNR';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.cell_type = 'PC|CRB';
+req_params.task = 'speed_2_dir_0,50,100';
 req_params.remove_question_marks = 0;
 req_params.ID = 4000:5000;
 req_params.remove_question_marks = 0;
 req_params.num_trials = 20;
+req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
 
-sup_dir_from = 'C:\Users\Owner\Desktop\DATA\';
-sup_dir_to = 'C:\noga\TD complex spike analysis\Data';
+
+sup_dir_from = 'C:\Users\Noga\Music\DATA\';
+sup_dir_to = 'C:\Users\Noga\Documents\Vermis Data\';
 
 task_info = getData(task_info, sup_dir_from, sup_dir_to , lines,...
     'numElectrodes',10);
 
-save('C:\noga\TD complex spike analysis\task_info','task_info')
+save('C:\Users\Noga\Documents\Vermis Data\task_info','task_info')
 
 
 filename = 'C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx';

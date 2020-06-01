@@ -1,8 +1,12 @@
 %% Behavior figure
 
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
+
+clear all
+
+MaestroPath = 'C:\Users\Noga\Music\';
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+
 
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
@@ -16,7 +20,8 @@ behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
 
-cells = findPathsToCells (supPath,task_info,req_params);
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
 
 velocities = [25,15];
 

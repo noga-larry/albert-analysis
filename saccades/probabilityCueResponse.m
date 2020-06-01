@@ -1,9 +1,9 @@
 % Probability Cue Response
-clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all;
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
-%% Make list of significant cells
+% Make list of significant cells
 
 
 req_params.task = 'saccade_8_dir_75and25';
@@ -12,8 +12,7 @@ req_params.remove_question_marks = 1;
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
 
-raster_params.allign_to = 'cue';
-raster_params.cue_time = 500;
+raster_params.align_to = 'cue';
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
@@ -42,13 +41,13 @@ for ii = 1:length(cells )
     
 end
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info');
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
 %% PSTHs
 
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC cs';
@@ -58,7 +57,7 @@ req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4243,4269,4575,4692,4718,4722]
 
-raster_params.allign_to = 'cue';
+raster_params.align_to = 'cue';
 raster_params.cue_time = 500;
 raster_params.time_before = 300;
 raster_params.time_after = 500;

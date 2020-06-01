@@ -1,7 +1,7 @@
 % Probability Tuning curves
 clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC cs';
@@ -10,9 +10,7 @@ req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
-
-raster_params.allign_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
@@ -26,8 +24,12 @@ angles = [0:45:180];
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
+
+
+cell_ID = [];
 for ii = 1:length(cells)
     data = importdata(cells{ii});
+    cell_ID  = [cell_ID,data.info.cell_ID];
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     
@@ -46,13 +48,19 @@ for ii = 1:length(cells)
     data.info.directionally_tuned = h(ii);
     save (cells{ii},'data');
     
-    
+    if ~strcmp(req_params.cell_type,'PC cs')
+        baseline = mean(TCpop(ii,:));
+         baseline = 0;
+    else
+       
+        baseline = 0;
+    end
     
     % rotate tuning curves
-    TC_High(ii,:) =  circshift(getTC(data, directions,inxHigh, comparison_window),5-indPD)-mean(TCpop(ii,:));
-    TC_Low(ii,:)= circshift(getTC(data, directions, inxLow, comparison_window),5-indPD)-mean(TCpop(ii,:));
-    
-    
+    TC_High(ii,:) =  circshift(getTC(data, directions,inxHigh, comparison_window),5-indPD)-baseline;
+    TC_Low(ii,:)= circshift(getTC(data, directions, inxLow, comparison_window),5-indPD)-baseline;
+   
+   
     for d = 1:length(angles)
         
         inx = find ((match_d == mod(PD+angles(d),360) | match_d == mod(PD-angles(d),360)) & (~boolFail));
@@ -60,8 +68,9 @@ for ii = 1:length(cells)
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
         raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
         
-        psth_High(ii,d,:) = raster2psth(raster_High,raster_params)-mean(TCpop(ii,:));
-        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)-mean(TCpop(ii,:));
+        
+        psth_High(ii,d,:) = raster2psth(raster_High,raster_params) - baseline;
+        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)- baseline;
         
     end
     
@@ -69,31 +78,66 @@ for ii = 1:length(cells)
 end
 
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info');
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
+angle_for_glm = -180:45:0;
+
+k = length(angle_for_glm);
+ind = find(h);
+
+for ii=1:length(ind)
+    cell_ID_for_GLM((2*k)*(ii-1)+1:(2*k)*ii) = cell_ID(ind(ii));
+    reward_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = 25;
+    reward_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = 75;
+    angle_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = angle_for_glm;
+    angle_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = angle_for_glm;
+    response_for_GLM((2*k)*(ii-1)+1:(2*k)*(ii-1)+k) = (TC_Low(ind(ii),1:5)+TC_Low(ind(ii),[1,8:-1:5]))/2;
+    response_for_GLM((2*k)*(ii-1)+(k+1):(2*k)*(ii-1)+(2*k)) = (TC_High(ind(ii),1:5)+TC_High(ind(ii),[1,8:-1:5]))/2;
+end
+
+glm_tbl = table(cell_ID_for_GLM',reward_for_GLM',angle_for_GLM',...
+    response_for_GLM','VariableNames',{'ID','reward','angle_from_PD','response'});
+glme = fitglme(glm_tbl,...
+'response ~ 1 + angle_from_PD + reward  +  angle_from_PD *reward + (1|ID)')
+
+
+
+directions = [-180:45:180];
 figure;
 ind = find(~h);
-subplot(2,1,1)
-aveHigh = nanmean(TC_High(ind,:));
-semHigh = nanstd(TC_High(ind,:))/sqrt(length(ind));
-aveLow = nanmean(TC_Low(ind,:));
-semLow = nanstd(TC_Low(ind,:))/sqrt(length(ind));
+subplot(3,1,1)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Untuned, n = ' num2str(length(ind))]);
 
 ind = find(h);
-subplot(2,1,2)
-aveHigh = nanmean(TC_High(ind,:));
-semHigh = nanstd(TC_High(ind,:))/sqrt(length(ind));
-aveLow = nanmean(TC_Low(ind,:));
-semLow = nanstd(TC_Low(ind,:))/sqrt(length(ind));
+subplot(3,1,2)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Significantly tuned, n = ' num2str(sum(h))]);
 xlabel('direction')
-legend('25', '75')
+legend( '25','75')
+
+ind = 1:length(cells);
+subplot(3,1,3)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
+errorbar(directions,aveLow,semLow,'r'); hold on
+errorbar(directions,aveHigh,semHigh,'b'); hold on
+title(['All, n = ' num2str(length(cells))]);
+xlabel('direction')
+legend( '25','75')
 
 
 figure;
@@ -110,11 +154,11 @@ for d = 1:length(angles)
         ylimits = get(gca,'YLim')
     end
     ylim([ylimits])
-    
+    legend( '25','75')
 end
 title(['Not Tuned, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
-legend('PD, High','PD, Low', 'Null, High','Null, Low')
+legend( '25','75')
 
 ind = find(h);
 for d = 1:length(angles)
@@ -129,14 +173,21 @@ for d = 1:length(angles)
         ylimits = get(gca,'YLim')
     end
     ylim([ylimits])
+    legend( '25','75')
     
 end
 title([' Tuned, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
-legend('PD, High','PD, Low', 'Null, High','Null, Low')
+legend( '25','75')
 
 
 %%
+
+aveHigh = nanmean(TC_High);
+aveLow = nanmean(TC_Low);
+
+directions = 0:45:315;
+
 repeats = 1000;
 meanSquares = nan(1,repeats);
 
@@ -157,7 +208,7 @@ for ii=1:repeats
     
 end
 
-1-invprctile(meanSquares,trueMeanSquares)/100
+ p = 1-invprctile(meanSquares,trueMeanSquares)/100
 
 TC_High_sig = TC_High(find(h),:);
 TC_Low_sig = TC_Low(find(h),:);
@@ -187,34 +238,28 @@ end
 
 
 clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 req_params.remove_question_marks = 1;
 
-comparison_window = 100:300; % for TC
-
-
-ts = -raster_params.time_before:raster_params.time_after;
-directions = 0:45:315;
 angles = [-45,0,45];
 lines = findLinesInDB (task_info, req_params);
-ind  = find([task_info(lines).directionally_tuned]);
-lines = lines(ind);
+%ind  = find([task_info(lines).directionally_tuned]);
+%lines = lines(ind);
 cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
@@ -242,11 +287,145 @@ for ii = 1:length(cells)
     rateHigh(ii) = mean(mean(raster_High));
     rateLow(ii) = mean(mean(raster_Low));
     
-
-    
-    
-    
+ 
 end
+
+figure; 
+scatter(rateHigh,rateLow);
+refline(1,0)
+p = signrank(rateHigh,rateLow);
+title(['p = ' num2str(p)])
+xlabel('P=75'); ylabel('P=25')
+%% reward significanse in different angles around the PD
+
+
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+
+req_params.grade = 7;
+req_params.cell_type = 'CRB';
+req_params.task = 'pursuit_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.num_trials = 50;
+req_params.remove_question_marks = 1;
+
+
+raster_params.align_to = 'targetMovementOnset';
+raster_params.time_before = -100;
+raster_params.time_after = 300;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 10;
+req_params.remove_question_marks = 1;
+
+angles = [0:45:180];
+lines = findLinesInDB (task_info, req_params);
+%ind  = find([task_info(lines).directionally_tuned]);
+%lines = lines(ind);
+cells = findPathsToCells (supPath,task_info,lines);
+
+for ii = 1:length(cells)
+    data = importdata(cells{ii});
+
+    [~,match_p] = getProbabilities (data);
+    boolFail = [data.trials.fail];
+    
+    inxLow = find (match_p == 25 & (~boolFail));
+    inxHigh = find (match_p == 75 & (~boolFail));
+    
+    [~,match_d] = getDirections(data);
+    
+    PD = data.info.PD;
+    
+    for j=1:length(angles)
+        boolDir = (match_d == mod(PD+angles(j),360)) |...
+            (match_d == mod(PD-angles(j),360));
+        
+        inx = find (boolDir & (~boolFail));
+        
+        raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
+        raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
+        
+        rateHigh(ii,j) = mean(mean(raster_High));
+        rateLow(ii,j) = mean(mean(raster_Low));
+    end
+ 
+end
+
+figure; 
+for j=1:length(angles)
+    subplot(2,ceil(length(angles)/2),j)
+    scatter(rateHigh(:,j),rateLow(:,j));
+    refline(1,0)
+    p = signrank(rateHigh(:,j),rateLow(:,j));
+    title(['PD +-' num2str(angles(j)) 'p = ' num2str(p)])
+    xlabel('P=75'); ylabel('P=25')
+end
+
+%% reward significanse in directions in the world
+
+
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+
+req_params.grade = 7;
+req_params.cell_type = 'CRB';
+req_params.task = 'pursuit_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.num_trials = 50;
+req_params.remove_question_marks = 1;
+
+
+raster_params.align_to = 'targetMovementOnset';
+raster_params.time_before = -100;
+raster_params.time_after = 300;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 10;
+req_params.remove_question_marks = 1;
+
+angles = [0:45:315];
+lines = findLinesInDB (task_info, req_params);
+%ind  = find([task_info(lines).directionally_tuned]);
+%lines = lines(ind);
+cells = findPathsToCells (supPath,task_info,lines);
+
+for ii = 1:length(cells)
+    data = importdata(cells{ii});
+
+    [~,match_p] = getProbabilities (data);
+    boolFail = [data.trials.fail];
+    
+    inxLow = find (match_p == 25 & (~boolFail));
+    inxHigh = find (match_p == 75 & (~boolFail));
+    
+    [~,match_d] = getDirections(data);
+    
+  
+    for j=1:length(angles)
+        boolDir = (match_d == angles(j));
+        
+        inx = find (boolDir & (~boolFail));
+        
+        raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
+        raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
+        
+        rateHigh(ii,j) = mean(mean(raster_High));
+        rateLow(ii,j) = mean(mean(raster_Low));
+    end
+ 
+end
+
+figure; 
+for j=1:length(angles)
+    subplot(2,ceil(length(angles)/2),j)
+    scatter(rateHigh(:,j),rateLow(:,j));
+    refline(1,0)
+    p = signrank(rateHigh(:,j),rateLow(:,j));
+    title(['PD +-' num2str(angles(j)) 'p = ' num2str(p)])
+    xlabel('P=75'); ylabel('P=25')
+end
+
 
 %% Checking the contribution of the eye velocity to the reward difference
 
@@ -257,14 +436,14 @@ MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
 
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = 'PC ss';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'targetMovementOnset';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.cue_time = 500;
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -318,6 +497,11 @@ for ii = 1:length(cells)
 end
 
 figure;scatter(rateHigh,rateLow); refline(1,0)
+
+
+
+
+%%
 clear all
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');

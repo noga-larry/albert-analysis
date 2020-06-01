@@ -1,5 +1,6 @@
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 
 req_params.grade = 7;
@@ -10,14 +11,9 @@ req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 lines = findLinesInDB (task_info, req_params);
-lines = lines(find ([task_info(lines).cue_differentiating]==1));
+cells = findPathsToCells (supPath,task_info,lines);
 
-req_params.ID = [task_info(lines).cell_ID];
-cells = findPathsToCells (supPath,task_info,req_params);
-
-
-raster_params.allign_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 300;
 raster_params.time_after = 500;
 raster_params.smoothing_margins = 100;
@@ -130,6 +126,9 @@ for ii = 1:length(cells)
     plot(ts,High,'k'); hold on
     title('High, Null')
     legend('fast','slow')
+    
+    pause
+    close all
     
 end
 

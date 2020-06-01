@@ -1,6 +1,6 @@
 % Probability Cue Response
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 % Make list of significant cells
 
@@ -11,6 +11,7 @@ req_params.remove_question_marks = 1;
 req_params.grade =10;
 req_params.cell_type = 'CRB|PC';
 req_params.num_trials = 20;
+req_params.remove_repeats = 0;
 
 
 raster_params.allign_to = 'cue';
@@ -26,6 +27,7 @@ for ii = 1:length(cells )
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
+    
     
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
@@ -43,29 +45,29 @@ for ii = 1:length(cells )
     
 end
 
-save ('C:\noga\TD complex spike analysis\task_info','task_info');
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
 %% PSTHs
 
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
-req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
-                                    4785,4802,4810,4841,4845,4862,4833,...
-                                    4907]);
+% req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
+%     4785,4802,4810,4841,4845,4862,4833,...
+%     4907]);
 req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4243,4269,4575,4692,4718,4722]
 
-raster_params.allign_to = 'cue';
-raster_params.cue_time = 500;
-raster_params.time_before = 300;
-raster_params.time_after = 500;
+raster_params.align_to = 'cue';
+raster_params.time_before = 399;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
@@ -84,6 +86,8 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
    
     [~,match_p] = getProbabilities (data);
+    boolSaccades = isTrailWIthSaccade(data,'cue',-200,500);
+
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
     indLow = find (match_p == 25 & (~boolFail));
@@ -94,7 +98,11 @@ for ii = 1:length(cells)
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     
-    baseline = mean(raster2psth(rasterBaseline,raster_params));
+    if ~strcmp(req_params.cell_type,'PC cs')
+         baseline = mean(raster2psth(rasterBaseline,raster_params));
+    else 
+        baseline = 0;
+    end
     psthLow(ii,:) = raster2psth(rasterLow,raster_params)-baseline;
     psthHigh(ii,:) = raster2psth(rasterHigh,raster_params)-baseline;
     h(ii) = task_info(lines(ii)).cue_differentiating;
@@ -103,7 +111,7 @@ end
 
 
 figure;
-subplot(2,1,1)
+subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
 semLow = std(psthLow(ind,:))/sqrt(length(ind));
@@ -114,7 +122,7 @@ errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
 title (['Significant, n = ' num2str(length(ind))])
 
-subplot(2,1,2)
+subplot(3,1,2)
 ind = find(~h);
 aveLow = mean(psthLow(ind,:));
 semLow = std(psthLow(ind,:))/sqrt(length(ind));
@@ -125,6 +133,17 @@ errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
 title (['Not Significant, n = ' num2str(length(ind))])
 
+
+subplot(3,1,3)
+aveLow = mean(psthLow);
+semLow = std(psthLow)/sqrt(length(cells));
+aveHigh = mean(psthHigh);
+semHigh = std(psthHigh)/sqrt(length(cells));
+errorbar(ts,aveLow,semLow,'r'); hold on
+errorbar(ts,aveHigh,semHigh,'b'); hold on
+xlabel('Time from cue (ms)')
+title (['All, n = ' num2str(length(cells))])
+
 figure;
 ind = find(h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
@@ -132,9 +151,13 @@ ind = find(~h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 refline (1,0)
 
+ p = signrank (mean(psthHigh(:,comparisonWindow),2),mean(psthLow(:,comparisonWindow),2))
+title(['p = ' num2str(p) ', n = ' num2str(length(cells))])
+
 
 
 %% seperation to tails
+
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
 

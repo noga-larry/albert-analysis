@@ -1,6 +1,6 @@
 clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC cs';
@@ -9,7 +9,7 @@ req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
-raster_params.allign_to = 'cue';
+raster_params.align_to = 'cue';
 raster_params.cue_time = 500;
 raster_params.time_before = 299;
 raster_params.time_after = 500;
@@ -55,7 +55,6 @@ p = signrank(omegaT,omegaR);
 xlabel('time')
 ylabel('reward+time*reward')
 title(['p_{reward} = ' num2str(p)])
-makeSquareAxis()
 refline(1,0)
 
 

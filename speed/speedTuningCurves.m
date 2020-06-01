@@ -1,22 +1,19 @@
 % Probability Tuning curves - regardles of direction 
 clear all
-
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
-
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 velocities = [15, 25];
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:5000;
 req_params.num_trials = 60;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
@@ -48,6 +45,10 @@ for ii = 1:length(cells)
     
     rasterBaseline =  getRaster(data,find(~boolFail), raster_params);
     baseline = mean(mean(rasterBaseline))*1000;
+    
+    if strcmp(req_params.cell_type,'PC cs')
+        baseline =0;
+    end
     
     TCLow (ii,v) = mean(mean(rasterLow(comparison_window,:)))*1000-baseline;
     TCMid (ii,v) = mean(mean(rasterMid(comparison_window,:)))*1000-baseline;
@@ -105,24 +106,26 @@ errorbar(velocities,aveTCLow,semTCLow,'r'); hold on
 errorbar(velocities,aveTCMid,semTCMid,'k');
 errorbar(velocities,aveTCHigh,semTCHigh,'b');
 
+
+
 %%
 
 % Probability Tuning curves - taking the PD into consideration
 clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 velocities = [15, 25];
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:5000;
 req_params.num_trials = 60;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'targetMovementOnset';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.cue_time = 500;
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -136,26 +139,11 @@ ts = -raster_params.time_before:raster_params.time_after;
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-req_params.num_trials = 60;
-req_params.cell_type = req_params.cell_type;
-req_params.task = 'pursuit_8_dir_75and25';
-
 
 for ii = 1:length(cells)
+
+
     
-    ID = task_info(lines(ii)).cell_ID;
-    req_params.ID = ID;     
-    line8directions = findLinesInDB (task_info, req_params);
-    
-    if isempty(line8directions)
-        continue
-    end
-     
-    if ~task_info(line8directions(1)).directionally_tuned
-        continue
-    end
-    
-    PD = task_info(line8directions(1)).PD;
     
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
@@ -194,7 +182,7 @@ for ii = 1:length(cells)
 end
 
 
-%%
+
 
 figure;
 

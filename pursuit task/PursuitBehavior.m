@@ -2,9 +2,9 @@
 
 clear all
 
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+MaestroPath = 'C:\Users\Noga\Music\';
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';

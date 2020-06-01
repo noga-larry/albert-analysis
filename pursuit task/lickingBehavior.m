@@ -1,8 +1,9 @@
 %% Behavior figure
 
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+MaestroPath = 'C:\Users\Noga\Music\DATA';
 
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
@@ -10,6 +11,7 @@ req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -20,11 +22,9 @@ behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
 windowEvent = -behavior_params.time_before:behavior_params.time_after;
 
-for ii = 1:length(cells)
+cellID = [];
+for ii = 186:length(cells)
 
-     if  ~isnan(task_info(lines(ii)).licking);
-        continue
-    end
     
     data = importdata(cells{ii});
     [data,flagCross] = getLicking(data,MaestroPath);
@@ -44,6 +44,7 @@ for ii = 1:length(cells)
         
     end
     
+    figure;
     plot(windowEvent,mean(licks))
     title([num2str(data.info.cell_ID) ', ' data.info.session ])
     signalQuality = input('1- good signal,0-bad signal');
@@ -55,12 +56,13 @@ for ii = 1:length(cells)
     
 end
 
-
+save('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 %%
 
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+MaestroPath = 'C:\Users\Noga\Music\DATA';
 
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
@@ -68,6 +70,7 @@ req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
@@ -79,7 +82,7 @@ threshold = 5000;
 
 
 lines = findLinesInDB(task_info,req_params);
-lickInd = cellfun(@(c) isnumeric(c) && c==1,{task_info(lines).licking},'uni',false);
+lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
 lickInd = [lickInd{:}];
 lickInd = find(lickInd);
 lines = lines(lickInd);
@@ -124,16 +127,19 @@ xlabel('Time from cue')
 ylabel('Fraction of trials with lick')
 
 %% 
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear all
+supPath =  'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+MaestroPath = 'C:\Users\Noga\Music\DATA';
 
+plot_cells =0;
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
@@ -145,7 +151,7 @@ threshold = 5000;
 
 
 lines = findLinesInDB(task_info,req_params);
-lickInd = cellfun(@(c) isnumeric(c) && c==1,{task_info(lines).licking},'uni',false);
+lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
 lickInd = [lickInd{:}];
 lickInd = find(lickInd);
 lines = lines(lickInd);
@@ -173,13 +179,31 @@ for ii = 1:length(cells)
         licks(t,:) = (data.trials(t).lick(ts)>threshold);
         
     end
-    
+
+
     licksLowR(ii,:) = nanmean(licks(indLowR,:));
     licksHighR(ii,:) = nanmean(licks(indHighR,:));
     licksLowNR(ii,:) = nanmean(licks(indLowNR,:));
     licksHighNR(ii,:) = nanmean(licks(indHighNR,:));
     
-    
+    if plot_cells
+        subplot(1,2,1)
+        plot(windowEvent,licksLowR(ii,:),'r'); hold on
+        plot(windowEvent,licksHighR(ii,:),'b'); hold off
+        xlabel('Time from Reward')
+        ylabel('Fraction of trials with lick')
+        title('Reward')
+        
+        subplot(1,2,2)
+        plot(windowEvent,licksLowNR(ii,:),'r'); hold on
+        plot(windowEvent,licksHighNR(ii,:),'b'); hold off
+        xlabel('Time from Reward')
+        ylabel('Fraction of trials with lick')
+        title('No Reward')
+        
+        
+        pause
+    end
 end
     
 %%
@@ -199,6 +223,7 @@ errorbar(windowEvent,aveLicksHighR,semLicksHighR,'b')
 xlabel('Time from Reward')
 ylabel('Fraction of trials with lick')
 title('Reward')
+legend ('25','75')
 
 subplot(1,2,2)
 errorbar(windowEvent,aveLicksLowNR,semLicksLowNR,'r'); hold on

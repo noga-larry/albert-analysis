@@ -1,7 +1,7 @@
 
 clear all;
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\saccade_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC cs';
@@ -12,7 +12,7 @@ req_params.num_trials = 20;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'reward';
+raster_params.align_to = 'reward';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
@@ -81,16 +81,19 @@ title('No Reward')
 figure;
 subplot(2,1,1);
 scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2));
+p = signrank(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2));
+
 refline(1,0)
 xlabel('75');ylabel('25')
-title('Reward')
+title(['Reward p=' num2str(p) ', n=' num2str(length(cells))])
 
 
 subplot(2,1,2); 
 scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2));
+p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2));
 refline(1,0)
 xlabel('75');ylabel('25')
-title('No Reward')
+title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 
 %% Make list of cells that responded to reward
 

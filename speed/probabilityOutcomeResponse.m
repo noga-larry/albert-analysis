@@ -1,15 +1,15 @@
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\speed_2_dir_0,50,100';
-load ('C:\noga\TD complex spike analysis\task_info');
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:5000; 
 req_params.num_trials =20;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'reward';
+raster_params.align_to = 'reward';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
@@ -18,8 +18,8 @@ req_params.remove_question_marks = 1;
 compsrison_window = raster_params.time_before + (100:300); 
 
 ts = -raster_params.time_before:raster_params.time_after;
-
-cells = findPathsToCells (supPath,task_info,req_params);
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
