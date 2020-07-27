@@ -2,7 +2,7 @@ data = importdata('C:\Users\Noga\Documents\Vermis Data\saccade_8_dir_75and25\\42
 
 data = importdata('C:\Users\Noga\Documents\Vermis Data\saccade_8_dir_75and25\\4814 CRB.mat')
 
-figure; 
+figure;
 raster_params.time_before = -399;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
@@ -35,7 +35,7 @@ data = importdata('C:\Users\Noga\Documents\Vermis Data\saccade_8_dir_75and25\\42
 
 %data = importdata('C:\Users\Noga\Documents\Vermis Data\saccade_8_dir_75and25\\4814 CRB.mat')
 
-figure; 
+figure;
 raster_params.time_before = 1;
 raster_params.time_after = 700;
 raster_params.smoothing_margins = 100;
@@ -86,3 +86,30 @@ for d = 1:length(angles)
     plot(ts,psth,'Color',colors(d,:)); hold on
     
 end
+%% Rasters
+
+figure;
+raster_params.time_before = 399;
+raster_params.time_after = 1200;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 10;
+raster_params.align_to = 'targetMovementOnset';
+
+directions = 0:45:315;
+probabilities = [25, 75];
+
+for p=1:length(probabilities)
+    for d=1:length(directions)
+        [~,match_d] = getDirections(data);
+        [~,match_p] = getProbabilities(data);
+        boolFail = [data.trials.fail];
+        inx = find (match_d == directions(d) & match_p == probabilities(p) & (~boolFail));
+        raster = getRaster(data,inx, raster_params);
+        
+        subplot(length(probabilities),length(directions),(length(directions)*(p-1)+d))
+        plotRaster(raster,raster_params)
+        title(['p = ' num2str(probabilities(p)) ', d = ' num2str(directions(d)) ])
+    end
+    
+end
+ suptitle(num2str(data.info.cell_ID))
