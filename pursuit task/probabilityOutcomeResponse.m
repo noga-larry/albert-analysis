@@ -1,3 +1,49 @@
+
+%% Make list of significant cells
+clear all
+supPath = 'C:\Users\Noga\Documents\Vermis Data';
+load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+
+req_params.task = 'pursuit_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.remove_question_marks = 1;
+req_params.grade = 10;
+req_params.cell_type = 'CRB|PC';
+req_params.num_trials = 20;
+req_params.remove_repeats = 0;
+
+
+raster_params.align_to = 'reward';
+raster_params.time_before = -100;
+raster_params.time_after = 300;
+raster_params.smoothing_margins = 0;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+for ii = 1:length(cells )
+    data = importdata(cells{ii});
+    [~,match_p] = getProbabilities (data);
+    match_o = getOutcome (data);
+    boolFail = [data.trials.fail];
+    
+    group = match_p*10+match_o; 
+    group = group(~boolFail);
+    
+    raster = getRaster(data,find(~boolFail),raster_params);
+    spikes = sum(raster,1);
+    
+    p = kruskalwallis(spikes,group,'off');
+    
+    task_info(lines(ii)).outcome_differentiating = p<0.05;
+    
+    
+    
+end
+
+save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
+
+%% PSTHs
 clear all
 supPath = 'C:\Users\Noga\Documents\Vermis Data';
 load ('C:\Users\Noga\Documents\Vermis Data\task_info');
@@ -10,8 +56,9 @@ req_params.ID = 4000:5000;
 %req_params.ID = setdiff(4000:5000,[4243,4269,4575,4692,4718,4722])
 %cells from saccade task:
 % req_params.ID = [4127,4237,4238,4239,4243,4262,4269,4274,4275,4276,4282,4328,4347,4369,4457,4535,4536,4569,4570,4578,4582,4602,4609,4610,4618,4619,4685,4695,4707,4721,4737,4785,4810,4839,4854,4857,4907,4917,4937,4968,4970,4987,4988]
-req_params.num_trials = 50;
+req_params.num_trials = 40;
 req_params.remove_question_marks = 1;
+
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -24,7 +71,7 @@ compsrison_window = raster_params.time_before + (100:300);
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
-%lines = lines(~[task_info(lines).directionally_tuned]);
+lines = lines(~[task_info(lines).directionally_tuned]);
 cells = findPathsToCells (supPath,task_info,lines);
 
 psthLowR = nan(length(cells),length(ts));
@@ -36,6 +83,8 @@ psthHighNR = nan(length(cells),length(ts));
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
+    
+    h(ii) = task_info(lines(ii)).cue_differentiating;
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
@@ -64,6 +113,7 @@ for ii = 1:length(cells)
     psthLowNR(ii,:) = raster2psth(rasterLowNR,raster_params) - baseline;
     psthHighR(ii,:) = raster2psth(rasterHighR,raster_params) - baseline;
     psthHighNR(ii,:) = raster2psth(rasterHighNR,raster_params) - baseline;
+    
 end
 
 aveLowR = nanmean(psthLowR);
@@ -95,7 +145,8 @@ title('No Reward')
 
 figure;
 subplot(2,1,1);
-scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2));
+scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
+scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));
 refline(1,0)
 xlabel('75');ylabel('25')
 title('Reward')
@@ -105,11 +156,18 @@ title(['Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 
 
 subplot(2,1,2);
-scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2))
+scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2)); hold on
+scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
+
 refline(1,0)
 xlabel('75');ylabel('25')
 p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2))
 title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
+
+%
+
+
+
 
 %%
 clear all
@@ -280,7 +338,7 @@ req_params.grade = 7;
 req_params.cell_type = 'PC cs';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.num_trials = 40;
 req_params.remove_question_marks = 1;
 
 
@@ -304,7 +362,8 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells)
     data = importdata(cells{ii});
    
-    
+    h(ii) = task_info(lines(ii)).cue_differentiating;
+
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
     
@@ -319,12 +378,13 @@ end
 
 
 figure;
-scatter(rateBaseline,rateCue);
+scatter(rateBaseline,rateCue); hold on
+scatter(rateBaseline(find(h)),rateCue(find(h)));
 refline(1,0)
 xlabel('Basline')
 ylabel('reward')
 p = signrank(rateBaseline,rateCue);
 title(['p=' num2str(p) ', n=' num2str(length(cells))])
 
-%% Check response withput saccdes 
+%% Check response without saccdes 
 
