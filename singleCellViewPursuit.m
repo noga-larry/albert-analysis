@@ -1,12 +1,12 @@
 
 %% Pursuit task
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Golda');
+
      
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = 'PC cs';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = [4000:5000];
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
@@ -40,10 +40,13 @@ for ii=1:length(cells)
     psthLow = raster2psth(rasterLow,raster_params);
     psthHigh = raster2psth(rasterHigh,raster_params);
     
+    
+    suptitle([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
+
+        
     subplot(4,4,1)
     plotRaster(rasterLow,raster_params,'r')
     xlabel('Time from cue')
-    title(num2str(data.info.cell_ID))
     subplot(4,4,2)
     plotRaster(rasterHigh,raster_params,'b')
     xlabel('Time from cue')

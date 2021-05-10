@@ -1,20 +1,20 @@
 % Probability Cue Response
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear; clc
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 % Make list of significant cells
 
 
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.task = 'saccade_8_dir_75and25';
 req_params.remove_question_marks = 1;
-req_params.grade =10;
-req_params.cell_type = 'CRB|PC';
-req_params.num_trials = 20;
+req_params.grade =7;
+req_params.ID = 4000:6000;
+req_params.cell_type = 'PC|CRB';
+req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 
 
-raster_params.allign_to = 'cue';
+raster_params.align_to = 'cue';
 raster_params.cue_time = 500;
 raster_params.time_before = -100;
 raster_params.time_after = 300;
@@ -45,23 +45,23 @@ for ii = 1:length(cells )
     
 end
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
+save (task_DB_path,'task_info')
 
 
 %% PSTHs
 
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear 
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda');
+
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.ID = 4000:6000;
+req_params.cell_type = 'PC ss';
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 % req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
 %     4785,4802,4810,4841,4845,4862,4833,...
 %     4907]);
-req_params.num_trials = 20;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4243,4269,4575,4692,4718,4722]
 

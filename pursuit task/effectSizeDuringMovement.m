@@ -1,11 +1,9 @@
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Golda');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss|CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.cell_type = 'PC|CRB';
+req_params.task = 'saccade_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
@@ -60,6 +58,12 @@ for ii = 1:length(cells)
     omegaT(ii) = omega(tbl,2);
     omegaR(ii) = omega(tbl,3)+omega(tbl,5);
     omegaD(ii) = omega(tbl,4)+omega(tbl,6);
+    
+    data.effect_sizes.movement.direction = omegaD(ii);
+    data.effect_sizes.movement.reward = omegaR(ii);
+    data.effect_sizes.movement.time = omegaT(ii);
+    
+    save(cells{ii},'data')
     
 end
 
@@ -140,6 +144,7 @@ legend('PC ss','CRB')
 title(['PC ss: p = ' num2str(p1) ', PC ss: p = ' num2str(p2)])
 
 subplot(3,2,5)
+ind = find(boolPC);
 scatter(omegaR(ind),omegaD(ind),'filled'); 
 p = signrank(omegaR(ind),omegaD(ind))
 title(['PC ss: p = ' num2str(p)])

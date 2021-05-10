@@ -1,15 +1,14 @@
-clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+
+clear; clc
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC|CRB';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
-raster_params.allign_to = 'targetMovementOnset';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.cue_time = 500;
 raster_params.time_before = 299;
 raster_params.time_after = 500;

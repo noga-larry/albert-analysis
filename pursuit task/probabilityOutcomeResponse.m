@@ -1,16 +1,16 @@
 
 %% Make list of significant cells
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear; clc
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
-req_params.num_trials = 20;
+req_params.num_trials = 50;
 req_params.remove_repeats = 0;
+req_params.ID = 4000:6000;
+
 
 
 raster_params.align_to = 'reward';
@@ -41,23 +41,20 @@ for ii = 1:length(cells )
     
 end
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
+save (task_DB_path,'task_info')
 
 %% PSTHs
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear; close all; clc
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
 
-req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-%req_params.ID = setdiff(4000:5000,[4243,4269,4575,4692,4718,4722])
-%cells from saccade task:
-% req_params.ID = [4127,4237,4238,4239,4243,4262,4269,4274,4275,4276,4282,4328,4347,4369,4457,4535,4536,4569,4570,4578,4582,4602,4609,4610,4618,4619,4685,4695,4707,4721,4737,4785,4810,4839,4854,4857,4907,4917,4937,4968,4970,4987,4988]
-req_params.num_trials = 40;
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
+req_params.grade = 7;
+req_params.cell_type = 'PC ss';
+req_params.num_trials = 50;
+req_params.remove_repeats = 0;
+req_params.ID = 4000:6000;
 
 
 raster_params.align_to = 'reward';
@@ -71,7 +68,7 @@ compsrison_window = raster_params.time_before + (100:300);
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
-lines = lines(~[task_info(lines).directionally_tuned]);
+% lines = lines(~[task_info(lines).directionally_tuned]);
 cells = findPathsToCells (supPath,task_info,lines);
 
 psthLowR = nan(length(cells),length(ts));
@@ -84,7 +81,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     
-    h(ii) = task_info(lines(ii)).cue_differentiating;
+    % h(ii) = task_info(lines(ii)).cue_differentiating;
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
@@ -99,12 +96,9 @@ for ii = 1:length(cells)
     rasterHighR = getRaster(data,indHighR,raster_params);
     rasterHighNR = getRaster(data,indHighNR,raster_params);
     
-    basline = getRaster(data,find(~boolFail),raster_params);
+    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
     
-    if ~strcmp(req_params.cell_type,'PC cs')
-        rasterBaseline = getRaster(data,indBaseline,raster_params);
-        baseline = mean(raster2psth(rasterBaseline,raster_params));
-    else
+    if strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
     
@@ -146,7 +140,7 @@ title('No Reward')
 figure;
 subplot(2,1,1);
 scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
-scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));
+%scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));
 refline(1,0)
 xlabel('75');ylabel('25')
 title('Reward')
@@ -157,7 +151,7 @@ title(['Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 
 subplot(2,1,2);
 scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2)); hold on
-scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
+%scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
 
 refline(1,0)
 xlabel('75');ylabel('25')

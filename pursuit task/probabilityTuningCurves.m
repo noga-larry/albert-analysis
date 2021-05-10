@@ -1,12 +1,10 @@
 % Probability Tuning curves
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear; clc
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda')
 
 req_params.grade = 7;
 req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.task = 'saccade_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
@@ -78,7 +76,7 @@ for ii = 1:length(cells)
 end
 
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
+save ('C:\Users\noga.larry\Documents\Golda Anlysis\task_info')
 
 
 angle_for_glm = -180:45:0;

@@ -2,9 +2,7 @@
 
 clear all
 
-MaestroPath = 'C:\Users\Noga\Music\DATA\';
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 10;
 req_params.cell_type = 'CRB|PC';
