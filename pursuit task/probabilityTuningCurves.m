@@ -1,12 +1,14 @@
 % Probability Tuning curves
-clear; clc
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda')
+clear; clc; close all
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.cell_type = 'PC ss';
+req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
+req_params.ID = 4000:6000;
+
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
@@ -46,11 +48,9 @@ for ii = 1:length(cells)
     data.info.directionally_tuned = h(ii);
     save (cells{ii},'data');
     
-    if ~strcmp(req_params.cell_type,'PC cs')
-        baseline = mean(TCpop(ii,:));
-         baseline = 0;
-    else
-       
+    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
+    
+    if strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
     
@@ -76,7 +76,7 @@ for ii = 1:length(cells)
 end
 
 
-save ('C:\Users\noga.larry\Documents\Golda Anlysis\task_info')
+save (task_DB_path,'task_info')
 
 
 angle_for_glm = -180:45:0;
@@ -103,49 +103,54 @@ glme = fitglme(glm_tbl,...
 
 directions = [-180:45:180];
 figure;
-ind = find(~h);
-subplot(3,1,1)
-aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
-aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
-errorbar(directions,aveLow,semLow,'r'); hold on
-errorbar(directions,aveHigh,semHigh,'b'); hold on
-title(['Untuned, n = ' num2str(length(ind))]);
 
 ind = find(h);
 subplot(3,1,2)
 aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
+semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Significantly tuned, n = ' num2str(sum(h))]);
 xlabel('direction')
 legend( '25','75')
+ylimits = get(gca,'YLim');
+
+ind = find(~h);
+subplot(3,1,1)
+aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
+semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
+aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
+semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
+errorbar(directions,aveLow,semLow,'r'); hold on
+errorbar(directions,aveHigh,semHigh,'b'); hold on
+title(['Untuned, n = ' num2str(length(ind))]);
+ylim([ylimits])
+
 
 ind = 1:length(cells);
 subplot(3,1,3)
 aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
+semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
+semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['All, n = ' num2str(length(cells))]);
 xlabel('direction')
 legend( '25','75')
+ylim([ylimits])
 
 
 figure;
 ind = find(~h);
 for d = 1:length(angles)
     subplot(2,5,d)
-    ave_Low = mean(squeeze(psth_Low(ind,d,:)));
-    sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
+    ave_Low = nanmean(squeeze(psth_Low(ind,d,:)));
+    sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
     ave_High = mean(squeeze(psth_High(ind,d,:)));
-    sem_High = std(squeeze(psth_High(ind,d,:)))/sqrt(length(ind));
+    sem_High = nanSEM(squeeze(psth_High(ind,d,:)));
     errorbar(ts,ave_Low,sem_Low,'r'); hold on
     errorbar(ts,ave_High,sem_High,'b'); hold on
     if d==1

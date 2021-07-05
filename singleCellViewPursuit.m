@@ -5,8 +5,8 @@ clear
 
      
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
+req_params.cell_type = 'PC ss';
+req_params.task = 'saccade_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 

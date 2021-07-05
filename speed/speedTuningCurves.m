@@ -1,14 +1,14 @@
 % Probability Tuning curves - regardles of direction 
 clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+
 
 velocities = [15, 25];
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'PC ss';
 req_params.task = 'speed_2_dir_0,50,100';
-req_params.ID = 4000:5000;
+req_params.ID = 4000:6000;
 req_params.num_trials = 60;
 req_params.remove_question_marks = 1;
 
