@@ -38,4 +38,6 @@ for ii = 33:length(cells)
     end
 end
   
-imagesc(probabilities,probabilities,squeeze(nanmean(fracChoice)))
+h = imagesc(probabilities,probabilities,squeeze(nanmean(fracChoice)))
+xticks(0:25:100);yticks(0:25:100)
+colourmap( [0 0 0; parula(256)] )
