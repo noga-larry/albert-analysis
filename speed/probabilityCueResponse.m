@@ -1,16 +1,16 @@
 % Probability Cue Response
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear; clc; close all
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 % Make list of significant cells
 
 
 req_params.task = 'speed_2_dir_0,50,100';
-req_params.ID = 4000:5000;
+req_params.ID = 4000:6000;
 req_params.remove_question_marks = 1;
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
-req_params.num_trials = 30;
+req_params.num_trials = 50;
 
 raster_params.align_to = 'cue';
 raster_params.time_before = -100;
@@ -51,7 +51,7 @@ for ii = 1:length(cells)
     
 end
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
+save (task_DB_path,'task_info')
 
 
 
@@ -61,11 +61,14 @@ save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 %% PSTHs
 
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+
+
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'PC ss';
 req_params.task = 'speed_2_dir_0,50,100';
-req_params.ID = 4000:5000;
-req_params.num_trials = 30;
+req_params.ID = 4000:6000;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
@@ -99,10 +102,16 @@ for ii = 1:length(cells)
     rasterMid = getRaster(data,indMid,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     
+    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
     
-    psthLow(ii,:) = raster2psth(rasterLow,raster_params);
-    psthMid(ii,:) = raster2psth(rasterMid,raster_params);
-    psthHigh(ii,:) = raster2psth(rasterHigh,raster_params);
+    if strcmp(req_params.cell_type,'PC cs')
+        baseline = 0;
+    end
+    
+    
+    psthLow(ii,:) = raster2psth(rasterLow,raster_params)-baseline;
+    psthMid(ii,:) = raster2psth(rasterMid,raster_params)-baseline;
+    psthHigh(ii,:) = raster2psth(rasterHigh,raster_params)-baseline;
     h(ii) = task_info(lines(ii)).cue_differentiating;
     
 end

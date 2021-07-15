@@ -1,10 +1,12 @@
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+
+clear all 
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'PC ss';
 req_params.task = 'speed_2_dir_0,50,100';
-req_params.ID = 4000:5000; 
+req_params.ID = 4000:6000; 
 req_params.num_trials =20;
 req_params.remove_question_marks = 1;
 
@@ -42,7 +44,7 @@ for ii = 1:length(cells)
     psthMidR(ii,:) = raster2psth(rasterMidR,raster_params);
     psthHighR(ii,:) = raster2psth(rasterHighR,raster_params);
 end
-%%
+
 aveMidR = mean(psthMidR);
 semMidR = std(psthMidR)/sqrt(length(cells));
 aveHighR = mean(psthHighR);
