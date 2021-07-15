@@ -51,12 +51,12 @@ save (task_DB_path,'task_info')
 %% PSTHs
 
 clear 
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda');
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 
 req_params.grade = 7;
 req_params.ID = 4000:6000;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC';
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 % req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
 %     4785,4802,4810,4841,4845,4862,4833,...

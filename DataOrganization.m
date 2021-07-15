@@ -1,8 +1,8 @@
 %% Get Data
 
-get_excel_info('C:\Users\Noga\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
-    'C:\Users\Noga\Documents\Vermis Data')
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+get_excel_info('C:\Users\noga.larry\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
+    'C:\Users\noga.larry\Documents\Vermis Data')
+load ('C:\Users\noga.larry\Documents\Vermis Data\task_info');
 for ii=1:length(task_info)
     str_date = regexp(task_info(ii).session,'[0-9]*','match');
     task_info(ii).date = str2num(str_date{1});
@@ -20,19 +20,19 @@ for ii=1:length(task_info)
     end
     task_info(ii).num_trials = length(trial_num);
     
-    task_info(ii).save_name = erase(task_info(ii).save_name,'''');
+    %task_info(ii).save_name = erase(task_info(ii).save_name,'''');
 end
 
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info')
+save ('C:\Users\noga.larry\Documents\Vermis Data\task_info')
 
 %% sup_dir_from
+clear
+[task_info] = loadDBAndSpecifyDataPaths('Vermis');
 
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-
-req_params.grade = 10;
-req_params.cell_type = 'PC|CRB';
-req_params.task = 'speed_2_dir_0,50,100';
+req_params.grade = 7;
+req_params.cell_type = 'SNR|BG|PC|CRB';
+%req_params.task = 'speed_2_dir_0,50,100';
 req_params.remove_question_marks = 0;
 req_params.ID = 4000:5000;
 req_params.remove_question_marks = 0;
@@ -41,13 +41,13 @@ req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
 
 
-sup_dir_from = 'C:\Users\Noga\Music\DATA\';
-sup_dir_to = 'C:\Users\Noga\Documents\Vermis Data\';
+sup_dir_from = 'G:\DATA';
+sup_dir_to = 'C:\Users\noga.larry\Documents\Vermis Data\';
 
-task_info = getData(task_info, sup_dir_from, sup_dir_to , lines,...
+task_info = getData('Vermis' , lines,...
     'numElectrodes',10);
 
-save('C:\Users\Noga\Documents\Vermis Data\task_info','task_info')
+save('C:\Users\noga.larry\Documents\Vermis Data\task_info','task_info')
 
 
 filename = 'C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx';
