@@ -2,12 +2,12 @@
 
 clear all
 
-[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Golda');
 
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.ID = 5600:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks =0;
 
@@ -55,7 +55,7 @@ MaestroPath = 'C:\Users\Noga\Music\DATA\';
 supPath = 'C:\Users\Noga\Documents\Vermis Data';
 load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;

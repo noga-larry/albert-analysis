@@ -3,15 +3,12 @@
 
 clear all
 
-MaestroPath = 'C:\Users\Noga\Music\';
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Golda');
 
-
-req_params.grade = 10;
-req_params.cell_type = 'CRB|PC';
+req_params.grade = 7;
+req_params.cell_type = 'CRB|PC ss';
 req_params.task = 'speed_2_dir_0,50,100';
-req_params.ID = 4000:5000;
+req_params.ID = 5600:6000;
 req_params.num_trials = 60;
 req_params.remove_question_marks =0;
 
