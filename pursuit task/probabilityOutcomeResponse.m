@@ -1,7 +1,8 @@
 
 %% Make list of significant cells
 clear; clc
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info, supPath ,~,task_DB_path] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
@@ -10,8 +11,6 @@ req_params.cell_type = 'CRB|PC';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 req_params.ID = 4000:6000;
-
-
 
 raster_params.align_to = 'reward';
 raster_params.time_before = -100;
@@ -37,25 +36,21 @@ for ii = 1:length(cells )
     
     task_info(lines(ii)).outcome_differentiating = p<0.05;
     
-    
-    
 end
 
 save (task_DB_path,'task_info')
 
 %% PSTHs
 clear; close all; clc
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
-
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda')
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 req_params.ID = 4000:6000;
-
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -111,16 +106,16 @@ for ii = 1:length(cells)
 end
 
 aveLowR = nanmean(psthLowR);
-semLowR =  nanstd(psthLowR)/sqrt(length(cells));
+semLowR =  nanSEM(psthLowR);
 aveHighR = nanmean(psthHighR);
-semHighR = nanstd(psthHighR)/sqrt(length(cells));
+semHighR = nanSEM(psthHighR);
 
 aveLowNR = nanmean(psthLowNR);
-semLowNR = nanstd(psthLowNR)/sqrt(length(cells));
+semLowNR = nanSEM(psthLowNR);
 aveHighNR = nanmean(psthHighNR);
-semHighNR = nanstd(psthHighNR)/sqrt(length(cells));
+semHighNR = nanSEM(psthHighNR);
 
-figure;
+f = figure; f.Position = [10 80 700 500];
 subplot(2,1,1);
 errorbar(ts,aveLowR,semLowR,'r'); hold on
 errorbar(ts,aveHighR,semHighR,'b'); hold on
@@ -137,7 +132,7 @@ ylabel('rate (spk/s)')
 legend('25','75')
 title('No Reward')
 
-figure;
+f = figure; f.Position = [10 80 700 500];
 subplot(2,1,1);
 scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
 %scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));

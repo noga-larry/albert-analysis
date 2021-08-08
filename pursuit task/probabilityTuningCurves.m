@@ -1,11 +1,11 @@
 % Probability Tuning curves
 clear; clc; close all
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.num_trials = 50;
+req_params.cell_type = 'PC cs';
+req_params.task = 'saccade_8_dir_75and25';
+req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 req_params.ID = 4000:6000;
 
@@ -102,7 +102,7 @@ glme = fitglme(glm_tbl,...
 
 
 directions = [-180:45:180];
-figure;
+f = figure; f.Position = [10 80 700 500];
 
 ind = find(h);
 subplot(3,1,2)
@@ -143,7 +143,8 @@ legend( '25','75')
 ylim([ylimits])
 
 
-figure;
+f = figure; f.Position = [10 80 700 500];
+
 ind = find(~h);
 for d = 1:length(angles)
     subplot(2,5,d)

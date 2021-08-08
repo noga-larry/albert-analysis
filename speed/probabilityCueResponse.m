@@ -1,6 +1,6 @@
 % Probability Cue Response
 clear; clc; close all
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
 
 % Make list of significant cells
 
@@ -61,11 +61,11 @@ save (task_DB_path,'task_info')
 
 %% PSTHs
 
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
 
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;
@@ -117,7 +117,8 @@ for ii = 1:length(cells)
 end
 
 
-figure;
+f = figure; f.Position = [10 80 700 500];
+
 subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
@@ -160,8 +161,8 @@ legend('0','50','100')
 xlabel('Time from cue (ms)')
 title (['All, n = ' num2str(length(cells))])
 
+f = figure; f.Position = [10 80 700 500];
 
-figure;
 ind = find(h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 ind = find(~h);

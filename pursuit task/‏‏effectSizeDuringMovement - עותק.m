@@ -1,12 +1,11 @@
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Golda');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC ss|CRB';
 req_params.task = 'saccade_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.ID = 4000:6000;
+req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
@@ -57,7 +56,7 @@ for ii = 1:length(cells)
     
     omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
       
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
+    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
     
     omegaT(ii) = omega(tbl,2);
     omegaR(ii) = omega(tbl,3)+omega(tbl,5);
@@ -118,7 +117,8 @@ plotHistForFC(omegaD,bins,'b'); hold on
 legend('T','R','D')
 
 %%
-figure;
+f = figure; f.Position = [10 80 700 500];
+
 boolPC = strcmp('PC ss', cellType);
 
 subplot(3,1,1)
@@ -158,7 +158,8 @@ title(['PC ss: p = ' num2str(p1) ', CRB: p = ' num2str(p2)])
 
  
 ranksum(omegaD(boolPC),omegaD(~boolPC))
-figure;
+f = figure; f.Position = [10 80 700 500];
+
 bins = -0.2:0.05:1;
 
 subplot(3,1,1)
@@ -184,7 +185,7 @@ plotHistForFC(omegaR(~boolPC),bins,'r'); hold on
 legend('SS', 'CRB')
 title(['Time: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(boolPC)) ', n_{crb} = ' num2str(sum(~boolPC))])
 
-figure;
+f = figure; f.Position = [10 80 700 500];
 bins = -0.3:0.05:1;
 
 overallExplained = omegaR+omegaD+omegaT;
