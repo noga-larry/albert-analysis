@@ -1,14 +1,13 @@
 %% Get Data
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
 
-get_excel_info('C:\Users\noga.larry\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
-    'C:\Users\noga.larry\Documents\Vermis Data')
-load ('C:\Users\noga.larry\Documents\Vermis Data\task_info');
+get_excel_info('C:\Users\Noga\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
+    task_DB_path)
+load (task_DB_path);
 for ii=1:length(task_info)
     str_date = regexp(task_info(ii).session,'[0-9]*','match');
     task_info(ii).date = str2num(str_date{1});
-    if ~isnumeric(task_info(ii).grade)
-        task_info(ii).grade = 100;
-    end
     f_b = task_info(ii).fb_after_sort;
     f_e = task_info(ii).fe_after_sort;
     if ~isnumeric(f_b)
@@ -24,30 +23,27 @@ for ii=1:length(task_info)
 end
 
 
-save ('C:\Users\noga.larry\Documents\Vermis Data\task_info')
+save (task_DB_path,'task_info')
 
 %% sup_dir_from
 clear
-[task_info] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
 req_params.cell_type = 'SNR|BG|PC|CRB';
-%req_params.task = 'speed_2_dir_0,50,100';
+%req_params.task = 'choice';
 req_params.remove_question_marks = 0;
-req_params.ID = 4000:5000;
-req_params.remove_question_marks = 0;
+req_params.ID = 4000:6000;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
 
 
-sup_dir_from = 'G:\DATA';
-sup_dir_to = 'C:\Users\noga.larry\Documents\Vermis Data\';
-
 task_info = getData('Vermis' , lines,...
-    'numElectrodes',10);
+    'numElectrodes',10,'includeBehavior',true);
 
-save('C:\Users\noga.larry\Documents\Vermis Data\task_info','task_info')
+save(task_DB_path,'task_info')
 
 
 filename = 'C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx';
