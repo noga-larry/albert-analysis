@@ -18,6 +18,8 @@ raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
 
 lines = findLinesInDB (task_info, req_params);
+
+
 cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells )
@@ -42,15 +44,15 @@ save (task_DB_path,'task_info')
 
 %% PSTHs
 clear; close all; clc
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Golda')
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'PC ss';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
-req_params.ID = 4000:6000;
+req_params.ID = 5000:6000;
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -58,11 +60,17 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
-compsrison_window = raster_params.time_before + (100:300);
+compsrison_window = raster_params.time_before + (100:500);
 
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
+
+lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
+lickInd = [lickInd{:}];
+lickInd = find(lickInd);
+lines = lines(lickInd);
+
 % lines = lines(~[task_info(lines).directionally_tuned]);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -115,6 +123,7 @@ semLowNR = nanSEM(psthLowNR);
 aveHighNR = nanmean(psthHighNR);
 semHighNR = nanSEM(psthHighNR);
 
+
 f = figure; f.Position = [10 80 700 500];
 subplot(2,1,1);
 errorbar(ts,aveLowR,semLowR,'r'); hold on
@@ -142,238 +151,179 @@ title('Reward')
 p = signrank(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2))
 title(['Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 
-
-
 subplot(2,1,2);
 scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2)); hold on
 %scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
-
 refline(1,0)
 xlabel('75');ylabel('25')
 p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2))
 title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 
-%
+
+figure;
+scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
+refline(1,0)
+xlabel('75 - NR');ylabel('25 - R')
+[r,p] = corr(mean(psthHighNR(:,compsrison_window),2),...
+    mean(psthLowR(:,compsrison_window),2),'type','Spearman');
+title([req_params.cell_type ' correlation: r =  ' num2str(r) ...
+    ', p=' num2str(p) ', n=' num2str(length(cells))])
+p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
+
+subtitle(['Signrank:' num2str(p)])
 
 
+%% Significance in time
+clear 
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
-
-%%
-clear all
-
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
+WINDOW_SIZE = 50;
+NUM_COMPARISONS = 7; 
+PLOT_INDIVIDUAL = false;
 
 req_params.grade = 7;
 req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.ID = 4000:6000;
+req_params.num_trials = 80;
 req_params.remove_question_marks = 1;
 
-raster_params.allign_to = 'reward';
-raster_params.cue_time = 500;
+raster_params.align_to = 'cue';
 raster_params.time_before = 300;
 raster_params.time_after = 500;
-raster_params.smoothing_margins = 50; % ms in each side
+raster_params.smoothing_margins = 0; % ms in each side
+raster_params.SD = 15;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-ts = -raster_params.time_before : raster_params.time_after;
+ts = -(raster_params.time_before - ceil(WINDOW_SIZE/2)): ...
+    (raster_params.time_after- ceil(WINDOW_SIZE/2));
 
-
-HighTail = nan(length(cells),length(ts));
-LowTail =nan(length(cells),length(ts));
-
-timeWindow = -raster_params.smoothing_margins:...
-    raster_params.smoothing_margins;
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
     
-    indR = find ( match_o & (~boolFail));
-    indNR = find ((~match_o) & (~boolFail));
-    indSuprise = find (((match_p == 75 & (~match_o))| ...
-        (match_p == 25 & match_o) ) & (~boolFail));
-    indNoSuprise = find (((match_p == 25 & (~match_o))| ...
-        (match_p == 75 & match_o) ) & (~boolFail));
+    ind = find(~boolFail);
     
-    rasterR = getRaster(data,indR,raster_params);
-    rasterNR = getRaster(data,indNR,raster_params);
-    rasterSuprise = getRaster(data,indSuprise,raster_params);
-    rasterNoSuprise = getRaster(data,indNoSuprise,raster_params);
+    raster = getRaster(data,ind,raster_params);
     
-    for t = 1:length(ts)
-        runningWindow = raster_params.smoothing_margins + t + timeWindow;
-        spksR = sum(rasterR(runningWindow,:));
-        spksNR = sum(rasterNR(runningWindow,:));
-        spksSuprise = sum(rasterSuprise(runningWindow,:));
-        spksNoSuprise = sum(rasterNoSuprise(runningWindow,:));
-        [~,R(ii,t)] = ranksum(spksR,spksNR,'tail','right');
-        [~,NR(ii,t)] = ranksum(spksR,spksNR,'tail','left');
-        [~,NoSuprise(ii,t)] = ranksum(spksNoSuprise,spksSuprise,'tail','right');
-        [~,Suprise(ii,t)] = ranksum(spksNoSuprise,spksSuprise,'tail','left');
+    func = @(raster) sigFunc(raster,match_p(ind),match_o(ind));
+    returnTrace(ii,:,:) = ...
+        runningWindowFunction(raster,func,WINDOW_SIZE,NUM_COMPARISONS);
+
+    if PLOT_INDIVIDUAL
+       ax1 = subplot(2,1,1); hold on
+        
+       ind = find (match_p==75 & match_o);
+       psth = getSTpsth(data,ind,raster_params);
+       ave = nanmean(psth); sem = nanSEM(psth);
+       errorbar(-raster_params.time_before:...
+           raster_params.time_after,ave,sem,'b')
+       
+       ind = find (match_p==75 & ~match_o);
+       psth = getSTpsth(data,ind,raster_params);
+       ave = nanmean(psth); sem = nanSEM(psth);
+       errorbar(-raster_params.time_before:...
+           raster_params.time_after,ave,sem,'--b')
+       marks = ts(find(returnTrace(ii,:,5)));
+       plot(marks,ones(length(marks),1),'k*')
+       title('75')       
+       
+       ax2 = subplot(2,1,2); hold on
+        
+       ind = find (match_p==25 & match_o);
+       psth = getSTpsth(data,ind,raster_params);
+       ave = nanmean(psth); sem = nanSEM(psth);
+       errorbar(-raster_params.time_before:...
+           raster_params.time_after,ave,sem,'r')
+       
+       ind = find (match_p==25 & ~match_o);
+       psth = getSTpsth(data,ind,raster_params);
+       ave = nanmean(psth); sem = nanSEM(psth);
+       errorbar(-raster_params.time_before:...
+           raster_params.time_after,ave,sem,'--r')
+       title('25')
+       marks = ts(find(returnTrace(ii,:,4)));
+       plot(marks,ones(length(marks),1),'k*')
+       
+       pause
+       cla(ax1); cla(ax2)
     end
 end
 
+figure;
+subplot(3,1,1)
+plot(ts,squeeze(mean(returnTrace(:,:,1:3))))
+xlabel('Time from cue')
+ylabel('Frac significiant')
+legend('R vs NR', '75 vs 25','Unlikely vs likely result')
 
+subplot(3,1,2); hold on
+plot(ts,squeeze(mean(returnTrace(:,:,5))),'b')
+plot(ts,squeeze(mean(returnTrace(:,:,4))),'r')
+xlabel('Time from cue')
+ylabel('Frac significiant')
+legend('R vs NR in 25', 'R vs NR in 75')
+
+subplot(3,1,3); hold on
+plot(ts,squeeze(mean(returnTrace(:,:,6))),'b')
+plot(ts,squeeze(mean(returnTrace(:,:,7))),'r')
+xlabel('Time from cue')
+ylabel('Frac significiant')
+legend('25 vs 75 in R', '25 vs 75 in NR')
+
+
+sgtitle(req_params.cell_type)
 %%
-fracNR = mean(NR>0.05);
-fracR = mean(R>0.05);
-fracNoSuprise = mean(NoSuprise>0.05);
-fracSuprise = mean(Suprise>0.05);
-figure;
-subplot(2,1,1)
-plot(ts,fracR,'m'); hold on
-plot(ts,fracNR,'k')
-title ('Reward vs No Reward')
-xlabel('Time from reward')
-ylabel('Frac of cells')
-legend ('R','NR')
+function h = sigFunc(raster,match_p,match_o)
+% comparison R vs NR
+spk1 = sum(raster(:,match_o));
+spk2 = sum(raster(:,~match_o));
+p(1) = ranksum(spk1,spk2);
 
-subplot(2,1,2)
-plot(ts,fracSuprise,'m'); hold on
-plot(ts,fracNoSuprise,'k')
-title ('Suprise vs No Suprise')
-xlabel('Time from reward')
-ylabel('Frac of cells')
-legend ('Suprise','No Suprise')
+% comparison 25 vs 75
+spk1 = sum(raster(:,match_p==25));
+spk2 = sum(raster(:,match_p==75));
+p(2) = ranksum(spk1,spk2);
+
+% comparison suprise 
+spk1 = sum(raster(:,(match_p==25 & match_o) | ...
+    match_p==75 & ~match_o));
+spk2 = sum(raster(:,(match_p==25 & ~match_o) | ...
+    match_p==75 & match_o));
+p(3) = ranksum(spk1,spk2);
+
+% within 25 
+spk1 = sum(raster(:,match_p==25 & match_o));
+spk2 = sum(raster(:,match_p==25 & ~match_o));
+p(4) = ranksum(spk1,spk2);
+
+% within 75
+
+spk1 = sum(raster(:,match_p==75 & match_o));
+spk2 = sum(raster(:,match_p==75 & ~match_o));
+p(5) = ranksum(spk1,spk2);
+
+% within R
+
+spk1 = sum(raster(:,match_p==75 & match_o));
+spk2 = sum(raster(:,match_p==25 & match_o));
+p(6) = ranksum(spk1,spk2);
+
+% within NR
+
+spk1 = sum(raster(:,match_p==75 & ~match_o));
+spk2 = sum(raster(:,match_p==25 & ~match_o));
+p(7) = ranksum(spk1,spk2);
 
 
-%%
-clear all
-prob = 75;
 
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
+h = p'<0.05;
 
-req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 20;
-req_params.remove_question_marks = 1;
-
-raster_params.allign_to = 'reward';
-raster_params.cue_time = 500;
-raster_params.time_before = 300;
-raster_params.time_after = 500;
-raster_params.smoothing_margins = 50; % ms in each side
-
-lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,lines);
-
-ts = -raster_params.time_before : raster_params.time_after;
-
-HighTail = nan(length(cells),length(ts));
-LowTail =nan(length(cells),length(ts));
-
-timeWindow = -raster_params.smoothing_margins:...
-    raster_params.smoothing_margins;
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-    data = getPreviousCompleted(data,MaestroPath);
-    
-    [~,match_p] = getProbabilities (data);
-    [match_o] = getOutcome (data);
-    boolFail = [data.trials.fail];
-    
-    indR = find (match_p == prob & match_o & (~boolFail));
-    indNR = find (match_p == prob &(~match_o) & (~boolFail));
-   
-    rasterR = getRaster(data,indR,raster_params);
-    rasterNR = getRaster(data,indNR,raster_params);
-    
-    for t = 1:length(ts)
-        runningWindow = raster_params.smoothing_margins + t + timeWindow;
-        spksR = sum(rasterR(runningWindow,:));
-        spksNR = sum(rasterNR(runningWindow,:));
-
-        [~,R(ii,t)] = ranksum(spksR,spksNR,'tail','right');
-        [~,NR(ii,t)] = ranksum(spksR,spksNR,'tail','left');
-     end
 end
-
-
-
-fracNR = mean(NR>0.05);
-fracR = mean(R>0.05);
-
-figure;
-plot(ts,fracR,'m'); hold on
-plot(ts,fracNR,'k')
-title ('Reward vs No Reward')
-xlabel('Time from reward')
-ylabel('Frac of cells')
-legend ('R','NR')
-
-title(num2str(prob))
-
-%% Check if reduction in Cspk rate is significant
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-
-req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 40;
-req_params.remove_question_marks = 1;
-
-
-raster_params.align_to = 'reward';
-raster_params.time_before = 399;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-raster_params.SD = 10;
-req_params.remove_question_marks =1;
-compsrison_window1 = raster_params.smoothing_margins + ...
-    raster_params.time_before + (100:300);
-compsrison_window2 = raster_params.smoothing_margins + ...
-    raster_params.time_before - (100:300);
-
-ts = -raster_params.time_before:raster_params.time_after;
-
-lines = findLinesInDB (task_info, req_params);
-lines = lines(~[task_info(lines).directionally_tuned]);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-   
-    h(ii) = task_info(lines(ii)).cue_differentiating;
-
-    [match_o] = getOutcome (data);
-    boolFail = [data.trials.fail];
-    
-    ind = find ((~match_o) & (~boolFail));
-
-    raster = getRaster(data,ind,raster_params);
-
-    rateCue(ii) = mean(mean(raster(compsrison_window1,:)))*1000;
-    rateBaseline(ii) = mean(mean(raster(compsrison_window2,:)))*1000;
-end
-
-
-
-figure;
-scatter(rateBaseline,rateCue); hold on
-scatter(rateBaseline(find(h)),rateCue(find(h)));
-refline(1,0)
-xlabel('Basline')
-ylabel('reward')
-p = signrank(rateBaseline,rateCue);
-title(['p=' num2str(p) ', n=' num2str(length(cells))])
-
-%% Check response without saccdes 
 

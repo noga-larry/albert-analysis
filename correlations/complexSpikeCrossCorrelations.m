@@ -2,17 +2,17 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 PLOT_INDIVIDUAL = 0;
-runningWindow = -50:100; %ms  
+runningWindow = -300:300; %ms  
 
 req_params.grade = 7;
-req_params.ID = 4000:6000;
+%req_params.ID = 4000:6000;
 req_params.remove_question_marks = 1;
-req_params.num_trials = 50;
+req_params.num_trials = 20;
 req_params.remove_repeats = false;
 
 req_params.cell_type = 'PC cs';
 lines1 = findLinesInDB (task_info, req_params);
-req_params.cell_type = 'SNR';
+req_params.cell_type = 'PC cs';
 lines2 = findLinesInDB (task_info, req_params);
 req_params.remove_question_marks = 1;
 

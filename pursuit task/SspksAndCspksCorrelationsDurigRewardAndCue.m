@@ -1,49 +1,35 @@
 % During Reward
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
+req_params.grade = 7;
+req_params.ID = 4000:6000;
+req_params.remove_question_marks = 1;
+req_params.num_trials = 50;
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.remove_question_marks = 1;
 
-bool_task = ~cellfun(@isempty,regexp({task_info.task},'pursuit_8_dir_75and25'));
-bool_type = ~cellfun(@isempty,regexp({task_info.cell_type},'PC cs'));
-bool_grade = [task_info.grade] <= 7;
-bool_nt = [task_info.num_trials] > 20;
-bool_qm = cellfun(@isempty,regexp({task_info.cell_type},'?'));
-IDCspks = [task_info(find(bool_qm& bool_task & bool_type & bool_grade &bool_nt)).cell_ID];
+lines = findCspkSspkPairs(task_info,req_params);
 
-bool_type = ~cellfun(@isempty,regexp({task_info.cell_type},'PC ss'));
-IDSspks = [task_info(find(bool_qm & bool_task & bool_type & bool_grade &bool_nt)).cell_ID];
-cellIDs = intersect(IDSspks,IDCspks);
-
-raster_params.allign_to = 'reward';
+raster_params.align_to = 'reward';
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
-comparison_window = 100:300; % for TC
-directions = 0:45:315;
 
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.remove_question_marks = 1;
-
-
-
-for ii = 1:length(cellIDs)
-    req_params.ID = cellIDs(ii);
-    req_params.cell_type = 'PC ss';
+for ii = 1:length(lines)
     
-    line = findLinesInDB (task_info, req_params);
-    path = findPathsToCells (supPath,task_info,line);
-    dataSspk = importdata(path{:});
-    req_params.cell_type = 'PC cs';
-    line = findLinesInDB (task_info, req_params);
-    path = findPathsToCells (supPath,task_info,line);
-    dataCspk = importdata(path{:});
+    cells = findPathsToCells (supPath,task_info,[lines(1,ii),lines(2,ii)]);
+    dataSspk = importdata(cells{1});
+    dataCspk = importdata(cells{2});
     
-    % Cspk
+    [dataSspk,dataCspk] = reduceToSharedTrials(dataSspk,dataCspk);
+     
     [~,match_p] = getProbabilities (dataCspk);
     [match_o] = getOutcome (dataCspk);
     boolFail = [dataCspk.trials.fail];
     
+    % Cspk    
     indLowR = find (match_p == 25 & match_o & (~boolFail));
     indHighR = find (match_p == 75 & match_o & (~boolFail));
     

@@ -1,14 +1,14 @@
 %% Behavior figure
 
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-MaestroPath = 'C:\Users\Noga\Music\DATA';
+clear 
 
-req_params.grade = 10;
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
+
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.task = 'speed_2_dir_0,50,100';
+req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
@@ -20,12 +20,13 @@ behavior_params.time_after = 1500;
 behavior_params.time_before = 2000;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
-windowEvent = -behavior_params.time_before:behavior_params.time_after;
+behavior_params.align_to = 'reward';
+
+ts = -behavior_params.time_before:behavior_params.time_after;
 
 cellID = [];
-for ii = 186:length(cells)
+for ii = 118:length(cells)
 
-    
     data = importdata(cells{ii});
     [data,flagCross] = getLicking(data,MaestroPath);
     
@@ -33,19 +34,10 @@ for ii = 186:length(cells)
         continue
     end
     
-    for t=1:length(data.trials)
-        
-        ts = data.trials(t).rwd_time_in_extended + windowEvent;
-        if data.trials(t).fail
-            continue
-        end 
-        licks(t,:) = (data.trials(t).lick(ts)>5000);
-        
-        
-    end
+    ind = find(~[data.trials.fail]);
+    licks = meanLicking(data,behavior_params,ind);
     
-    figure;
-    plot(windowEvent,mean(licks))
+    plot(ts,licks)
     title([num2str(data.info.cell_ID) ', ' data.info.session ])
     signalQuality = input('1- good signal,0-bad signal');
     task_info(lines(ii)).lick = signalQuality;
@@ -59,14 +51,14 @@ end
 save('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 %%
 
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-MaestroPath = 'C:\Users\Noga\Music\DATA';
+clear
+PROBABILITIES = [0:50:100];
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
-req_params.task = 'pursuit_8_dir_75and25';
+req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
@@ -76,10 +68,9 @@ behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
+behavior_params.align_to = 'cue';
 
-windowEvent = -behavior_params.time_before:behavior_params.time_after;
-threshold = 5000;
-
+ts = -behavior_params.time_before:behavior_params.time_after;
 
 lines = findLinesInDB(task_info,req_params);
 lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
@@ -95,47 +86,39 @@ for ii = 1:length(cells)
     data = getLicking(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
-    indLow = find (match_p == 25 & (~boolFail));
-    indHigh = find (match_p == 75 & (~boolFail));
-    
-    licks = nan(length(data.trials),length(windowEvent));
-    for t=find(~boolFail)
-        
-        ts = data.trials(t).cue_onset +1000 + windowEvent;
-        licks(t,:) = (data.trials(t).lick(ts)>threshold);
-        
+    for p = 1:length(PROBABILITIES)
+        ind = find (match_p == PROBABILITIES(p) & (~boolFail));
+        licks(ii,p,:) = meanLicking(data,behavior_params,ind);
     end
     
-    licksLow(ii,:) = nanmean(licks(indLow,:));
-    licksHigh(ii,:) = nanmean(licks(indHigh,:));
-    
-    
 end
-    
 
-aveLicksLow = mean(licksLow);
-aveLicksHigh = mean(licksHigh);
-semLicksLow = std(licksLow)/sqrt(length(cells));
-semLicksHigh = std(licksHigh)/sqrt(length(cells));
 
-figure;
-errorbar(windowEvent,aveLicksLow,semLicksLow,'r'); hold on
-errorbar(windowEvent,aveLicksHigh,semLicksHigh,'b')
+%%
+aveLicks = squeeze(mean(licks));
+semLicks = squeeze(nanSEM(licks));
+
+figure; hold on
+errorbar(ts,squeeze(aveLicks(2,:)),squeeze(semLicks(2,:)),'k') 
+errorbar(ts,squeeze(aveLicks(3,:)),squeeze(semLicks(3,:)),'b') 
+errorbar(ts,squeeze(aveLicks(1,:)),squeeze(semLicks(1,:)),'r') 
+
 xlabel('Time from cue')
 ylabel('Fraction of trials with lick')
 
 %% 
-clear all
-supPath =  'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-MaestroPath = 'C:\Users\Noga\Music\DATA';
+clear
+PROBABILITIES = [25,75];
+OUTCOMES = [0 1];
+PLOT_CELLS = false;
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
-plot_cells =0;
-req_params.grade = 10;
+req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
-req_params.task = 'pursuit_8_dir_75and25';
+req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
@@ -145,10 +128,9 @@ behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
+behavior_params.align_to = 'reward';
 
-windowEvent = -behavior_params.time_before:behavior_params.time_after;
-threshold = 5000;
-
+ts = -behavior_params.time_before:behavior_params.time_after;
 
 lines = findLinesInDB(task_info,req_params);
 lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
@@ -164,39 +146,28 @@ for ii = 1:length(cells)
     data = getLicking(data,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
-    [match_o] = getOutcome (data);
+    [match_o] = getOutcome(data);
     boolFail = [data.trials.fail];
     
-    indLowR = find (match_p == 25 & match_o == 1 &(~boolFail));
-    indHighR = find (match_p == 75 & match_o == 1 & (~boolFail));
-    indLowNR = find (match_p == 25 & match_o == 0 &(~boolFail));
-    indHighNR = find (match_p == 75 & match_o == 0 &(~boolFail));
-    
-    licks = nan(length(data.trials),length(windowEvent));
-    for t=find(~boolFail)
-        
-        ts = data.trials(t).rwd_time_in_extended + windowEvent;
-        licks(t,:) = (data.trials(t).lick(ts)>threshold);
-        
+    for p = 1:length(PROBABILITIES)
+        for j=1:length(OUTCOMES)
+            ind = find (match_p == PROBABILITIES(p)...
+                & match_o == OUTCOMES(j) & (~boolFail));
+            licks(ii,p,j,:) = meanLicking(data,behavior_params,ind);
+        end
     end
-
-
-    licksLowR(ii,:) = nanmean(licks(indLowR,:));
-    licksHighR(ii,:) = nanmean(licks(indHighR,:));
-    licksLowNR(ii,:) = nanmean(licks(indLowNR,:));
-    licksHighNR(ii,:) = nanmean(licks(indHighNR,:));
     
-    if plot_cells
+    if PLOT_CELLS
         subplot(1,2,1)
-        plot(windowEvent,licksLowR(ii,:),'r'); hold on
-        plot(windowEvent,licksHighR(ii,:),'b'); hold off
+        plot(ts,licksLowR(ii,:),'r'); hold on
+        plot(ts,licksHighR(ii,:),'b'); hold off
         xlabel('Time from Reward')
         ylabel('Fraction of trials with lick')
         title('Reward')
         
         subplot(1,2,2)
-        plot(windowEvent,licksLowNR(ii,:),'r'); hold on
-        plot(windowEvent,licksHighNR(ii,:),'b'); hold off
+        plot(ts,licksLowNR(ii,:),'r'); hold on
+        plot(ts,licksHighNR(ii,:),'b'); hold off
         xlabel('Time from Reward')
         ylabel('Fraction of trials with lick')
         title('No Reward')
@@ -207,31 +178,21 @@ for ii = 1:length(cells)
 end
     
 %%
-aveLicksLowR = mean(licksLowR);
-aveLicksHighR = mean(licksHighR);
-semLicksLowR = std(licksLowR)/sqrt(length(cells));
-semLicksHighR = std(licksHighR)/sqrt(length(cells));
-aveLicksLowNR = mean(licksLowNR);
-aveLicksHighNR = mean(licksHighNR);
-semLicksLowNR = std(licksLowNR)/sqrt(length(cells));
-semLicksHighNR = std(licksHighNR)/sqrt(length(cells));
 
-figure;
-subplot(1,2,1)
-errorbar(windowEvent,aveLicksLowR,semLicksLowR,'r'); hold on
-errorbar(windowEvent,aveLicksHighR,semLicksHighR,'b')
-xlabel('Time from Reward')
+aveLicks = squeeze(mean(licks));
+semLicks = squeeze(nanSEM(licks));
+
+figure
+subplot(2,1,1); hold on
+errorbar(ts,squeeze(aveLicks(1,1,:)),squeeze(semLicks(1,1,:)),'r')
+errorbar(ts,squeeze(aveLicks(2,1,:)),squeeze(semLicks(1,1,:)),'b') 
+xlabel('Time from outcome')
 ylabel('Fraction of trials with lick')
-title('Reward')
-legend ('25','75')
+title('NR')  
 
-subplot(1,2,2)
-errorbar(windowEvent,aveLicksLowNR,semLicksLowNR,'r'); hold on
-errorbar(windowEvent,aveLicksHighNR,semLicksHighNR,'b')
-xlabel('Time from Reward')
+subplot(2,1,2); hold on
+errorbar(ts,squeeze(aveLicks(1,2,:)),squeeze(semLicks(1,2,:)),'r')
+errorbar(ts,squeeze(aveLicks(2,2,:)),squeeze(semLicks(2,2,:)),'b')  
+xlabel('Time from outcome')
 ylabel('Fraction of trials with lick')
-title('No Reward')
-legend ('25','75')
-
-    
-    
+title('R') 

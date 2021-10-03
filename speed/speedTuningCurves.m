@@ -1,12 +1,12 @@
 % Probability Tuning curves - regardles of direction 
-clear all
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
-
+clear
+[task_info, supPath ,~,task_DB_path] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 velocities = [15, 25];
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'CRB';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000;
 req_params.num_trials = 60;
@@ -42,7 +42,6 @@ for ii = 1:length(cells)
     rasterMid = getRaster(data,find(boolMid & (match_v == velocities(v))), raster_params);
     rasterHigh = getRaster(data,find(boolHigh & (match_v == velocities(v))), raster_params);
     
-    
     rasterBaseline =  getRaster(data,find(~boolFail), raster_params);
     baseline = mean(mean(rasterBaseline))*1000;
     
@@ -62,32 +61,34 @@ for ii = 1:length(cells)
     
 end
 
+
 figure;
 
 subplot(3,1,1)
 
 aveLow = mean(squeeze(psthLow(:,1,:)));
-semLow = std(squeeze(psthLow(:,1,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,1,:)));
 errorbar(ts,aveLow,semLow,'c'); hold on
 aveLow = mean(squeeze(psthLow(:,2,:)));
-semLow = std(squeeze(psthLow(:,2,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,2,:)));
 errorbar(ts,aveLow,semLow,'k'); hold on
+legend('15','25')
 
 subplot(3,1,2)
 
 aveMid = mean(squeeze(psthMid(:,1,:)));
-semMid = std(squeeze(psthMid(:,1,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,1,:)));
 errorbar(ts,aveMid,semMid,'c'); hold on
 aveMid = mean(squeeze(psthMid(:,2,:)));
-semMid = std(squeeze(psthMid(:,2,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,2,:)));
 errorbar(ts,aveMid,semMid,'k'); hold on    
 
 subplot(3,1,3)
 aveHigh = mean(squeeze(psthHigh(:,1,:)));
-semHigh = std(squeeze(psthHigh(:,1,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,1,:)));
 errorbar(ts,aveHigh,semHigh,'c'); hold on
 aveHigh = mean(squeeze(psthHigh(:,2,:)));
-semHigh = std(squeeze(psthHigh(:,2,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,2,:)));
 errorbar(ts,aveHigh,semHigh,'k'); hold on
 
 
@@ -97,15 +98,15 @@ aveTCLow = mean(TCLow);
 aveTCMid = mean(TCMid);
 aveTCHigh = mean(TCHigh);
 
-semTCLow = mean(TCLow)/sqrt(length(cells));
-semTCMid = mean(TCMid)/sqrt(length(cells));
-semTCHigh = mean(TCHigh)/sqrt(length(cells));
+semTCLow = nanSEM(TCLow);
+semTCMid = nanSEM(TCMid);
+semTCHigh = nanSEM(TCHigh);
 
 
 errorbar(velocities,aveTCLow,semTCLow,'r'); hold on
 errorbar(velocities,aveTCMid,semTCMid,'k');
 errorbar(velocities,aveTCHigh,semTCHigh,'b');
-
+legend('0','50','100')
 
 
 %%
@@ -189,10 +190,10 @@ figure;
 subplot(3,2,1)
 
 aveLow = mean(squeeze(psthLow(:,1,1,:)));
-semLow = std(squeeze(psthLow(:,1,1,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,1,1,:)));
 errorbar(ts,aveLow,semLow,'c'); hold on
 aveLow = mean(squeeze(psthLow(:,2,1,:)));
-semLow = std(squeeze(psthLow(:,2,1,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,2,1,:)));
 errorbar(ts,aveLow,semLow,'k'); hold on
 title('Low, PD')
 
@@ -200,10 +201,10 @@ title('Low, PD')
 subplot(3,2,2)
 
 aveLow = mean(squeeze(psthLow(:,1,2,:)));
-semLow = std(squeeze(psthLow(:,1,2,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,1,2,:)));
 errorbar(ts,aveLow,semLow,'c'); hold on
 aveLow = mean(squeeze(psthLow(:,2,2,:)));
-semLow = std(squeeze(psthLow(:,2,2,:)))/sqrt(length(cells));
+semLow = nanSEM(squeeze(psthLow(:,2,2,:)));
 errorbar(ts,aveLow,semLow,'k'); hold on
 title('Low, Null')
 
@@ -211,38 +212,38 @@ title('Low, Null')
 subplot(3,2,3)
 
 aveMid = mean(squeeze(psthMid(:,1,1,:)));
-semMid = std(squeeze(psthMid(:,1,1,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,1,1,:)));
 errorbar(ts,aveMid,semMid,'c'); hold on
 aveMid = mean(squeeze(psthMid(:,2,1,:)));
-semMid = std(squeeze(psthMid(:,2,1,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,2,1,:)));
 errorbar(ts,aveMid,semMid,'k'); hold on   
 title('Mid, PD')
 
 subplot(3,2,4)
 
 aveMid = mean(squeeze(psthMid(:,1,2,:)));
-semMid = std(squeeze(psthMid(:,1,2,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,1,2,:)));
 errorbar(ts,aveMid,semMid,'c'); hold on
 aveMid = mean(squeeze(psthMid(:,2,2,:)));
-semMid = std(squeeze(psthMid(:,2,2,:)))/sqrt(length(cells));
+semMid = nanSEM(squeeze(psthMid(:,2,2,:)));
 errorbar(ts,aveMid,semMid,'k'); hold on   
 title('Mid, Null')
 
 subplot(3,2,5)
 aveHigh = mean(squeeze(psthHigh(:,1,1,:)));
-semHigh = std(squeeze(psthHigh(:,1,1,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,1,1,:)));
 errorbar(ts,aveHigh,semHigh,'c'); hold on
 aveHigh = mean(squeeze(psthHigh(:,2,1,:)));
-semHigh = std(squeeze(psthHigh(:,2,1,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,2,1,:)));
 errorbar(ts,aveHigh,semHigh,'k'); hold on
 title('High, PD')
 
 subplot(3,2,6)
 aveHigh = mean(squeeze(psthHigh(:,1,2,:)));
-semHigh = std(squeeze(psthHigh(:,1,2,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,1,2,:)));
 errorbar(ts,aveHigh,semHigh,'c'); hold on
 aveHigh = mean(squeeze(psthHigh(:,2,2,:)));
-semHigh = std(squeeze(psthHigh(:,2,2,:)))/sqrt(length(cells));
+semHigh = nanSEM(squeeze(psthHigh(:,2,2,:)));
 errorbar(ts,aveHigh,semHigh,'k'); hold on
 title('High, Null')
 
@@ -253,9 +254,9 @@ aveTCLow = mean(TCLow);
 aveTCMid = mean(TCMid);
 aveTCHigh = mean(TCHigh);
 
-semTCLow = mean(TCLow)/sqrt(length(cells));
-semTCMid = mean(TCMid)/sqrt(length(cells));
-semTCHigh = mean(TCHigh)/sqrt(length(cells));
+semTCLow = nanSEM(TCLow);
+semTCMid = nanSEM(TCMid);
+semTCHigh = nanSEM(TCHigh);
 
 
 errorbar(velocities,aveTCLow,semTCLow,'r'); hold on

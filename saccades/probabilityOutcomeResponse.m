@@ -1,5 +1,5 @@
 
-clear all;
+clear;
 supPath = 'C:\Users\Noga\Documents\Vermis Data';
 load ('C:\Users\Noga\Documents\Vermis Data\task_info');
 
@@ -98,26 +98,23 @@ title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
 %% Make list of cells that responded to reward
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.cell_type = 'PC ss';
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials =20;
 req_params.remove_question_marks = 1;
-
 
 raster_params.allign_to = 'reward';
 raster_params.time_before = -100;
 raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
 raster_params.SD = 10;
-req_params.remove_question_marks =1;
 
-cells = findPathsToCells (supPath,task_info,req_params);
-
-
-cellID =[];
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
+    
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);

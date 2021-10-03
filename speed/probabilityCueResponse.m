@@ -1,6 +1,7 @@
 % Probability Cue Response
 clear; clc; close all
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+[task_info, supPath ,~,task_DB_path] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 % Make list of significant cells
 
@@ -25,7 +26,7 @@ h = nan(length(cells),1);
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];;
     
     indLow = find (match_p == 0 & (~boolFail));
     indMid = find (match_p == 50 & (~boolFail));
@@ -54,25 +55,22 @@ end
 save (task_DB_path,'task_info')
 
 
-
-
-
-
-
 %% PSTHs
 
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+clear 
+[task_info, supPath ,~,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = 'CRB|PC ss';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
-raster_params.allign_to = 'cue';
+raster_params.align_to = 'cue';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
@@ -91,7 +89,7 @@ h = nan(length(cells),1);
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
     indLow = find (match_p == 0 & (~boolFail));
     indMid = find (match_p == 50 & (~boolFail));
@@ -122,11 +120,11 @@ f = figure; f.Position = [10 80 700 500];
 subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
-semLow = std(psthLow(ind,:))/sqrt(length(ind));
+semLow = nanSEM(psthLow(ind,:));
 aveMid = mean(psthMid(ind,:));
-semMid = std(psthMid(ind,:))/sqrt(length(ind));
+semMid = nanSEM(psthMid(ind,:));
 aveHigh = mean(psthHigh(ind,:));
-semHigh = std(psthHigh(ind,:))/sqrt(length(ind));
+semHigh = nanSEM(psthHigh(ind,:));
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveMid,semMid,'k'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
@@ -136,11 +134,11 @@ title (['Significant, n = ' num2str(length(ind))])
 subplot(3,1,2)
 ind = find(~h);
 aveLow = mean(psthLow(ind,:));
-semLow = std(psthLow(ind,:))/sqrt(length(ind));
-semMid = std(psthLow(ind,:))/sqrt(length(ind));
+semLow = nanSEM(psthLow(ind,:));
+semMid = nanSEM(psthLow(ind,:));
 aveMid = mean(psthMid(ind,:));
 aveHigh = mean(psthHigh(ind,:));
-semHigh = std(psthHigh(ind,:))/sqrt(length(ind));
+semHigh = nanSEM(psthHigh(ind,:));
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveMid,semMid,'k'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
@@ -149,11 +147,11 @@ title (['Not Significant, n = ' num2str(length(ind))])
 
 subplot(3,1,3)
 aveLow = mean(psthLow);
-semLow = std(psthLow)/sqrt(length(cells));
-semMid = std(psthLow)/sqrt(length(cells));
+semLow = nanSEM(psthLow);
+semMid = nanSEM(psthLow);
 aveMid = mean(psthMid);
 aveHigh = mean(psthHigh);
-semHigh = std(psthHigh)/sqrt(length(cells));
+semHigh = nanSEM(psthHigh);
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveMid,semMid,'k'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
@@ -162,7 +160,7 @@ xlabel('Time from cue (ms)')
 title (['All, n = ' num2str(length(cells))])
 
 f = figure; f.Position = [10 80 700 500];
-
+subplot(2,1,1)
 ind = find(h);
 scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
 ind = find(~h);
@@ -170,8 +168,28 @@ scatter (mean(psthHigh(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindo
 refline (1,0)
 p = signrank(mean(psthHigh(:,comparisonWindow),2),mean(psthLow(:,comparisonWindow),2)); hold on
 title(['p = ' num2str(p) 'n = ' num2str(length(cells))])
+xlabel('100');ylabel('0')
 
+subplot(2,1,2)
+ind = find(h);
+aveHighMid = 0.5*(psthHigh+psthMid);
+scatter (mean(aveHighMid(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
+ind = find(~h);
+scatter (mean(aveHighMid(ind,comparisonWindow),2),mean(psthLow(ind,comparisonWindow),2)); hold on
+refline (1,0)
+p = signrank(mean(aveHighMid(:,comparisonWindow),2),mean(psthLow(:,comparisonWindow),2)); hold on
+title(['p = ' num2str(p) 'n = ' num2str(length(cells))])
+xlabel('(100+50)/2');ylabel('0')
 
+f = figure; f.Position = [10 80 700 500];
+distHighMid = mean(sqrt((psthHigh-psthMid).^2),2);  
+distLowMid = mean(sqrt((psthLow-psthMid).^2),2); 
+scatter(distHighMid,distLowMid)
+p = signrank(distHighMid,distLowMid)
+xlabel('PSTH distance 100 to 50');
+ylabel('PSTH distance 0 to 50');
+equalAxis(); refline (1,0);
+title(['signrank: p = ' num2str(p) ', n = ' num2str(length(cells))])
 %% seperation to tails
 
 req_params.grade = 7;

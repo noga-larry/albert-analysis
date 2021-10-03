@@ -3,13 +3,13 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-%%   
+   
 req_params.grade = 7;
 req_params.cell_type = 'PC ss|CRB|BG ';
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
-req_params.ID = x;
+req_params.ID = 5666;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
