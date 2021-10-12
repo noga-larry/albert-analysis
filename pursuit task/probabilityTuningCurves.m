@@ -599,7 +599,7 @@ signrank(rateHigh(ind),correctedLow(ind))
 
 %% Significance in time
 clear 
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 WINDOW_SIZE = 50;
 NUM_COMPARISONS = 3; 

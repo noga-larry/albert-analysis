@@ -43,7 +43,7 @@ end
 save (task_DB_path,'task_info')
 
 %% PSTHs
-clear; close all; clc
+clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
@@ -182,13 +182,13 @@ NUM_COMPARISONS = 7;
 PLOT_INDIVIDUAL = false;
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = 'CRB|PC ss';
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 80;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'cue';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 300;
 raster_params.time_after = 500;
 raster_params.smoothing_margins = 0; % ms in each side
@@ -256,24 +256,25 @@ for ii = 1:length(cells)
     end
 end
 
+%%
 figure;
 subplot(3,1,1)
 plot(ts,squeeze(mean(returnTrace(:,:,1:3))))
-xlabel('Time from cue')
+xlabel(['Time from ' raster_params.align_to])
 ylabel('Frac significiant')
 legend('R vs NR', '75 vs 25','Unlikely vs likely result')
 
 subplot(3,1,2); hold on
 plot(ts,squeeze(mean(returnTrace(:,:,5))),'b')
 plot(ts,squeeze(mean(returnTrace(:,:,4))),'r')
-xlabel('Time from cue')
+xlabel(['Time from ' raster_params.align_to])
 ylabel('Frac significiant')
 legend('R vs NR in 25', 'R vs NR in 75')
 
 subplot(3,1,3); hold on
 plot(ts,squeeze(mean(returnTrace(:,:,6))),'b')
 plot(ts,squeeze(mean(returnTrace(:,:,7))),'r')
-xlabel('Time from cue')
+xlabel(['Time from ' raster_params.align_to])
 ylabel('Frac significiant')
 legend('25 vs 75 in R', '25 vs 75 in NR')
 

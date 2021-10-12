@@ -1,13 +1,14 @@
 
-clear all 
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
+clear
+[task_info, supPath ,~,task_DB_path] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC ss|CRB';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000; 
-req_params.num_trials =20;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 
@@ -33,57 +34,67 @@ for ii = 1:length(cells)
     indMidR = find (match_p == 50 & match_o & (~boolFail));
     indMidNR = find (match_p == 50 & (~match_o) & (~boolFail));
     indHighR = find (match_p == 100 & match_o & (~boolFail));
+    indBaseline = find (~boolFail);
+    baseline = mean(getPSTH(data,indBaseline,raster_params));
     
-    rasterLowNR = getRaster(data,indLowNR,raster_params);
-    rasterMidNR = getRaster(data,indMidNR,raster_params);
-    rasterMidR = getRaster(data,indMidR,raster_params);
-    rasterHighR = getRaster(data,indHighR,raster_params);
+    psthLowNR(ii,:) = getPSTH(data,indLowNR,raster_params)-baseline;
+    psthMidNR(ii,:) = getPSTH(data,indMidNR,raster_params)-baseline;
+    psthMidR(ii,:) = getPSTH(data,indMidR,raster_params)-baseline;
+    psthHighR(ii,:) = getPSTH(data,indHighR,raster_params)-baseline;
     
-    psthLowNR(ii,:) = raster2psth(rasterLowNR,raster_params);
-    psthMidNR(ii,:) = raster2psth(rasterMidNR,raster_params);
-    psthMidR(ii,:) = raster2psth(rasterMidR,raster_params);
-    psthHighR(ii,:) = raster2psth(rasterHighR,raster_params);
 end
 
+%%
 aveMidR = mean(psthMidR);
-semMidR = std(psthMidR)/sqrt(length(cells));
+semMidR = nanSEM(psthMidR);
 aveHighR = mean(psthHighR);
-semHighR = std(psthHighR)/sqrt(length(cells));
+semHighR = nanSEM(psthHighR);
 
 aveLowNR = mean(psthLowNR);
-semLowNR = std(psthLowNR)/sqrt(length(cells));
+semLowNR = nanSEM(psthLowNR);
 aveMidNR = mean(psthMidNR);
-semMidNR = std(psthMidNR)/sqrt(length(cells));
+semMidNR = nanSEM(psthMidNR);
 
 figure;
 subplot(2,1,1); title('Reward')
 errorbar(ts,aveMidR,semMidR,'k'); hold on
 errorbar(ts,aveHighR,semHighR,'b'); hold on
-xlabel('Time for reward')
+xlabel('Time form reward')
 ylabel('Rate (spk/s)')
 legend('50','100')
 
 subplot(2,1,2); title('No Reward')
 errorbar(ts,aveLowNR,semLowNR,'r'); hold on
 errorbar(ts,aveMidNR,semMidNR,'k'); hold on
-xlabel('Time for reward')
-ylabel('Cspk rate (spk/s)')
+xlabel('Time form reward')
+ylabel('Rate (spk/s)')
 legend('0','50')
 
 
 figure;
 subplot(2,1,1);
 scatter(mean(psthHighR(:,compsrison_window),2),mean(psthMidR(:,compsrison_window),2));
-refline(1,0)
+p = signrank(mean(psthHighR(:,compsrison_window),2),mean(psthMidR(:,compsrison_window),2));
+refline(1,0); equalAxis();
 xlabel('100');ylabel('50')
- title('Reward')
+ title(['Reward, 50 vs 100: p = ' num2str(p)])
 
 
 subplot(2,1,2); 
 scatter(mean(psthLowNR(:,compsrison_window),2),mean(psthMidNR(:,compsrison_window),2));
-refline(1,0)
+p = signrank(mean(psthLowNR(:,compsrison_window),2),mean(psthMidNR(:,compsrison_window),2));
+refline(1,0); equalAxis();
 xlabel('0');ylabel('50')
-title('No Reward')
+title(['No Reward, 50 vs 0: p = ' num2str(p)])
+
+figure;
+scatter(mean(psthMidR(:,compsrison_window),2),...
+    mean(psthMidNR(:,compsrison_window),2));
+p = signrank(mean(psthMidR(:,compsrison_window),2),...
+    mean(psthMidNR(:,compsrison_window),2));
+refline(1,0)
+xlabel('R');ylabel('NR')
+title(['50: = ' num2str(p)])
 
 %% Make list of cells that responded to reward
 
@@ -122,9 +133,7 @@ for ii = 1:length(cells)
     [~,h] = ranksum(sum(rasterLowR),sum(rasterHighR));
     if h
         cellID = [cellID, data.info.cell_ID]
-    end
-
-    
+    end 
 
 end
 
