@@ -4,7 +4,6 @@ clear; clc
 
 % Make list of significant cells
 
-
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade =7;

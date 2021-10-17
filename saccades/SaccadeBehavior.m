@@ -2,12 +2,14 @@
 
 clear
 
-[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Golda');
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
 req_params.cell_type = 'CRB|PC ss';
 req_params.task = 'saccade_8_dir_75and25';
-req_params.ID = setdiff([5600:6000],[5574,5575]);
+%req_params.ID = setdiff([5600:6000],[5574,5575]);
+req_params.ID = 4000:5000;
 req_params.num_trials = 70;
 req_params.remove_question_marks =1;
 
@@ -25,8 +27,7 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     [~,match_d] = getDirections (data);
-    
-    
+        
     for d=1:length(directions)
         indLow = find (match_p == 25 & (~boolFail) & match_d==directions(d));
         indHigh = find (match_p == 75 & (~boolFail)& match_d==directions(d));
@@ -80,9 +81,9 @@ legend('25','75')
 title('Duration')
 subplot(2,2,3)
 aveLow = nanmean(VelLow);
-semLow = nanstd(VelLow)/sqrt(length(cells));
+semLow = nanSEM(VelLow);
 aveHigh = nanmean(VelHigh);
-semHigh = nanstd(VelHigh)/sqrt(length(cells));
+semHigh = nanSEM(VelHigh)/sqrt(length(cells));
 
 errorbar(0:45:315,aveLow,semLow,'r'); hold on
 errorbar(0:45:315,aveHigh,semHigh,'b')
@@ -124,17 +125,17 @@ xlabel('P=75')
 ylabel('P=25')
 
 subplot(2,2,3)
-scatter(mean(VelHigh,2),mean(VelLow,2))
+scatter(nanmean(VelHigh,2),nanmean(VelLow,2))
 refline(1,0)
-p = signrank(mean(VelHigh,2),mean(VelLow,2))
+p = signrank(nanmean(VelHigh,2),nanmean(VelLow,2))
 title(['Vel: p = ' num2str(p)])
 xlabel('P=75')
 ylabel('P=25')
 
 subplot(2,2,4)
-scatter(mean(OverShootHigh,2),mean(OverShootLow,2))
+scatter(nanmean(OverShootHigh,2),nanmean(OverShootLow,2))
 refline(1,0)
-p = signrank(mean(OverShootHigh,2),mean(OverShootLow,2))
+p = signrank(nanmean(OverShootHigh,2),nanmean(OverShootLow,2))
 title(['Over Shoot: p = ' num2str(p)])
 xlabel('P=75')
 ylabel('P=25')
