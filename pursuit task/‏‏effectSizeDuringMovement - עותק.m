@@ -1,17 +1,18 @@
 clear 
-[task_info,supPath] = loadDBAndSpecifyDataPaths('Golda');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss|CRB';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
+req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 299;
-raster_params.time_after = 500;
-raster_params.smoothing_margins = 0;
+raster_params.time_before = 300;
+raster_params.time_after = 800;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 25;
 bin_sz = 50;
 
 ts = -raster_params.time_before:raster_params.time_after;
@@ -26,10 +27,8 @@ omegaD = nan(1,length(cells));
 list = [];
 for ii = 1:length(cells)
     
-    
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
-
    
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
@@ -39,8 +38,8 @@ for ii = 1:length(cells)
     match_d = match_d(find(~boolFail))';
     
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = reshape(raster,bin_sz,size(raster,1)/bin_sz,size(raster,2));
-    response = (squeeze(sum(response))/bin_sz)*1000;
+    psth = raster2STpsth(raster,raster_params);
+    response = downSampleToBins(psth,bin_sz)'*(1000/bin_sz);
     
     groupT = repmat((1:size(response,1))',1,size(response,2));
     groupR = repmat(match_p',size(response,1),1);
@@ -77,9 +76,7 @@ for ii = 1:length(cells)
     omegaData(ii,5) = omegaRD(ii);
 end
 
-
 %%
-
 
 figure;
 subplot(3,1,1)
@@ -97,7 +94,6 @@ title(['p_{movement} = ' num2str(p)])
 xlabel('$\eta^2$ time','interpreter','latex')
 ylabel('direction+time*direcion')
  refline(1,0)
-
 
 subplot(3,1,3)
 scatter(omegaR,omegaD,'filled'); 
@@ -117,83 +113,77 @@ plotHistForFC(omegaD,bins,'b'); hold on
 legend('T','R','D')
 
 %%
+
+for i = 1:length(req_params.cell_type)
+    
+    figure;
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    subplot(3,1,1)
+    scatter(omegaT(indType),omegaR(indType),'filled','k'); hold on
+    p = signrank(omegaT(indType),omegaR(indType));
+    xlabel('time')
+    ylabel('reward+time*reward')
+    refline(1,0)
+    title(['p = ' num2str(p)])
+        
+    subplot(3,1,2)
+    scatter(omegaT(indType),omegaD(indType),'filled','k'); hold on
+    p = signrank(omegaT(indType),omegaD(indType));
+    xlabel('time')
+    ylabel('direction+time*direcion')
+    refline(1,0)
+    title(['p= ' num2str(p)])
+    
+    subplot(3,1,3)
+    scatter(omegaD(indType),omegaR(indType),'filled','k'); hold on
+    p = signrank(omegaD(indType),omegaR(indType));
+    ylabel('reward+time*reward')
+    xlabel('direction+time*direcion')
+    refline(1,0)
+    title(['p = ' num2str(p)])
+    
+    sgtitle(req_params.cell_type{i})
+end
+
+%%
 f = figure; f.Position = [10 80 700 500];
+ax1 = subplot(3,1,1); title('Direction')
+ax2 = subplot(3,1,2);title('Time')
+ax3 = subplot(3,1,3); title('Reward')
 
-boolPC = strcmp('PC ss', cellType);
+bins = linspace(-0.2,1.4,100);
 
-subplot(3,1,1)
-scatter(omegaT(boolPC),omegaR(boolPC),'filled','k'); hold on
-p1 = signrank(omegaT(boolPC),omegaR(boolPC));
-scatter(omegaT(~boolPC),omegaR(~boolPC),'filled','m'); 
-p2 = signrank(omegaT(~boolPC),omegaR(~boolPC));
-xlabel('time')
-ylabel('reward+time*reward')
-refline(1,0)
-legend('PC ss','CRB')
-title(['PC ss: p_{reward} = ' num2str(p1) ', CRB: p_{reward} = ' num2str(p2)])
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    axes(ax1)
+    plotHistForFC(omegaD(indType),bins); hold on
+    
+    axes(ax2)
+    plotHistForFC(omegaT(indType),bins); hold on
+    
+    axes(ax3)
+    plotHistForFC(omegaR(indType),bins); hold on
+    
+end
 
+title(ax1,'Direction')
+title(ax2,'Time')
+title(ax3,'Reward')
+legend(req_params.cell_type)
+%%
 
-subplot(3,1,2)
-scatter(omegaT(boolPC),omegaD(boolPC),'filled','k'); hold on
-p1 = signrank(omegaT(boolPC),omegaD(boolPC));
-scatter(omegaT(~boolPC),omegaD(~boolPC),'filled','m'); 
-p2 = signrank(omegaT(~boolPC),omegaD(~boolPC));
-xlabel('time')
-ylabel(' direction+time*direcion')
-refline(1,0)
-legend('PC ss','CRB')
-title(['PC ss: p_{movement} = ' num2str(p1) ', CRB: p_{movement} = ' num2str(p2)])
-
-subplot(3,1,3)
-scatter(omegaD(boolPC),omegaR(boolPC),'filled','k'); hold on
-p1 = signrank(omegaD(boolPC),omegaR(boolPC));
-scatter(omegaD(~boolPC),omegaR(~boolPC),'filled','m'); 
-p2 = signrank(omegaD(~boolPC),omegaR(~boolPC));
-xlabel('reward+time*reward')
-ylabel('direction+time*direcion')
-refline(1,0)
-legend('PC ss','CRB')
-title(['PC ss: p = ' num2str(p1) ', CRB: p = ' num2str(p2)])
-
-
- 
-ranksum(omegaD(boolPC),omegaD(~boolPC))
-f = figure; f.Position = [10 80 700 500];
-
-bins = -0.2:0.05:1;
-
-subplot(3,1,1)
-p = ranksum(omegaD(boolPC),omegaD(~boolPC))
-plotHistForFC(omegaD(boolPC),bins,'g'); hold on
-plotHistForFC(omegaD(~boolPC),bins,'r'); hold on
-legend('SS', 'CRB')
-title(['Direction: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(boolPC)) ', n_{crb} = ' num2str(sum(~boolPC))])
-
-subplot(3,1,2)
-p = ranksum(omegaT(boolPC),omegaT(~boolPC))
-plotHistForFC(omegaT(boolPC),bins,'g'); hold on
-plotHistForFC(omegaT(~boolPC),bins,'r'); hold on
-legend('SS', 'CRB')
-title(['Time: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(boolPC)) ', n_{crb} = ' num2str(sum(~boolPC))])
-
-bins = -0.2:0.01:1;
-
-subplot(3,1,3)
-p = ranksum(omegaR(boolPC),omegaR(~boolPC))
-plotHistForFC(omegaR(boolPC),bins,'g'); hold on
-plotHistForFC(omegaR(~boolPC),bins,'r'); hold on
-legend('SS', 'CRB')
-title(['Time: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(boolPC)) ', n_{crb} = ' num2str(sum(~boolPC))])
-
-f = figure; f.Position = [10 80 700 500];
-bins = -0.3:0.05:1;
-
-overallExplained = omegaR+omegaD+omegaT;
-p = ranksum(overallExplained(boolPC),overallExplained(~boolPC))
-plotHistForFC(overallExplained(boolPC),bins,'g'); hold on
-plotHistForFC(overallExplained(~boolPC),bins,'r'); hold on
-legend('SS', 'CRB')
-title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(boolPC)) ', n_{crb} = ' num2str(sum(~boolPC))])
+    f = figure; f.Position = [10 80 700 500];
+    bins = -0.3:0.05:1;
+    
+    overallExplained = omegaR+omegaD+omegaT;
+    p = ranksum(overallExplained(indType),overallExplained(~indType))
+    plotHistForFC(overallExplained(indType),bins,'g'); hold on
+    plotHistForFC(overallExplained(~indType),bins,'r'); hold on
+    legend('SS', 'CRB')
+    title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) ', n_{crb} = ' num2str(sum(~indType))])
 
 
 
@@ -218,12 +208,12 @@ for ii = 1:length(cells)
 end
 
 figure; 
-scatter(FR(boolPC),overallExplained(boolPC),'k'); hold on
-scatter(FR(~boolPC),overallExplained(~boolPC),'m'); hold on
+scatter(FR(indType),overallExplained(indType),'k'); hold on
+scatter(FR(~indType),overallExplained(~indType),'m'); hold on
 legend('SS', 'CRB')
 
 xlabel('FR')
 ylabel('Sum of effects')
-[r1,p1] = corr(FR(boolPC)',overallExplained(boolPC)','type','Spearman')
-[r2,p2] = corr(FR(~boolPC)',overallExplained(~boolPC)','type','Spearman')
+[r1,p1] = corr(FR(indType)',overallExplained(indType)','type','Spearman')
+[r2,p2] = corr(FR(~indType)',overallExplained(~indType)','type','Spearman')
 title(['SS : r = ' num2str(r1) ', ' num2str(p1) ', CRB : r = ' num2str(r2) ', ' num2str(p2)])
