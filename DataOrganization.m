@@ -4,6 +4,8 @@ clear
 [~,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
 
+get_excel_info('C:\Users\Noga\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_noga_gil.xlsx',...
+    task_DB_path)
 
 load (task_DB_path);
 for ii=1:length(task_info)
