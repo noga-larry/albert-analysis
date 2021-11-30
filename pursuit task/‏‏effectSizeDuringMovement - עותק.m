@@ -2,9 +2,10 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.ID = [4305, 4379, 4625, 4681, 4701, 4814, 4894, 4915,... 
+        4951, 5606, 5722, 5809];
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
@@ -12,8 +13,8 @@ raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 300;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 25;
 bin_sz = 50;
+raster_params.SD = 25;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -40,22 +41,23 @@ for ii = 1:length(cells)
     raster = getRaster(data,find(~boolFail),raster_params);
     psth = raster2STpsth(raster,raster_params);
     response = downSampleToBins(psth,bin_sz)'*(1000/bin_sz);
+    %response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
     
     groupT = repmat((1:size(response,1))',1,size(response,2));
     groupR = repmat(match_p',size(response,1),1);
     groupD = repmat(match_d',size(response,1),1);
 
     [p,tbl,stats,terms] = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-        'model','full','display','off');
+        'model','full','display','off','sstype',1);
     
     totVar = tbl{10,2};
     SSe = tbl{9,2};
     msw = tbl{9,5};
     N = length(response(:));
     
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
+    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
       
-    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
+    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
     
     omegaT(ii) = omega(tbl,2);
     omegaR(ii) = omega(tbl,3)+omega(tbl,5);
@@ -64,16 +66,10 @@ for ii = 1:length(cells)
     
     overAllExplained(ii) = (totVar - SSe)/totVar;
     
-    if omegaD(ii)>0.2
+    if omegaD(ii)>0.6
         list = [list, data.info.cell_ID];
     end
     
-    % organize for mati
-    omegaData(ii,1) = data.info.cell_ID;
-    omegaData(ii,2) = omegaR(ii);
-    omegaData(ii,3) = omegaD(ii);
-    omegaData(ii,4) = omegaT(ii);
-    omegaData(ii,5) = omegaRD(ii);
 end
 
 %%
@@ -173,6 +169,7 @@ title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward')
 legend(req_params.cell_type)
+sgtitle([req_params.task],'Interpreter', 'none');
 %%
 
     f = figure; f.Position = [10 80 700 500];
