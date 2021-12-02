@@ -4,7 +4,7 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
-req_params.task = 'pursuit_8_dir_75and25';
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
@@ -61,10 +61,28 @@ for ii = 1:length(cells)
     
 end
 
+%%
+
+for i = 1:length(req_params.cell_type)
+    
+    figure;
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    scatter(omegaT(indType),omegaR(indType),'filled','k'); hold on
+    p = signrank(omegaT(indType),omegaR(indType));
+    xlabel('time')
+    ylabel('reward+time*reward')
+    refline(1,0)
+    title(['p = ' num2str(p)])
+        
+ 
+    sgtitle(['Cue:' req_params.cell_type{i}])
+end
+
 
 %%
 f = figure; f.Position = [10 80 700 500];
-ax1 = subplot(2,1,1); title('Direction')
+ax1 = subplot(2,1,1); title('Reward')
 ax2 = subplot(2,1,2);title('Time')
 
 
@@ -85,4 +103,4 @@ end
 title(ax1,'Reward')
 title(ax2,'Time')
 legend(req_params.cell_type)
-sgtitle([req_params.task],'Interpreter', 'none');
+sgtitle('Cue','Interpreter', 'none');

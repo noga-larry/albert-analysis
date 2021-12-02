@@ -2,10 +2,8 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR'};
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = [4305, 4379, 4625, 4681, 4701, 4814, 4894, 4915,... 
-        4951, 5606, 5722, 5809];
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
@@ -14,7 +12,6 @@ raster_params.time_before = 300;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 bin_sz = 50;
-raster_params.SD = 25;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -39,9 +36,7 @@ for ii = 1:length(cells)
     match_d = match_d(find(~boolFail))';
     
     raster = getRaster(data,find(~boolFail),raster_params);
-    psth = raster2STpsth(raster,raster_params);
-    response = downSampleToBins(psth,bin_sz)'*(1000/bin_sz);
-    %response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
     
     groupT = repmat((1:size(response,1))',1,size(response,2));
     groupR = repmat(match_p',size(response,1),1);
@@ -139,7 +134,7 @@ for i = 1:length(req_params.cell_type)
     refline(1,0)
     title(['p = ' num2str(p)])
     
-    sgtitle(req_params.cell_type{i})
+    sgtitle(['Motion:' req_params.cell_type{i}])
 end
 
 %%
@@ -169,7 +164,7 @@ title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward')
 legend(req_params.cell_type)
-sgtitle([req_params.task],'Interpreter', 'none');
+sgtitle('Motion','Interpreter', 'none');
 %%
 
     f = figure; f.Position = [10 80 700 500];
