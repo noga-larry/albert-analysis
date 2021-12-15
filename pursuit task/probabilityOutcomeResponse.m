@@ -7,7 +7,7 @@ clear; clc
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
+req_params.cell_type = 'SNR';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 req_params.ID = 4000:6000;
@@ -44,15 +44,15 @@ save (task_DB_path,'task_info')
 
 %% PSTHs
 clear; clc
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'SNR';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
-req_params.ID = 5000:6000;
+req_params.ID = 4000:5000;
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -66,10 +66,10 @@ ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
 
-lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
-lickInd = [lickInd{:}];
-lickInd = find(lickInd);
-lines = lines(lickInd);
+% lickInd = cellfun(@(c) ~isempty(c) && c==1,{task_info(lines).lick},'uni',false);
+% lickInd = [lickInd{:}];
+% lickInd = find(lickInd);
+% lines = lines(lickInd);
 
 % lines = lines(~[task_info(lines).directionally_tuned]);
 cells = findPathsToCells (supPath,task_info,lines);

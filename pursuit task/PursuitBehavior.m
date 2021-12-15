@@ -2,12 +2,12 @@
 
 clear all
 
-[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Golda');
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
+req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 5600:6000;
+req_params.ID = 5000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks =0;
 
@@ -97,3 +97,6 @@ hold on
 errorbar(directions,nanmean(mean(velLow(:,:,200:250),3)),nanstd(mean(velLow(:,:,200:250),3))/sqrt(length(cells)),'r')
 xlabel('Vel');ylabel('Direction 200:25 ms')
 legend('P=25','P=75')
+
+
+%% by previous cond 

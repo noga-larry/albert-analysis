@@ -1,16 +1,18 @@
+%% Movement
+
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss|CRB';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 299;
-raster_params.time_after = 500;
+raster_params.time_after = 750;
 raster_params.smoothing_margins = 0;
 bin_sz = 50;
 
@@ -47,7 +49,7 @@ for ii = 1:length(cells)
     msw = tbl{5,5};
     N = length(response);
     
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
+    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
       
     omegaR(ii,t) = omega(tbl,2);
     omegaD(ii,t) = omega(tbl,3);
@@ -59,27 +61,235 @@ end
 
 %%
 
-boolPC = strcmp('PC ss', cellType);
-ind = find(boolPC);
+f = figure; hold on
+ax1 = subplot(1,3,1); title('Direction'); hold on
+ax2 = subplot(1,3,2);title('Reward'); hold on
+ax3 = subplot(1,3,3); title('Interaction'); hold on
 
-figure;
-subplot(3,1,1); hold on
-title('Diretion')
-plot(ts,omegaD(ind,:))
-ylabel('omega')
-xlabel('Time from motion')
-plot(ts,nanmean(omegaD(ind,:)),'k','LineWidth',2)
 
-subplot(3,1,2); hold on
-title('Reward')
-plot(ts,omegaR(ind,:))
-ylabel('omega')
-xlabel('Time from motion')
-plot(ts,nanmean(omegaR(ind,:)),'k','LineWidth',2)
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    axes(ax1)
+    errorbar(ts,nanmean(omegaD(indType,:)),nanSEM(omegaD(indType,:)))
+    xlabel('time')
+    
+    axes(ax2)
+    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaR(indType,:)))
+    xlabel('time')
+    
+    axes(ax3)
+    errorbar(ts,nanmean(omegaRD(indType,:)),nanSEM(omegaRD(indType,:)))
+    xlabel('time')
+end
 
-subplot(3,1,3); hold on
-title('Reward*Direction Interaction')
-plot(ts,omegaRD(ind,:))
-ylabel('omega')
-xlabel('Time from motion')
-plot(ts,nanmean(omegaRD(ind,:)),'k','LineWidth',2)
+legend(req_params.cell_type)
+
+%% CUE
+
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+
+req_params.grade = 7;
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.ID = 4000:6000;
+req_params.num_trials = 70;
+req_params.remove_question_marks = 1;
+
+raster_params.align_to = 'cue';
+raster_params.time_before = 299;
+raster_params.time_after = 800;
+raster_params.smoothing_margins = 0;
+bin_sz = 50;
+
+ts = -raster_params.time_before:bin_sz:raster_params.time_after;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+omegaR = nan(length(cells),length(ts));
+cellType = cell(length(cells),1);
+
+list = [];
+for ii = 1:length(cells)
+    
+    data = importdata(cells{ii});
+    cellType{ii} = data.info.cell_type;
+    
+    [~,match_p] = getProbabilities (data);
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    match_p = match_p(find(~boolFail))';
+    
+    raster = getRaster(data,find(~boolFail),raster_params);
+    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+       
+    for t=1:length(ts)
+    [~,tbl,~,~] = anovan(response(t,:),{match_p},...
+        'model','full','display','off');
+    
+    totVar = tbl{end,2};
+    SSe = tbl{end-1,2};
+    msw = tbl{end-1,5};
+    N = length(response);
+    
+    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
+      
+    omegaR(ii,t) = omega(tbl,2);
+    
+    end
+end
+
+%%
+
+f = figure; hold on
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaR(indType,:)))
+    xlabel('time')
+    
+end
+
+legend(req_params.cell_type)
+
+%% Outcome
+
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+
+req_params.grade = 7;
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.ID = 4000:6000;
+req_params.num_trials = 70;
+req_params.remove_question_marks = 1;
+
+raster_params.align_to = 'reward';
+raster_params.time_before = 299;
+raster_params.time_after = 750;
+raster_params.smoothing_margins = 0;
+bin_sz = 50;
+
+ts = -raster_params.time_before:bin_sz:raster_params.time_after;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+omegaR = nan(length(cells),length(ts));
+omegaD = nan(length(cells),length(ts));
+omegaO = nan(length(cells),length(ts));
+omegaInter = nan(length(cells),length(ts),3); 
+cellType = cell(length(cells),1);
+
+for ii = 1:length(cells)
+    
+    data = importdata(cells{ii});
+    cellType{ii} = data.info.cell_type;
+    
+    [~,match_p] = getProbabilities (data);
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    match_p = match_p(find(~boolFail))';
+    [~,match_d] = getDirections (data);
+    match_d = match_d(find(~boolFail))';
+    match_o = getOutcome (data);
+    match_o = match_o(find(~boolFail))'; 
+    
+    raster = getRaster(data,find(~boolFail),raster_params);
+    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+       
+    for t=1:length(ts)
+        
+    [~,tbl,~,~] = anovan(response(t,:),{match_p,match_d, match_o},...
+        'model','interaction','display','off');
+    
+    totVar = tbl{end,2};
+    SSe = tbl{end-1,2};
+    msw = tbl{end-1,5};
+    N = length(response);
+    
+    omega = @(tbl,dim) ([tbl{dim,2}]-[tbl{dim,3}]*msw)/(msw+totVar);
+      
+    omegaR(ii,t) = omega(tbl,2);
+    omegaD(ii,t) = omega(tbl,3);
+    omegaO(ii,t) = omega(tbl,4);
+    omegaInter(ii,t,:) = omega(tbl,5:7);
+    
+    overAllExplained(ii,t) = (totVar - SSe)/totVar;
+    end
+end
+
+%%
+
+f = figure; hold on
+ax1 = subplot(1,4,1); title('Direction'); hold on; ax1.YLim = [-0.05 0.1]
+ax2 = subplot(1,4,2);title('Reward'); hold on; ax2.YLim = [-0.05 0.1]
+ax3 = subplot(1,4,3); title('Outcome'); hold on; ax3.YLim = [-0.05 0.1]
+ax4 = subplot(1,4,4); title('Interactions'); hold on; ax4.YLim = [-0.05 0.1]
+
+
+
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    axes(ax1)
+    errorbar(ts,nanmean(omegaD(indType,:)),nanSEM(omegaD(indType,:)))
+    xlabel('time')
+    
+    axes(ax2)
+    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaR(indType,:)))
+    xlabel('time')
+    
+    axes(ax3)
+    errorbar(ts,nanmean(omegaO(indType,:)),nanSEM(omegaO(indType,:)))
+    xlabel('time')
+    
+    axes(ax4)
+    inter = 3;
+    errorbar(ts,nanmean(omegaInter(indType,:,inter)),nanSEM(omegaInter(indType,:,inter)))
+    xlabel('time')
+    
+end
+
+legend(req_params.cell_type)
+
+
+
+%% Histogram 
+
+T = find(ts==401)
+bins = linspace(-0.2,1,50);
+f = figure; hold on
+ax1 = subplot(1,4,1); title('Direction'); hold on
+ax2 = subplot(1,4,2);title('Reward'); hold on
+ax3 = subplot(1,4,3); title('Outcome'); hold on
+ax4 = subplot(1,4,4); title('Interactions'); hold on
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    axes(ax1)
+    plotHistForFC(omegaD(indType,T),bins)
+    xlabel('Effect Size')
+    
+    axes(ax2)
+    plotHistForFC(omegaR(indType,T),bins)
+    xlabel('Effect Size')
+    
+    axes(ax3)
+    plotHistForFC(omegaO(indType,T),bins)
+    xlabel('Effect Size')
+    
+    axes(ax4)
+    plotHistForFC(omegaInter(indType,T,inter),bins)
+    xlabel('Effect Size')
+    
+end
+
+legend(req_params.cell_type)

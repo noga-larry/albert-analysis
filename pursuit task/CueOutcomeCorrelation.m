@@ -3,7 +3,7 @@ clear; clc
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;
@@ -20,6 +20,8 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
+    cellType{ii} = data.info.cell_type;
+    
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
@@ -47,15 +49,25 @@ for ii = 1:length(cells)
 end
 
 
-
+%%
 figure;
-scatter(cueResoponse,rewardResoponse); hold on
-scatter(cueResoponse(find(h)),rewardResoponse(find(h)))
-xlabel('cue: 75-25');ylabel('reward: R-NR')
-[r,p] = corr(cueResoponse',rewardResoponse','type','Spearman')
-%[r,p] = corr(cueResoponse(find(h))',rewardResoponse(find(h))','type','Spearman')
-equalAxis(); refline(1,0)
-title([req_params.cell_type ', r = ' num2str(r) ', p = ' num2str(p)])
+N = length(req_params.cell_type);
+
+for i = 1:length(req_params.cell_type)
+    
+    subplot(2,ceil(N/2),i)  
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    scatter(cueResoponse(indType),rewardResoponse(indType)); hold on
+    [r,p] = corr(cueResoponse(indType)',rewardResoponse(indType)','type','Spearman')
+    indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
+    scatter(cueResoponse(indType),rewardResoponse(indType)); hold on
+    xlabel('cue: 75-25');ylabel('reward: R-NR')
+    
+    %[r,p] = corr(cueResoponse(find(h))',rewardResoponse(find(h))','type','Spearman')
+    equalAxis(); refline(1,0)
+    title([req_params.cell_type{i} ', r = ' num2str(r) ', p = ' num2str(p)])
+end
 %% spesific to prob
 
 clear all
