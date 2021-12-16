@@ -29,10 +29,9 @@ for ii = 1:length(cells)
     cellType{ii} = data.info.cell_type;
    
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail];
     match_p = match_p(find(~boolFail))';
     [~,match_d] = getDirections (data);
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     match_d = match_d(find(~boolFail))';
     
     raster = getRaster(data,find(~boolFail),raster_params);
@@ -43,11 +42,11 @@ for ii = 1:length(cells)
     groupD = repmat(match_d',size(response,1),1);
 
     [p,tbl,stats,terms] = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-        'model','full','display','off','sstype',1);
+        'model','full','display','off');
     
-    totVar = tbl{10,2};
-    SSe = tbl{9,2};
-    msw = tbl{9,5};
+    totVar = tbl{end,2};
+    SSe = tbl{end-1,2};
+    msw = tbl{end-1,5};
     N = length(response(:));
     
     %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
@@ -104,46 +103,51 @@ plotHistForFC(omegaD,bins,'b'); hold on
 legend('T','R','D')
 
 %%
-
+N = length(req_params.cell_type);
+figure; 
 for i = 1:length(req_params.cell_type)
     
-    figure;
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
-    subplot(3,1,1)
+    subplot(3,N,i)
     scatter(omegaT(indType),omegaR(indType),'filled','k'); hold on
     p = signrank(omegaT(indType),omegaR(indType));
     xlabel('time')
     ylabel('reward+time*reward')
+    equalAxis()
     refline(1,0)
-    title(['p = ' num2str(p)])
+    title(req_params.cell_type{i})
+    subtitle(['p = ' num2str(p)])
         
-    subplot(3,1,2)
+    subplot(3,N,i+N)
     scatter(omegaT(indType),omegaD(indType),'filled','k'); hold on
     p = signrank(omegaT(indType),omegaD(indType));
     xlabel('time')
     ylabel('direction+time*direcion')
+    equalAxis()
     refline(1,0)
-    title(['p= ' num2str(p)])
+    title(req_params.cell_type{i})
+    subtitle(['p = ' num2str(p)])
     
-    subplot(3,1,3)
+    subplot(3,N,i+2*N)
     scatter(omegaD(indType),omegaR(indType),'filled','k'); hold on
     p = signrank(omegaD(indType),omegaR(indType));
     ylabel('reward+time*reward')
     xlabel('direction+time*direcion')
+    equalAxis()
     refline(1,0)
-    title(['p = ' num2str(p)])
+    title(req_params.cell_type{i})
+    subtitle(['p = ' num2str(p)])
     
-    sgtitle(['Motion:' req_params.cell_type{i}])
 end
 
 %%
 f = figure; f.Position = [10 80 700 500];
-ax1 = subplot(3,1,1); title('Direction')
-ax2 = subplot(3,1,2);title('Time')
-ax3 = subplot(3,1,3); title('Reward')
+ax1 = subplot(1,3,1); title('Direction')
+ax2 = subplot(1,3,2);title('Time')
+ax3 = subplot(1,3,3); title('Reward')
 
-bins = linspace(-0.2,1.4,100);
+bins = linspace(-0.2,1,100);
 
 for i = 1:length(req_params.cell_type)
     
@@ -151,13 +155,15 @@ for i = 1:length(req_params.cell_type)
     
     axes(ax1)
     plotHistForFC(omegaD(indType),bins); hold on
+    xlabel('Effect size')
     
     axes(ax2)
     plotHistForFC(omegaT(indType),bins); hold on
+    xlabel('Effect size')
     
     axes(ax3)
     plotHistForFC(omegaR(indType),bins); hold on
-    
+    xlabel('Effect size')
 end
 
 title(ax1,'Direction')
@@ -167,17 +173,15 @@ legend(req_params.cell_type)
 sgtitle('Motion','Interpreter', 'none');
 %%
 
-    f = figure; f.Position = [10 80 700 500];
-    bins = -0.3:0.05:1;
-    
-    overallExplained = omegaR+omegaD+omegaT;
-    p = ranksum(overallExplained(indType),overallExplained(~indType))
-    plotHistForFC(overallExplained(indType),bins,'g'); hold on
-    plotHistForFC(overallExplained(~indType),bins,'r'); hold on
-    legend('SS', 'CRB')
-    title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) ', n_{crb} = ' num2str(sum(~indType))])
+f = figure; f.Position = [10 80 700 500];
+bins = -0.3:0.05:1;
 
-
+overallExplained = omegaR+omegaD+omegaT;
+p = ranksum(overallExplained(indType),overallExplained(~indType))
+plotHistForFC(overallExplained(indType),bins,'g'); hold on
+plotHistForFC(overallExplained(~indType),bins,'r'); hold on
+legend('SS', 'CRB')
+title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) ', n_{crb} = ' num2str(sum(~indType))])
 
 %% CV and
 raster_params.align_to = 'cue';

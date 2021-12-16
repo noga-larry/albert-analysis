@@ -25,7 +25,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells )
     data = importdata(cells{ii});
     [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] |~[data.trials.previous_completed] ;
     
     
     indLow = find (match_p == 25 & (~boolFail));
