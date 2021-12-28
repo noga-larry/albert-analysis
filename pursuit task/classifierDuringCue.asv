@@ -8,17 +8,17 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.ID = [4135, 4208, 4209, 4343, 4390, 4569,...
-    4570,4602, 4604, 4605, 4623, 4625, 4658, 4701,...
-    4791, 4806, 4821, 4846, 4886];
+% req_params.ID = [4135, 4208, 4209, 4343, 4390, 4569,...
+%     4570,4602, 4604, 4605, 4623, 4625, 4658, 4701,...
+%     4791, 4806, 4821, 4846, 4886];
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;
-raster_params.time_after = 1000;
-raster_params.smoothing_margins = 0;
+raster_params.time_after = 1200;
+raster_params.smoothing_margins = 300;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -48,7 +48,7 @@ for ii = 1:length(cells)
         test_set = raster(:,cross_val_sets{k,1});
         test_labels = labels(cross_val_sets{k,1});
         
-        mdl = PsthAsEmClassifierModel;
+        mdl = PsthDistanceClassifierModel;
         mdl = mdl.train(training_set,training_labels);
         accuracy(k,ii) = mdl.evaluate(test_set,test_labels);
     end
@@ -56,7 +56,7 @@ end
 
 ave_accuracy = mean(accuracy);
 
-%%
+
 figure;
 
 bins = linspace(0,1,50);

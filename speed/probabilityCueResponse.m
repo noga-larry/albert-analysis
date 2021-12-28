@@ -10,7 +10,7 @@ req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000;
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
+req_params.cell_type = 'CRB|PC|BG msn|SNR';
 req_params.num_trials = 50;
 
 raster_params.align_to = 'cue';
@@ -63,7 +63,7 @@ clear
 
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB|PC ss';
+req_params.cell_type = 'BG msn';
 req_params.task = 'speed_2_dir_0,50,100';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;

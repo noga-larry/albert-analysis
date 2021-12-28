@@ -56,7 +56,6 @@ for ii = 1:length(cells)
     %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
     
     overAllExplained(ii) = (totVar - SSe)/totVar;
-
     
 end
 

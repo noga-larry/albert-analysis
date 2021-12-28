@@ -1,0 +1,36 @@
+classdef PsthDistanceClassifierModel < ClassifierModel
+   
+    properties
+        psthMap
+        SD = 10
+    end
+    
+    methods
+        
+        function mdl = train(mdl,X,y)
+            psthMap = containers.Map('KeyType','double','ValueType','any');
+            classes = unique(y);            
+            for i = 1:length(classes)
+                ind = find(y == classes(i));
+                psth = gaussSmooth(mean(X(:,ind)*1000,2),mdl.SD);
+                psthMap(classes(i)) = psth;
+            end
+            mdl.psthMap = psthMap;            
+            
+        end
+        
+        function pred = predict(mdl,X)
+            classes = mdl.psthMap.keys;
+            for i = 1:size(X,2)
+                trialPsth = gaussSmooth(mean(X(:,i)*1000,2),mdl.SD);
+                for j = 1:length(classes)
+                    abs (trialPsth - mdl.psthMap(classesPj}) 
+                    
+                end
+            end
+            
+            
+        end
+        
+    end
+end

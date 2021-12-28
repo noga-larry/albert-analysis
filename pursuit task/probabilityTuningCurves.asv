@@ -1,11 +1,11 @@
 % Probability Tuning curves
 clear; clc; close all
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Golda');
 
 req_params.grade = 7;
 req_params.cell_type = 'PC ss';
 req_params.task = 'saccade_8_dir_75and25';
-req_params.num_trials = 70;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.ID = 4000:6000;
 
@@ -48,9 +48,11 @@ for ii = 1:length(cells)
     data.info.directionally_tuned = h(ii);
     save (cells{ii},'data');
     
-    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
-    
-    if strcmp(req_params.cell_type,'PC cs')
+    if ~strcmp(req_params.cell_type,'PC cs')
+        baseline = mean(TCpop(ii,:));
+         baseline = 0;
+    else
+       
         baseline = 0;
     end
     
@@ -60,7 +62,7 @@ for ii = 1:length(cells)
    
    
     for d = 1:length(angles)
-        
+        d
         inx = find ((match_d == mod(PD+angles(d),360) | match_d == mod(PD-angles(d),360)) & (~boolFail));
         
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
@@ -102,14 +104,14 @@ glme = fitglme(glm_tbl,...
 
 
 directions = [-180:45:180];
-f = figure; f.Position = [10 80 700 500];
+figure;
 
 ind = find(h);
 subplot(3,1,2)
 aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Significantly tuned, n = ' num2str(sum(h))]);
@@ -120,9 +122,9 @@ ylimits = get(gca,'YLim');
 ind = find(~h);
 subplot(3,1,1)
 aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['Untuned, n = ' num2str(length(ind))]);
@@ -132,9 +134,9 @@ ylim([ylimits])
 ind = 1:length(cells);
 subplot(3,1,3)
 aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
-semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
+semHigh = [nanstd(TC_High(ind,:)),nanstd(TC_High(ind,1))]/sqrt(length(ind));
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
-semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
+semLow = [nanstd(TC_Low(ind,:)), nanstd(TC_Low(ind,1))]/sqrt(length(ind));
 errorbar(directions,aveLow,semLow,'r'); hold on
 errorbar(directions,aveHigh,semHigh,'b'); hold on
 title(['All, n = ' num2str(length(cells))]);
@@ -143,15 +145,14 @@ legend( '25','75')
 ylim([ylimits])
 
 
-f = figure; f.Position = [10 80 700 500];
-
+figure;
 ind = find(~h);
 for d = 1:length(angles)
     subplot(2,5,d)
-    ave_Low = nanmean(squeeze(psth_Low(ind,d,:)));
-    sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
+    ave_Low = mean(squeeze(psth_Low(ind,d,:)));
+    sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
     ave_High = mean(squeeze(psth_High(ind,d,:)));
-    sem_High = nanSEM(squeeze(psth_High(ind,d,:)));
+    sem_High = std(squeeze(psth_High(ind,d,:)))/sqrt(length(ind));
     errorbar(ts,ave_Low,sem_Low,'r'); hold on
     errorbar(ts,ave_High,sem_High,'b'); hold on
     if d==1
@@ -367,6 +368,7 @@ for j=1:length(angles)
 end
 
 %% reward significanse in directions in the world
+
 
 clear all
 supPath = 'C:\Users\Noga\Documents\Vermis Data';
@@ -597,65 +599,60 @@ scatter(rateHigh(ind),correctedLow(ind),'k'); refline(1,0)
 signrank(rateHigh(ind),correctedLow(ind)) 
 
 
-%% Significance in time
-clear 
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
+%%
+clear all
 
-WINDOW_SIZE = 50;
-NUM_COMPARISONS = 3; 
+supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
+load ('C:\noga\TD complex spike analysis\task_info');
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'saccade_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 120;
+req_params.cell_type = 'PC cs';
+req_params.task = 'pursuit_8_dir_75and25';
+req_params.ID = 4000:5000;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'targetMovementOnset';
+raster_params.allign_to = 'targetMovementOnset';
 raster_params.time_before = 300;
 raster_params.time_after = 500;
-raster_params.smoothing_margins = 0; % ms in each side
-raster_params.SD = 15;
+raster_params.smoothing_margins = 50; % ms in each side
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-ts = -(raster_params.time_before - ceil(WINDOW_SIZE/2)): ...
-    (raster_params.time_after- ceil(WINDOW_SIZE/2));
+ts = -raster_params.time_before : raster_params.time_after;
 
+
+HighTail = nan(length(cells),length(ts));
+LowTail =nan(length(cells),length(ts));
+
+timeWindow = -raster_params.smoothing_margins:...
+    raster_params.smoothing_margins;
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     
     [~,match_p] = getProbabilities (data);
-    [~,match_d] = getDirections (data);
     boolFail = [data.trials.fail];
     
-    ind = find(~boolFail);
+    indLow = find (match_p == 25 & (~boolFail));
+    indHigh = find (match_p == 75 & (~boolFail));
+    rasterLow = getRaster(data,indLow,raster_params);
+    rasterHigh = getRaster(data,indHigh,raster_params);
     
-    raster = getRaster(data,ind,raster_params);
-    
-    func = @(raster) sigFunc(raster,match_p(ind),match_d(ind));
-    returnTrace(ii,:,:) = ...
-        runningWindowFunction(raster,func,WINDOW_SIZE,NUM_COMPARISONS);
-
+    for t = 1:length(ts)
+        runningWindow = raster_params.smoothing_margins + t + timeWindow;
+        spksHigh = sum(rasterHigh(runningWindow,:));
+        spksLow = sum(rasterLow(runningWindow,:));
+        [~,HighTail(ii,t)] = ranksum(spksHigh,spksLow,'tail','right');
+        [~,LowTail(ii,t)] = ranksum(spksHigh,spksLow,'tail','left');
+    end
 end
 
-
+fracHighTail = mean(HighTail>0.05);
+fracLowTail = mean(LowTail>0.05);
 figure;
-plot(ts,squeeze(mean(returnTrace)))
+plot(ts,fracHighTail,'b'); hold on
+plot(ts,fracLowTail,'r')
 xlabel('Time from movement')
-ylabel('Frac significiant')
-legend('75 vs 25','Direction','Interaction')
-
-sgtitle(req_params.cell_type)
-%%
-function h = sigFunc(raster,match_p,match_d)
-% comparison R vs NR
-
-spk = sum(raster);
-p = anovan(spk,{match_p,match_d},'model','full','display','off');
-
-h = p'<0.05;
-
-end
+ylabel('Frac of cells')

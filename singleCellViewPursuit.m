@@ -3,13 +3,13 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-   
+figure 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss|CRB|BG ';
-req_params.task = 'pursuit_8_dir_75and25';
+%req_params.cell_type = 'SNR';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
-req_params.ID = 5666;
+req_params.ID = 4208;
+req_params.remove_repeats = false;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -19,7 +19,7 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
-comparison_window = 100:300;
+comparison_window = 100:800;
 angles = [0:45:180];
 ts = -raster_params.time_before:raster_params.time_after;
 
