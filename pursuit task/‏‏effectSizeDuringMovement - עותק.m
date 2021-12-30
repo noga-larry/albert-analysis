@@ -28,11 +28,10 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
    
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    match_p = match_p(find(~boolFail))';
-    [~,match_d] = getDirections (data);
-    match_d = match_d(find(~boolFail))';
+    boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
+    ind = find(~boolFail);
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);

@@ -1,24 +1,25 @@
 
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+load('sessionMap.mat')
 
 K_FOLD = 10;
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
+req_params.cell_type = {'PC ss','PC cs', 'CRB','SNR', 'BG msn'};
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.ID = [4135, 4208, 4209, 4343, 4390, 4569,...
-    4570,4602, 4604, 4605, 4623, 4625, 4658, 4701,...
-    4791, 4806, 4821, 4846, 4886];
-req_params.num_trials = 50;
+% req_params.ID = [4135, 4208, 4209, 4343, 4390, 4569,...
+%     4570,4602, 4604, 4605, 4623, 4625, 4658, 4701,...
+%     4791, 4806, 4821, 4846, 4886];
+req_params.num_trials = 30;
 req_params.remove_question_marks = 1;
-req_params.remove_repeats = false;
+req_params.remove_repeats = true;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;
-raster_params.time_after = 1000;
-raster_params.smoothing_margins = 0;
+raster_params.time_after = 1200;
+raster_params.smoothing_margins = 300;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -30,12 +31,21 @@ accuracy = nan(K_FOLD,length(cells));
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
+    cellID(ii) = data.info.cell_ID;
+    
+    if ismember(cellType{ii},{'PC ss','PC cs','CRB'})
+        session_list = sessionMap('Vermis');
+    else
+        session_list = sessionMap('BG');
+    end
+    
+    bool_sig_session(ii) = ismember(data.info.session,session_list);
     
     boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
     ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    labels = match_d;
+    labels = match_p;
     
     raster = getRaster(data,ind,raster_params);
     N = size(raster,2);
@@ -48,24 +58,23 @@ for ii = 1:length(cells)
         test_set = raster(:,cross_val_sets{k,1});
         test_labels = labels(cross_val_sets{k,1});
         
-        mdl = PsthAsEmClassifierModel;
+        mdl = PsthDistanceClassifierModel;
         mdl = mdl.train(training_set,training_labels);
         accuracy(k,ii) = mdl.evaluate(test_set,test_labels);
     end
 end
 
 ave_accuracy = mean(accuracy);
-
 %%
 figure;
 
 bins = linspace(0,1,50);
-
+bool_relevant = cellID>0;
 for i = 1:length(req_params.cell_type)
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    indType = find(strcmp(req_params.cell_type{i}, cellType) & bool_relevant);
     plotHistForFC(ave_accuracy(indType),bins); hold on
-    
+    disp([req_params.cell_type{i} ': ' num2str(mean(bool_sig_session(indType)))])
 end
 legend(req_params.cell_type)
-sgtitle(num2str(mean(ave_accuracy)),'Interpreter', 'none');
+sgtitle(num2str(nanmean(ave_accuracy)),'Interpreter', 'none');

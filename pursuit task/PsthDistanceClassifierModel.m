@@ -26,7 +26,7 @@ classdef PsthDistanceClassifierModel < ClassifierModel
                 trialPsth = mdl.psthCal(X(:,i));
                 dists = nan(1,length(classes));
                 for j = 1:length(classes)
-                    dists(j) = sum(abs(trialPsth - mdl.psthMap(classes{j}))) ;
+                    dists(j) = sum((trialPsth - mdl.psthMap(classes{j})).^2) ;
                 end
                 [~,ind] = min(dists);
                 pred(i) =  classes{ind};
