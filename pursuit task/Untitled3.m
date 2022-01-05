@@ -66,6 +66,8 @@ for ii = 1:length(cells)
 end
 
 figure;scatter(rateHigh,rateLow); refline(1,0)
+
+%%
 clear all
 supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
 load ('C:\noga\TD complex spike analysis\task_info');
@@ -103,8 +105,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
-    
+    data = getBehavior(data,MaestroPath);    
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];

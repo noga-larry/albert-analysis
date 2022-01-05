@@ -34,28 +34,9 @@ for ii = 1:length(cells)
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
     
-    groupT = repmat((1:size(response,1))',1,size(response,2));
-    groupR = repmat(match_p',size(response,1),1);
-
-    [p,tbl,~,~] = anovan(response(:),{groupT(:),groupR(:)},'model','interaction','display','off');
-    %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
-    
-%     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
-%     ss_a(ii,1) = tbl{2,2};ss_a(ii,2) = ss.X1;
-%     ss_b(ii,1) = tbl{3,2};ss_b(ii,2) = ss.X2;
-%     ss_ab(ii,1) = tbl{4,2};ss_ab(ii,2) = ss.interaction;
-    totVar = tbl{6,2};
-    msw = tbl{5,5};
-    SSe = tbl{5,2};
-    N = length(response(:));
-      
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-    omegaT(ii) = omega(tbl,2);
-    omegaR(ii) = omega(tbl,3)+omega(tbl,4);
-      
-    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-    
-    overAllExplained(ii) = (totVar - SSe)/totVar;
+    omegas = calOmegaSquare(response,{match_p});
+    omegaT = omegas(1).value;
+    omegaR = omegas(2).value + omegas(3).value;
     
 end
 

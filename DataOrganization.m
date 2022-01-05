@@ -23,20 +23,32 @@ end
 
 save ([task_DB_path '.mat'],'task_info')
 
+%%
+clear
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
+
+for i=1:length(task_info)
+    if contains(task_info(i).cell_type,'SNR') & contains(task_info(i).cell_type,'?')
+        task_info(i).cell_type = 'SNR';
+    end
+end
+uniqueRowsCA({task_info.cell_type}')
+save ([task_DB_path '.mat'],'task_info')
+
 %% sup_dir_from
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'SNR|BG|PC|CRB';
+req_params.cell_type = 'SNR';
 %req_params.task = 'choice';
 req_params.remove_question_marks = 0;
 %req_params.ID = 5260;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
-
 
 task_info = getData('Vermis' , lines,...
     'numElectrodes',10,'includeBehavior',false);

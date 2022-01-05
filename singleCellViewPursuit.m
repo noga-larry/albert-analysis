@@ -8,7 +8,7 @@ req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
-req_params.ID = 4208;
+req_params.ID = 4209;
 req_params.remove_repeats = false;
 
 lines = findLinesInDB (task_info, req_params);
@@ -39,11 +39,9 @@ for ii=1:length(cells)
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     psthLow = raster2psth(rasterLow,raster_params);
-    psthHigh = raster2psth(rasterHigh,raster_params);
-    
+    psthHigh = raster2psth(rasterHigh,raster_params);    
     
     sgtitle([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
-
         
     subplot(4,4,1)
     plotRaster(rasterLow,raster_params,'r')
