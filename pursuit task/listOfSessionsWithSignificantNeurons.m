@@ -2,18 +2,19 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 cell_type = {'PC ss','PC cs', 'CRB','SNR', 'BG msn'};
-BIN_SIZE = 50;
+BIN_SIZE = 100;
 
 req_params.grade = 7;
 cell_type = {'PC ss','PC cs', 'CRB','SNR', 'BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';req_params.ID = 4000:6000;
-req_params.num_trials = 30;
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.num_trials = 100;
 req_params.remove_repeats = false;
+req_params.remove_question_marks = 0;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;
 raster_params.time_after = 1200;
-raster_params.smoothing_margins = 300;
+raster_params.smoothing_margins = 0;
 
 sessions = uniqueRowsCA({task_info.session}');
 sessions_list = cell(1,length(cell_type));
@@ -50,10 +51,16 @@ for i = 1:length(sessions)
             groupR = repmat(match_p',size(response,1),1);
             groupD = repmat(match_d',size(response,1),1);
             
-            p = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-                'model','interaction','display','off');
+%             p = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
+%                 'model','interaction','display','off');
+            try
+            [d,p] = manova1(response',match_d);
+            catch
+                p = 1;
+                disp(['Skip' data.info.cell_type])
+            end
             
-            if p(3)<0.05 | p(5)<0.05
+            if p(1)<0.001
                sig_flag = true;
             end
         end

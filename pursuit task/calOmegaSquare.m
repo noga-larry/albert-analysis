@@ -2,7 +2,7 @@ function omega = calOmegaSquare(response,labels)
 
 groups{1} = repmat((1:size(response,1))',1,size(response,2));
 for i = 1:length(labels)
-    groups{i+1} = repmat(labels{i}',size(response,1),1);
+    groups{i+1} = repmat(labels{i},size(response,1),1);
 end
 for i = 1:length(groups)
     tmp = groups{i};
@@ -29,6 +29,6 @@ for i = 2:(length(tbl)-3)
     omega(c).variable = tbl{i,1};
 end
 omega(c+1).variable = 'Total';
-omega(c).value = (totVar - SSe)/totVar;
+omega(c+1).value = (totVar - SSe)/totVar;
 %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
 

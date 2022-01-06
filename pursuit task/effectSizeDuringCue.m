@@ -6,7 +6,7 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.num_trials = 50;
+req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'cue';
@@ -28,15 +28,14 @@ for ii = 1:length(cells)
     cellType{ii} = data.info.cell_type;
     
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    ind = find(~boolFail);
+    ind = find(~boolFail);    
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
-    
+
     omegas = calOmegaSquare(response,{match_p});
-    omegaT = omegas(1).value;
-    omegaR = omegas(2).value + omegas(3).value;
+    omegaT(ii) = omegas(1).value;
+    omegaR(ii) = omegas(2).value + omegas(3).value;
     
 end
 
