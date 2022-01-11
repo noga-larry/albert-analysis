@@ -10,9 +10,9 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'targetMovementOnset';
+raster_params.align_to = 'reward';
 raster_params.time_before = 299;
-raster_params.time_after = 750;
+raster_params.time_after = 2000;
 raster_params.smoothing_margins = 0;
 bin_sz = 50;
 

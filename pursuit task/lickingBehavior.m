@@ -59,7 +59,7 @@ PROBABILITIES = [25,75];
 req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
+req_params.ID = 5000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
@@ -84,14 +84,15 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     data = getLicking(data,MaestroPath);
-    match_o = getPreviousOutcomes(data);
+    match_po = getPreviousOutcomes(data);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    boolFail(1) = 1;
     
     for p = 1:length(PROBABILITIES)
         for j=1:2
             ind = find (match_p == PROBABILITIES(p) & ...
-                (~boolFail) & match_o == j-1 );
+                (~boolFail) & match_po == j-1 );
             licks(ii,p,j,:) = meanLicking(data,behavior_params,ind);
         end
     end
@@ -99,7 +100,7 @@ for ii = 1:length(cells)
 end
 
 
-%%
+
 aveLicks = squeeze(mean(licks));
 semLicks = squeeze(nanSEM(licks));
 col = {'r','b'}
@@ -136,7 +137,7 @@ behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
-behavior_params.align_to = 'reward';
+behavior_params.align_to = 'targetMovementOnset';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
 
@@ -244,7 +245,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     data = getLicking(data,MaestroPath);
-    match_o = getPreviousOutcomes(data);
+    match_po = getPreviousOutcomes(data);
     [~,match_p] = getProbabilities (data);
     [~,match_d] = getDirections(data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
