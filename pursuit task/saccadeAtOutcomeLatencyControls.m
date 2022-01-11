@@ -1,14 +1,12 @@
 clear all
 
-MaestroPath = 'C:\Users\Noga\Music\DATA';
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 10;
-req_params.cell_type = 'PC cs';
+req_params.grade = 7;
+req_params.cell_type = 'PC ss|BG|SNR';
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.ID = 5000:6000;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 0;
 
 behavior_params.time_after = 1500;
@@ -50,7 +48,7 @@ for ii = 1:length(cells)
     saccadeRate = nan(length(data.trials),length(windowEvent));
     blinkRate = nan(length(data.trials),length(windowEvent));
 
-    FirstSaccadeLatency = nan(length(data.trials));
+    FirstSaccadeLatency = nan(length(data.trials),1);
     for t=find(~boolFail)
         
         if data.trials(t).extended_trial_begin<1000 |...
@@ -72,27 +70,28 @@ for ii = 1:length(cells)
     end
     
 
-    latencyLowR(ii) = nanmean(FirstSaccadeLatency(indLowR));
-    latencyHighR(ii) = nanmean(FirstSaccadeLatency(indHighR));
-    latencyLowNR(ii) = nanmean(FirstSaccadeLatency(indLowNR));
-    latencyHighNR(ii) = nanmean(FirstSaccadeLatency(indHighNR));
-    
-    
-    rasterLowR = getRaster(data,indLowR,raster_params);
-    rasterLowNR = getRaster(data,indLowNR,raster_params);
-    rasterHighR = getRaster(data,indHighR,raster_params);
-    rasterHighNR = getRaster(data,indHighNR,raster_params);
-    
-    psthLowR(ii,:) = raster2psth(rasterLowR,raster_params);
-    psthLowNR(ii,:) = raster2psth(rasterLowNR,raster_params);
-    psthHighR(ii,:) = raster2psth(rasterHighR,raster_params);
-    psthHighNR(ii,:) = raster2psth(rasterHighNR,raster_params) ;
+    latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
+    latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
+    latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
+    latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
     
     
    
 end
 
-
+%%
+figure
+subplot(2,1,1)
+scatter(latencyLowR,latencyLowNR)
+p = signrank(latencyLowR,latencyLowNR);
+refline(1,0)
+xlabel('R'); ylabel('NR'); title(['25, p = ' num2str(p)])
+subplot(2,1,2)
+scatter(latencyHighR,latencyHighNR)
+p = signrank(latencyHighR,latencyHighNR);
+refline(1,0)
+xlabel('R'); ylabel('NR'); title(['75, p = ' num2str(p)])
+%%
 ind = find(latencyLowR<latencyHighR);
 
 aveLowR = nanmean(psthLowR(ind,:));

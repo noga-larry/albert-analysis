@@ -10,6 +10,7 @@ req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks =0;
+req_params.remove_repreats = false;
 
 behavior_params.time_after = 300;
 behavior_params.time_before = 0;
@@ -44,6 +45,7 @@ errorbar(aveHigh,semHigh,'b')
 
 figure
 scatter(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
+signrank(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
 xlabel('High');ylabel('Low')
 refline(1,0)
 
@@ -161,7 +163,7 @@ end
 
 %%
 
-ind = find(cellID<5000)
+ind = find(cellID<10000);
 aveLow = squeeze(nanmean(velLow(ind,:,:),1));
 semLow = squeeze(nanSEM(velLow(ind,:,:),1));
 aveHigh = squeeze(nanmean(velHigh(ind,:,:),1));
@@ -189,3 +191,36 @@ p = signrank(mean(mean(velHigh(ind,[1,4],200:250),3),2),mean(mean(velHigh(ind,[2
 xlabel('25NR+75R'); ylabel('25R+75NR')
 title(['25 in this trial, p =' num2str(p)])
 equalAxis(); refline(1,0)
+
+%%
+
+figure
+ind = find(cellID<5000);
+
+subplot(2,2,1)
+scatter(mean(mean(velLow(ind,1,200:250),3),2),mean(mean(velLow(ind,2,200:250),3),2))
+p = signrank(mean(mean(velLow(ind,1,200:250),3),2),mean(mean(velLow(ind,2,200:250),3),2));
+refline(1,0)
+xlabel('Previous 25NR'); ylabel('Previous 25R')
+title(['25 in this trial, p =' num2str(p)])
+
+subplot(2,2,2)
+scatter(mean(mean(velLow(ind,3,200:250),3),2),mean(mean(velLow(ind,4,200:250),3),2))
+p = signrank(mean(mean(velLow(ind,3,200:250),3),2),mean(mean(velLow(ind,4,200:250),3),2));
+refline(1,0)
+xlabel('Previous 75NR'); ylabel('Previous 75R')
+title(['25 in this trial, p =' num2str(p)])
+
+subplot(2,2,3)
+scatter(mean(mean(velHigh(ind,1,200:250),3),2),mean(mean(velHigh(ind,2,200:250),3),2))
+p = signrank(mean(mean(velHigh(ind,1,200:250),3),2),mean(mean(velHigh(ind,2,200:250),3),2));
+refline(1,0)
+xlabel('Previous 25NR'); ylabel('Previous 25R')
+title(['75 in this trial, p =' num2str(p)])
+
+subplot(2,2,4)
+scatter(mean(mean(velHigh(ind,3,200:250),3),2),mean(mean(velHigh(ind,4,200:250),3),2))
+p = signrank(mean(mean(velHigh(ind,3,200:250),3),2),mean(mean(velHigh(ind,4,200:250),3),2));
+refline(1,0)
+xlabel('Previous 75NR'); ylabel('Previous 75R')
+title(['75 in this trial, p =' num2str(p)])

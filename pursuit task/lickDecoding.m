@@ -5,7 +5,7 @@ clear
 load('sessionMap.mat')
 
 CAL_CLASSIFIER = true;
-CAL_OMEGA = true;
+CAL_OMEGA = false;
 K_FOLD = 10;
 bin_sz = 50;
 
@@ -54,11 +54,13 @@ for ii = 1:length(cells)
     
     bool_sig_session(ii) = ismember(data.info.session,session_list);
     
-    boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    boolFail(1) = true;
     ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     [match_o] = getOutcome(data,ind,'omitNonIndexed',true);
+    match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
     boolLick = isTrialWithLick(data,raster_params.align_to, 0, 500, ind);
         
     ind = find(~boolFail);
@@ -96,7 +98,7 @@ end
 
 figure;
 
-effect = omega
+effect = accuracy
 bins = linspace(0,1,50);
 ind_relevant = 1:length(cells)
 for i = 1:length(req_params.cell_type)
@@ -109,7 +111,10 @@ for i = 1:length(req_params.cell_type)
         effect(2,intersect(ind_relevant,indType)))
     title([req_params.cell_type{i} ', p = ' num2str(p)])
     xlabel('licks')
-    ylabel('reward')
+    ylabel('previous outcome')
+    
+    nanmean(effect(1,intersect(ind_relevant,indType))-...
+        effect(2,intersect(ind_relevant,indType)))
 end
 
 %%
@@ -121,7 +126,7 @@ for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     plotHistForFC(effect(2,intersect(ind_relevant,indType)),bins); hold on
-    disp([req_params.cell_type{i} ': ' num2str(signrank(effect(2,intersect(ind_relevant,indType))))])
+    disp([req_params.cell_type{i} ': ' num2str(signrank(effect(2,intersect(ind_relevant,indType))-0.5))])
 end
 legend(req_params.cell_type)
 xlabel('Accuracy')
