@@ -177,10 +177,12 @@ sgtitle('CRB')
 
 
 %% Correlation in time PD versus Null
+clear 
+
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 PROBABILITIES = [25, 75];
 BIN_SIZE = 200;
-ANGLES_AROUND = [-45,0,45];
+ANGLES_AROUND = [0];
 
 comparison_window = [100:400];
 
@@ -203,9 +205,10 @@ assert(length(times_before)==length(times_after))
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
+modulation = nan(1,length(cells));
+correlation = nan(2,length(cells),length(times_before));
+significance = nan(2,length(cells),length(times_before));
 
-correlation = nan(2,length(PROBABILITIES),length(cells),length(times_before));
-significance = nan(2,length(PROBABILITIES),length(cells),length(times_before));
 
 for ii = 1:length(cells)
     
@@ -215,47 +218,71 @@ for ii = 1:length(cells)
     cellType{ii} = data.info.cell_type;
     cellID(ii) = data.info.cell_ID;
     
+    raster_params.time_before = 400;
+    raster_params.time_after = -100;
+    
+    boolFail = [data.trials.fail];
+    [~,match_d] = getDirections (data);
+    
     PD = getPD(data,1:length(data.trials),comparison_window);
     for d = 1:2 %PD and Null
         
-       if d==1
-           directions = mod(PD+ANGLES_AROUND,360);
-       elseif d==2
-           directions = mod(PD+ANGLES_AROUND+180,360);
-       end
-       
-        for p = 1:length(PROBABILITIES)
+        if d==1
+            cur_dir = mod(PD,360);
+        elseif d==2
+            cur_dir = mod(PD+180,360);
+        end
+        
+        inx = find(~boolFail & match_d == cur_dir);
+        
+        baseline = mean(getRaster(data, inx, raster_params))*1000;
+        
+        raster_params.time_before = -100;
+        raster_params.time_after = 400;
+        
+        response = mean(getRaster(data, find(~boolFail), raster_params))*1000;
+        
+        modulation(d,ii) = mean(response)- mean(baseline);        
+    
+        
+        for t=1:length(times_before)
+            raster_params.time_before = times_before(t);
+            raster_params.time_after = times_after(t);
             
-            for t=1:length(times_before)
-                raster_params.time_before = times_before(t);
-                raster_params.time_after = times_after(t);
-                
-                [r,p_val] = NB_corr(data,raster_params,PROBABILITIES(p),directions);
-                
-                correlation(d,p,ii,t) = r;
-                significance(d,p,ii,t) = p_val<0.05;
-            end
+            [r,p_val] = NB_corr(data,raster_params,mod(cur_dir+ANGLES_AROUND,360));
+            
+            correlation(d,ii,t) = r;
+            significance(d,ii,t) = p_val<0.05;
         end
     end
 end
+
 
 %%
 ts = (-times_before+times_after)/2;
 figure;
 c=0;
 
+cell_groups_names = {'Deceasing','Incresing'};
+
 dirs = {'PD','Null'};
 for d = 1:2 %PD and Null
-    for p = 1:length(PROBABILITIES)
-        c =c+1;
+    for j = 1:2
+        if j==1
+            cell_group = find(modulation(d,:)<0);
+        elseif j==2
+            cell_group = find(modulation(d,:)>0);
+        end
+        c = c+1;
         subplot(2,2,c); hold on
-        title(['Probability = ' num2str(PROBABILITIES(p)) ', ' dirs{d}])
+        title([cell_groups_names{j} ', ' dirs{d}])
         for i = 1:length(req_params.cell_type)
             
-            indType = find(strcmp(req_params.cell_type{i}, cellType));
+            indType = intersect(find(strcmp(req_params.cell_type{i}, cellType)),...
+                cell_group);
             
-            ave = squeeze(nanmean(correlation(d,p,indType,:),3));
-            sem = squeeze(nanSEM(correlation(d,p,indType,:),3));
+            ave = squeeze(nanmean(correlation(d,indType,:),2));
+            sem = squeeze(nanSEM(correlation(d,indType,:),2));
             errorbar(ts,ave,sem)
             xlabel(['Time from ' raster_params.align_to])
         end

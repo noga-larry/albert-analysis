@@ -1,13 +1,12 @@
-function [r,p_val] = NB_corr(data,raster_params,prob,directions)
+function [r,p_val] = NB_corr(data,raster_params,directions)
 spikes =[];
 RTs =[];
 boolFail = [data.trials.fail];
-[~,match_p] = getProbabilities (data);
 [~,match_d] = getDirections (data);
 
 % substract RT average in direction to reduce directional variance
 for d = 1:length(directions)
-    inx = find (match_p == prob & (~boolFail)...
+    inx = find ((~boolFail)...
         & match_d == directions(d));
     
     raster = getRaster(data,inx, raster_params);

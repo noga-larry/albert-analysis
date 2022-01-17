@@ -50,7 +50,7 @@ end
 
 %%
 
-ind = find(cellID > 5000);
+ind = find(cellID < 5000);
 figure;
 subplot(2,2,1)
 aveLow = nanmean(RTLow(ind,:));
