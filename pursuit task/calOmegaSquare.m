@@ -1,8 +1,24 @@
-function omega = calOmegaSquare(response,labels)
+function omega = calOmegaSquare(response,labels,varargin)
 
-groups{1} = repmat((1:size(response,1))',1,size(response,2));
+p = inputParser;
+defaultPartial = false;
+addOptional(p,'partial',defaultPartial,@islogical);
+
+defaultIncludeTime = true;
+addOptional(p,'includeTime',defaultIncludeTime,@islogical);
+
+parse(p,varargin{:})
+partial = p.Results.partial;
+includeTime = p.Results.includeTime;
+
+if includeTime
+    groups{1} = repmat((1:size(response,1))',1,size(response,2));
+    c = 1;
+else
+    c=0;
+end
 for i = 1:length(labels)
-    groups{i+1} = repmat(labels{i},size(response,1),1);
+    groups{i+1-c} = repmat(labels{i},size(response,1),1);
 end
 for i = 1:length(groups)
     tmp = groups{i};
@@ -21,7 +37,13 @@ msw = tbl{end-1,5};
 SSe = tbl{end-1,2};
 N = length(response(:));
 
-omegafun = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
+if partial
+    omegafun = @(tbl,dim) (tbl{dim,3}*(tbl{dim,5}-msw))/...
+        (tbl{dim,3}*tbl{dim,5}+(N-tbl{dim,3})*msw);
+else
+    omegafun = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
+end
+
 c=0;
 for i = 2:(length(tbl)-3)
     c = c+1;

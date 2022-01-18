@@ -7,7 +7,7 @@ classdef ClassifierModel
     
     methods
         
-        function accuracy = evaluate(mdl,X,y)
+        function accuracy = evaluate(mdl,X,y)                
             preds = mdl.predict(X);
             accuracy = mean(preds==y');
         end

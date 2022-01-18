@@ -4,7 +4,7 @@ clear
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.num_trials = 70;
+req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'reward';
@@ -26,49 +26,31 @@ omegaO = nan(1,length(cells));
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    cellType{ii} = data.info.cell_type;   
+    cellType{ii} = data.info.cell_type;
     
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     ind = find(~boolFail);
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    [match_o] = getOutcome(data,ind,'omitNonIndexed',true); 
     raster = getRaster(data,find(~boolFail),raster_params);
-    
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
     
-    groupT = repmat((1:size(response,1))',1,size(response,2));
-    groupR = repmat(match_p',size(response,1),1);
-    groupD = repmat(match_d',size(response,1),1);
-    groupO = repmat(match_o',size(response,1),1);
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
+    [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
     
-    [p,tbl] = anovan(response(:),{groupT(:),groupR(:),groupD(:),groupO(:)},...
-        'model','interaction','display','off');
+    omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true);
     
-    totVar = tbl{end,2};
-    SSe = tbl{end-1,2};
-    msw = tbl{end-1,5};
-    N = length(response(:));
+    omegaT(ii) = omegas(1).value;
+    omegaR(ii) = omegas(2).value + omegas(5).value;
+    omegaD(ii) = omegas(3).value + omegas(6).value;
+    omegaO(ii) = omegas(4).value + omegas(7).value;
     
-    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
-      
-    omega = @(tbl,dim) ([tbl{dim,2}]-[tbl{dim,3}]*msw)/(msw+totVar);
-    
-    omegaT(ii) = omega(tbl,2);
-    omegaR(ii) = omega(tbl,3)+omega(tbl,6);
-    omegaD(ii) = omega(tbl,4)+omega(tbl,7);
-    omegaO(ii) = omega(tbl,5)+omega(tbl,8);
-    
-    overAllExplained(ii) = (totVar - SSe)/totVar;
+    overAllExplained(ii) = omegas(10).value;
     
     if mod(ii,50)==0
         disp(ii)
     end
     
 end
-
-
-
 
 %%
 f = figure; f.Position = [10 80 700 500];
@@ -108,7 +90,8 @@ end
 
 title(ax1,'Direction')
 title(ax2,'Time')
-title(ax3,'Reward')
+title(ax3,'Reward Prob')
+title(ax4,'Outcome')
 legend(req_params.cell_type)
 
 
