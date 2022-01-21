@@ -28,15 +28,12 @@ for ii = 1:length(cells)
     
     cellType{ii} = data.info.cell_type;
     cellID(ii) = data.info.cell_ID;
-
+     
+    [r,p_val] = NB_corr(data,raster_params,DIRECTIONS);
     
-    for p = 1:length(PROBABILITIES)
-        
-        [r,p_val] = NB_corr(data,raster_params,PROBABILITIES(p),DIRECTIONS);
-
-        correlation(p,ii) = r;
-        significance(p,ii) = p_val<0.05;
-    end
+    correlation(ii) = r;
+    significance(ii) = p_val<0.05;
+    
     
 end
 
@@ -74,7 +71,7 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'targetMovementOnset';
+raster_params.align_to = 'cue';
 raster_params.SD = 10;
 raster_params.smoothing_margins = 0;
 
@@ -86,30 +83,28 @@ assert(length(times_before)==length(times_after))
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-
-correlation = nan(length(PROBABILITIES),length(cells),length(times_before));
-significance = nan(length(PROBABILITIES),length(cells),length(times_before));
+correlation = nan(length(cells),length(times_before));
+significance = nan(length(cells),length(times_before));
 
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     data = getBehavior(data,MaestroPath);
     
-    cellType{ii} = data.info.cell_type;
+    cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    for p = 1:length(PROBABILITIES)
+    
+    for t=1:length(times_before)
+        raster_params.time_before = times_before(t);
+        raster_params.time_after = times_after(t);
         
-        for t=1:length(times_before)
-            raster_params.time_before = times_before(t);
-            raster_params.time_after = times_after(t);
-            
-            [r,p_val] = NB_corr(data,raster_params,PROBABILITIES(p),DIRECTIONS);
-            
-            correlation(p,ii,t) = r;
-            significance(p,ii,t) = p_val<0.05;
-        end
-    end   
+        [r,p_val] = NB_corr(data,raster_params,DIRECTIONS);
+        
+        correlation(ii,t) = r;
+        significance(ii,t) = p_val<0.05;
+        
+    end
 end
 
 
@@ -118,36 +113,33 @@ end
 ts = (-times_before+times_after)/2;
 figure;
 
-for p = 1:length(PROBABILITIES)
-    subplot(2,2,p); hold on
-    title(['Probability = ' num2str(PROBABILITIES(p))])
-    for i = 1:length(req_params.cell_type)
-        
-        indType = find(strcmp(req_params.cell_type{i}, cellType));
-        
-        ave = squeeze(nanmean(correlation(p,indType,:),2));
-        sem = squeeze(nanSEM(correlation(p,indType,:),2));
-        errorbar(ts,ave,sem) 
-        xlabel(['Time from ' raster_params.align_to])
-    end
+
+subplot(2,1,1); hold on
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    ave = squeeze(nanmean(correlation(indType,:)));
+    sem = squeeze(nanSEM(correlation(indType,:)));
+    errorbar(ts,ave,sem)
+    xlabel(['Time from ' raster_params.align_to])
 end
+
 
 legend(req_params.cell_type)
 
-for p = 1:length(PROBABILITIES)
-    subplot(2,2,2+p); hold on
-    title(['Probability = ' num2str(PROBABILITIES(p))])
-    for i = 1:length(req_params.cell_type)
-        
-        indType = find(strcmp(req_params.cell_type{i}, cellType));
-        
-        ave = squeeze(nanmean(significance(p,indType,:),2));
-        sem = squeeze(nanSEM(significance(p,indType,:),2));
-        errorbar(ts,ave,sem) 
-        xlabel(['Time from ' raster_params.align_to])
-        
-        yline(0.05)
-    end
+subplot(2,1,2); hold on
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    ave = squeeze(nanmean(significance(indType,:)));
+    sem = squeeze(nanSEM(significance(indType,:)));
+    errorbar(ts,ave,sem)
+    xlabel(['Time from ' raster_params.align_to])
+    
+    yline(0.05)
+    
 end
 
 %%
