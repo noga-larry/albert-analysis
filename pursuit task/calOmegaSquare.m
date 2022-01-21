@@ -18,7 +18,7 @@ else
     c=0;
 end
 for i = 1:length(labels)
-    groups{i+1-c} = repmat(labels{i},size(response,1),1);
+    groups{i+c} = repmat(labels{i},size(response,1),1);
 end
 for i = 1:length(groups)
     tmp = groups{i};
