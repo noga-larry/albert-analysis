@@ -26,7 +26,7 @@ list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    cellType{ii} = data.info.cell_type;
+    cellType{ii} = task_info(lines(ii)).cell_type;
    
     boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
     ind = find(~boolFail);
@@ -35,29 +35,14 @@ for ii = 1:length(cells)
     
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
-    
-    groupT = repmat((1:size(response,1))',1,size(response,2));
-    groupR = repmat(match_p',size(response,1),1);
-    groupD = repmat(match_d',size(response,1),1);
 
-    [p,tbl,stats,terms] = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-        'model','full','display','off');
+    omegas = calOmegaSquare(response,{match_p, match_d}); 
     
-    totVar = tbl{end,2};
-    SSe = tbl{end-1,2};
-    msw = tbl{end-1,5};
-    N = length(response(:));
+    omegaT(ii) = omegas(1).value;
+    omegaD(ii) = omegas(2).value + omegas(4).value;
+    omegaR(ii) = omegas(3).value + omegas(5).value;
     
-    %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(tbl{dim,2}+(N-tbl{dim,3})*msw);
-      
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-    
-    omegaT(ii) = omega(tbl,2);
-    omegaR(ii) = omega(tbl,3)+omega(tbl,5);
-    omegaD(ii) = omega(tbl,4)+omega(tbl,6);
-    omegaRD(ii) = omega(tbl,7)+omega(tbl,8);
-    
-    overAllExplained(ii) = (totVar - SSe)/totVar;
+    overAllExplained(ii) = omegas(6).value;
     
     if omegaD(ii)>0.6
         list = [list, data.info.cell_ID];
@@ -90,8 +75,7 @@ p = signrank(omegaR,omegaD)
 title(['p = ' num2str(p)])
 xlabel('reward+time*reward')
 ylabel('direction+time*direcion')
- refline(1,0)
-
+refline(1,0)
 
 figure;
 
@@ -164,7 +148,7 @@ for i = 1:length(req_params.cell_type)
     plotHistForFC(omegaR(indType),bins); hold on
     xlabel('Effect size')
 end
-
+kruskalwallis(omegaT,cellType)
 title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward')

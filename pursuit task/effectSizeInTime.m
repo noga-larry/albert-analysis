@@ -14,9 +14,9 @@ raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 299;
 raster_params.time_after = 2000;
 raster_params.smoothing_margins = 0;
-bin_sz = 50;
+BIN_SIZE = 50;
 
-ts = -raster_params.time_before:bin_sz:raster_params.time_after;
+ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -37,7 +37,7 @@ for ii = 1:length(cells)
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+    response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
        
     for t=1:length(ts)
     [~,tbl,~,~] = anovan(response(t,:),{match_p,match_d},...
@@ -101,9 +101,9 @@ raster_params.align_to = 'cue';
 raster_params.time_before = 299;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
-bin_sz = 50;
+BIN_SIZE = 50;
 
-ts = -raster_params.time_before:bin_sz:raster_params.time_after;
+ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -122,7 +122,7 @@ for ii = 1:length(cells)
     match_p = match_p(find(~boolFail))';
     
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+    response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
        
     for t=1:length(ts)
     [~,tbl,~,~] = anovan(response(t,:),{match_p},...
@@ -171,9 +171,9 @@ raster_params.align_to = 'reward';
 raster_params.time_before = 299;
 raster_params.time_after = 750;
 raster_params.smoothing_margins = 0;
-bin_sz = 50;
+BIN_SIZE = 50;
 
-ts = -raster_params.time_before:bin_sz:raster_params.time_after;
+ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -192,7 +192,7 @@ for ii = 1:length(cells)
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     ind = find(~boolFail);
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+    response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
     
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
