@@ -11,8 +11,8 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'cue';
-raster_params.time_before = -400;
+raster_params.align_to = 'reward';%% if reward than correlation will be calculated with previous trial!!!
+raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.SD = 10;
 raster_params.smoothing_margins = 0;
@@ -33,7 +33,13 @@ for ii = 1:length(cells)
     for p = 1:length(PROBABILITIES)
         
         ind = find(match_p==PROBABILITIES(p));
-        [r,p_val] = NB_corr(data,raster_params,DIRECTIONS,ind);
+        
+        if strcmp(raster_params.align_to,'reward')
+            [r,p_val] = NB_corr_with_prev_outcome...
+                (data,raster_params,DIRECTIONS,ind);
+        else
+            [r,p_val] = NB_corr(data,raster_params,DIRECTIONS,ind);
+        end
         
         correlation(ii,p) = r;
         significance(ii,p) = p_val<0.05;
@@ -74,7 +80,6 @@ clear
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 PROBABILITIES = [25, 75];
 DIRECTIONS = 0:45:315;
-BIN_SIZE = 200;
 PLOT_CELLS = false;
 
 req_params.grade = 7;
@@ -84,10 +89,9 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'cue';
+raster_params.align_to = 'reward'; %% if reward than correlation will be calculated with previous trial!!!
 raster_params.SD = 10;
 raster_params.smoothing_margins = 0;
-
 
 times_before = [400:-50:-1000];
 times_after = [-200:50:1200];
@@ -97,31 +101,49 @@ assert(length(times_before)==length(times_after))
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-correlation = nan(length(cells),length(times_before));
-significance = nan(length(cells),length(times_before));
-
+correlation = nan(length(cells),length(PROBABILITIES),length(times_before));
+significance = nan(length(cells),length(PROBABILITIES),length(times_before));
+modulation = nan(length(cells),length(PROBABILITIES));
 
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
     
-    [~,match_p] = getProbabilities (data);    
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    [~,match_p] = getProbabilities (data);
     
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
     for p = 1:length(PROBABILITIES)
         
+        ind = find(~boolFail & match_p==PROBABILITIES(p));
+        
+        raster_params.time_before = 400;
+        raster_params.time_after = 0;
+        spks1 = mean(getRaster(data, ind, raster_params));
+        
+        raster_params.time_before = 0;
+        raster_params.time_after = 800;
+        spks2 = mean(getRaster(data, ind, raster_params));
+        
+        modulation(ii,p) = mean(spks1-spks2);
+        
+        
         for t=1:length(times_before)
                         
-            ind = find(match_p==PROBABILITIES(p));            
+            ind = find(match_p==PROBABILITIES(p));          
             
             raster_params.time_before = times_before(t);
             raster_params.time_after = times_after(t);
             
-            [r,p_val] = NB_corr(data,raster_params,DIRECTIONS,ind);
-            
+            if strcmp(raster_params.align_to,'reward')
+                [r,p_val] = NB_corr_with_prev_outcome...
+                    (data,raster_params,DIRECTIONS,ind);
+            else
+                [r,p_val] = NB_corr(data,raster_params,DIRECTIONS,ind);
+            end
             correlation(ii,p,t) = r;
             significance(ii,p,t) = p_val<0.05;
         end
@@ -129,7 +151,7 @@ for ii = 1:length(cells)
     
     if PLOT_CELLS
         
-        boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+        ind = find(~boolFail & match_p==PROBABILITIES(p));
         raster_params.smoothing_margins = 100;
 
         for p = 1:length(PROBABILITIES)
@@ -164,15 +186,20 @@ end
 %%
 
 figure;
+ts = (-times_before+times_after)/2;
+
 
 for p = 1:length(PROBABILITIES)
+    
+    ind = find(modulation(:,p)>0);
     
     subplot(2,2,p); hold on
     title(['Probability = ' num2str(PROBABILITIES(p))])
     
     for i = 1:length(req_params.cell_type)
         
-        indType = find(strcmp(req_params.cell_type{i}, cellType));
+        indType = intersect(ind,...
+            find(strcmp(req_params.cell_type{i}, cellType)));
         
         ave = squeeze(nanmean(correlation(indType,p,:)));
         sem = squeeze(nanSEM(correlation(indType,p,:)));
@@ -186,12 +213,15 @@ legend(req_params.cell_type)
 
 for p = 1:length(PROBABILITIES)
     
+    ind = find(modulation(:,p)>0);
+    
     subplot(2,2,p+2); hold on
     title(['Probability = ' num2str(PROBABILITIES(p))])
-    for i = 1:length(req_params.cell_type)
+    
+    for i = 1:length(req_params.cell_type)        
         
-        
-        indType = find(strcmp(req_params.cell_type{i}, cellType));
+        indType = intersect(ind,...
+            find(strcmp(req_params.cell_type{i}, cellType)));
         
         ave = squeeze(nanmean(significance(indType,p,:)));
         sem = squeeze(nanSEM(significance(indType,p,:)));
@@ -202,6 +232,8 @@ for p = 1:length(PROBABILITIES)
         
     end
 end
+
+sgtitle('Decreasing')
 %%
 
 figure
