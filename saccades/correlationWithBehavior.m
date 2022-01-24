@@ -1,6 +1,6 @@
 clear
 
-[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 PROBABILITIES = [25, 75];
 DIRECTIONS = 0:45:315;
 
@@ -11,7 +11,7 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'reward';%% if reward than correlation will be calculated with previous trial!!!
+raster_params.align_to = 'cue';%% if reward than correlation will be calculated with previous trial!!!
 raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.SD = 10;
@@ -77,7 +77,7 @@ sgtitle(['Aligned to ' raster_params.align_to])
 
 %% Correlation in time
 clear
-[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 PROBABILITIES = [25, 75];
 DIRECTIONS = 0:45:315;
 PLOT_CELLS = false;
@@ -128,8 +128,7 @@ for ii = 1:length(cells)
         raster_params.time_after = 800;
         spks2 = mean(getRaster(data, ind, raster_params));
         
-        modulation(ii,p) = mean(spks1-spks2);
-        
+        modulation(ii,p) = mean(spks1-spks2);        
         
         for t=1:length(times_before)
                         
@@ -191,7 +190,7 @@ ts = (-times_before+times_after)/2;
 
 for p = 1:length(PROBABILITIES)
     
-    ind = find(modulation(:,p)>0);
+    ind = 1:length(cells);
     
     subplot(2,2,p); hold on
     title(['Probability = ' num2str(PROBABILITIES(p))])
@@ -213,7 +212,7 @@ legend(req_params.cell_type)
 
 for p = 1:length(PROBABILITIES)
     
-    ind = find(modulation(:,p)>0);
+    ind = 1:length(cells);
     
     subplot(2,2,p+2); hold on
     title(['Probability = ' num2str(PROBABILITIES(p))])
@@ -233,7 +232,7 @@ for p = 1:length(PROBABILITIES)
     end
 end
 
-sgtitle('Decreasing')
+sgtitle('All')
 %%
 
 figure
