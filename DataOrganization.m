@@ -36,16 +36,18 @@ end
 uniqueRowsCA({task_info.cell_type}')
 save ([task_DB_path '.mat'],'task_info')
 
-%% sup_dir_from
+
+
+%% get Data
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'SNR';
-%req_params.task = 'choice';
+%req_params.cell_type = 'SNR';
+req_params.task = 'choice';
 req_params.remove_question_marks = 0;
-%req_params.ID = 5260;
+req_params.ID = 4052;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
@@ -54,6 +56,31 @@ task_info = getData('Vermis' , lines,...
     'numElectrodes',10,'includeBehavior',false);
 
 save ([task_DB_path '.mat'],'task_info')
+
+%% bahvior shadow files
+clear
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
+d = dir(dataPath); d = d(3:end);
+dfolders = d([d(:).isdir]);
+
+for d=2:length(dfolders)
+    
+    files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
+    files = files(~[files(:).isdir]);
+    for i =1:length(files)
+        data = importdata([dataPath '\' dfolders(d).name '\' files(i).name]);
+        behavior_data = getBehaviorShadowFile(data,MaestroPath);
+        behavior_name = [erase(files(i).name,'.mat')...
+            ' behavior.mat'];
+        path = [dataPath '\' dfolders(d).name '\behavior\' behavior_name];
+        save(path,'behavior_data')
+        data.info.behavior_shadow_name = behavior_name;
+        save([dataPath '\' dfolders(d).name '\' files(i).name],'data')
+    end
+    
+end
+
 
 %%
 filename = 'C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx';
