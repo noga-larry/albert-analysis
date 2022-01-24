@@ -30,7 +30,8 @@ for ii = 1:length(cells)
     
     for p = 1:length(PROBABILITIES)
         
-        [r,p_val] = NB_corr_with_prev_outcome(data,raster_params,DIRECTIONS);
+        [r,p_val] = NB_corr_with_prev_outcome...
+            (data,raster_params,DIRECTIONS);
 
         correlation(p,ii) = r;
         significance(p,ii) = p_val<0.05;
@@ -91,7 +92,7 @@ significance = nan(length(cells),length(times_before));
 for ii = 1:length(cells)    
     
     data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
+    data = getBehavior(data,supPath);
     
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;  
@@ -101,7 +102,8 @@ for ii = 1:length(cells)
         raster_params.time_before = times_before(t);
         raster_params.time_after = times_after(t);
         
-        [r,p_val] = NB_corr_with_prev_outcome(data,raster_params,DIRECTIONS);
+        [r,p_val] = NB_corr_with_prev_outcome...
+            (data,raster_params,DIRECTIONS);
         
         correlation(ii,t) = r;
         significance(ii,t) = p_val<0.05;

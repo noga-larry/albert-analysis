@@ -1,4 +1,4 @@
-function [r,p_val] = NB_corr(data,raster_params,directions)
+function [r,p_val] = NB_corr(data,raster_params,directions, ind)
 spikes =[];
 RTs =[];
 boolFail = [data.trials.fail];
@@ -6,8 +6,8 @@ boolFail = [data.trials.fail];
 
 % substract RT average in direction to reduce directional variance
 for d = 1:length(directions)
-    inx = find ((~boolFail)...
-        & match_d == directions(d));
+    inx = intersect(ind, find ((~boolFail)...
+        & match_d == directions(d)));
     
     raster = getRaster(data,inx, raster_params);
     spikes = [spikes, mean(raster)*1000];
@@ -15,6 +15,6 @@ for d = 1:length(directions)
     RTs_dir = saccadeRTs(data,inx);
     RTs = [RTs, RTs_dir - nanmean(RTs_dir)];
 end
-[r,p_val] = corr(spikes',RTs','Rows','Pairwise');
+[r,p_val] = corr(spikes',RTs','Rows','Pairwise','type','Spearman');
 
 end

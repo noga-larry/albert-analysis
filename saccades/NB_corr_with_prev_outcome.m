@@ -17,6 +17,6 @@ for d = 1:length(directions)
     RTs_dir = saccadeRTs(data,inx);
     RTs = [RTs, RTs_dir - nanmean(RTs_dir)];
 end
-[r,p_val] = corr(spikes',RTs','Rows','Pairwise');
+[r,p_val] = corr(spikes',RTs','Rows','Pairwise','type','Spearman');
 
 end
