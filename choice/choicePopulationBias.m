@@ -22,11 +22,10 @@ lines = findSameNeuronInTwoLinesLists(task_info,lines_choice,lines_single)
 ID_sample = [lines.cell_ID];
 
 
-
 K_FOLD = 10;
 
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.num_trials = 100;
+req_params.num_trials = 50;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;

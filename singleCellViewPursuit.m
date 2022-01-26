@@ -8,7 +8,7 @@ req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
-req_params.ID = 4209;
+req_params.ID = 4501;
 req_params.remove_repeats = false;
 
 lines = findLinesInDB (task_info, req_params);
@@ -20,7 +20,7 @@ raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
 comparison_window = 100:800;
-angles = [0:45:180];
+angles = 0:45:180;
 ts = -raster_params.time_before:raster_params.time_after;
 
 for ii=1:length(cells)

@@ -176,8 +176,6 @@ for ii = 1:length(lines)
                 ~(match_d==directions(1) | match_d==directions(2)) ;
         end
         
-
-        
         ind = find(~boolFail);
         [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
         [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
