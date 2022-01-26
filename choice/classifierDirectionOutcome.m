@@ -36,7 +36,8 @@ for ii = 1:length(cells)
     cellType{ii} =task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
         
-    boolFail = [data.trials.fail] | ~[data.trials.choice] | ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail] | ~[data.trials.choice] |...
+        ~[data.trials.previous_completed];
     boolFail(1)=1;
     ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
