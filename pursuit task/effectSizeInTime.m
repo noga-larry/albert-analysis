@@ -40,21 +40,15 @@ for ii = 1:length(cells)
     response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
        
     for t=1:length(ts)
-    [~,tbl,~,~] = anovan(response(t,:),{match_p,match_d},...
-        'model','full','display','off');
-    
-    totVar = tbl{6,2};
-    SSe = tbl{5,2};
-    msw = tbl{5,5};
-    N = length(response);
-    
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-      
-    omegaR(ii,t) = omega(tbl,2);
-    omegaD(ii,t) = omega(tbl,3);
-    omegaRD(ii,t) = omega(tbl,4);
-    
-    overAllExplained(ii,t) = (totVar - SSe)/totVar;
+        
+        omegas = calOmegaSquare(response(t,:),...
+            {match_p,match_d},...
+            'partial',false, 'includeTime',false);
+        
+        omegaR(ii,t) = omegas(1).value;
+        omegaD(ii,t) = omegas(2).value;
+        omegaRD(ii,t) = omegas(3).value;
+        overAllExplained(ii,t) = omegas(end).value;
     end
 end
 
@@ -123,21 +117,18 @@ for ii = 1:length(cells)
     
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
-       
+    
+    
     for t=1:length(ts)
-    [~,tbl,~,~] = anovan(response(t,:),{match_p},...
-        'model','full','display','off');
-    
-    totVar = tbl{end,2};
-    SSe = tbl{end-1,2};
-    msw = tbl{end-1,5};
-    N = length(response);
-    
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-      
-    omegaR(ii,t) = omega(tbl,2);
-    
+        
+        omegas = calOmegaSquare(response(t,:),...
+            {match_p},...
+            'partial',false, 'includeTime',false);
+        
+        omegaR(ii,t) = omegas(1).value;
+        overAllExplained(ii,t) = omegas(end).value;
     end
+    
 end
 
 %%
@@ -201,7 +192,7 @@ for ii = 1:length(cells)
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),{match_p,match_d,match_o},...
-            'partial',true, 'includeTime',true);
+            'partial',true, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
         omegaD(ii,t) = omegas(2).value;

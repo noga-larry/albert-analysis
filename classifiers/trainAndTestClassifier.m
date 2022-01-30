@@ -9,18 +9,10 @@ for k = 1:kFold
     test_set = response(:,crossValSets{k,1});
     test_labels = labels(crossValSets{k,1});
     
-    mdl = clasifierFactory(classifierType);
+    mdl = classifierFactory(classifierType);
     mdl = mdl.train(training_set,training_labels);
     accuracy(k) = mdl.evaluate(test_set,test_labels);
 end
 
 accuracy = mean(accuracy);
-end
-
-function mdl = clasifierFactory(classifierType)
-    switch classifierType
-        case 'PsthDistance'
-            mdl = PsthDistanceClassifierModel;
-    end
-            
 end
