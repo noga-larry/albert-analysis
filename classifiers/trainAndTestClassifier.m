@@ -1,4 +1,4 @@
-function accuracy = trainAndTestClassifier...
+function ave_accuracy = trainAndTestClassifier...
     (classifierType,response,labels,crossValSets)
 
 kFold = size(crossValSets,1);
@@ -14,5 +14,5 @@ for k = 1:kFold
     accuracy(k) = mdl.evaluate(test_set,test_labels);
 end
 
-accuracy = mean(accuracy);
+ave_accuracy = mean(accuracy);
 end

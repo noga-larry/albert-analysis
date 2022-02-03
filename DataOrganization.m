@@ -72,7 +72,9 @@ clear
 d = dir(dataPath); d = d(3:end);
 dfolders = d([d(:).isdir]);
 
-for d=2:length(dfolders)
+for d=1:length(dfolders)
+    
+    mkdir([dataPath '\' dfolders(d).name '\behavior\'])
     
     files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
     files = files(~[files(:).isdir]);
