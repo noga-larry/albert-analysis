@@ -31,6 +31,14 @@ clear
 for i=1:length(task_info)
     if contains(task_info(i).cell_type,'SNR') & contains(task_info(i).cell_type,'?')
         task_info(i).cell_type = 'SNR';
+    elseif strcmp(task_info(i).cell_type,'SNR ')
+        task_info(i).cell_type = 'SNR';
+    elseif strcmp(task_info(i).cell_type,'BG msn ')
+        task_info(i).cell_type = 'BG msn';
+    elseif strcmp(task_info(i).cell_type,'PC ss ' )
+        task_info(i).cell_type = 'PC ss';        
+    elseif strcmp(task_info(i).cell_type,'PC  cs' )
+        task_info(i).cell_type = 'PC ss';
     end
 end
 uniqueRowsCA({task_info.cell_type}')
@@ -64,7 +72,9 @@ clear
 d = dir(dataPath); d = d(3:end);
 dfolders = d([d(:).isdir]);
 
-for d=2:length(dfolders)
+for d=1:length(dfolders)
+    
+    mkdir([dataPath '\' dfolders(d).name '\behavior\'])
     
     files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
     files = files(~[files(:).isdir]);

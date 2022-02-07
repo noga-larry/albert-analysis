@@ -12,7 +12,7 @@ raster_params.time_before = 300;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 bin_sz = 50;
-
+ 
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
