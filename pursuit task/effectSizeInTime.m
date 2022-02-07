@@ -92,7 +92,7 @@ req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'cue';
-raster_params.time_before = 299;
+raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
 BIN_SIZE = 50;

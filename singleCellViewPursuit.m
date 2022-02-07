@@ -20,7 +20,7 @@ raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
 comparison_window = 100:800;
-angles = 0:45:180;
+DIRECTIONS = 0:45:315;
 ts = -raster_params.time_before:raster_params.time_after;
 
 for ii=1:length(cells)
@@ -100,21 +100,21 @@ for ii=1:length(cells)
 
     TC = getTC(data, 0:45:315,1:length(data.trials), comparison_window);
     [PD,indPD] = centerOfMass (TC, 0:45:315);
-    colors = varycolor(length(angles));
+    colors = varycolor(length(DIRECTIONS));
     
-    for d = 1:length(angles)
+    for d = 1:length(DIRECTIONS)
         
-        inx = find ((match_d == mod(PD+angles(d),360) | match_d == mod(PD-angles(d),360)) & (~boolFail));
+        inx = find ((match_d == mod(PD+DIRECTIONS(d),360) | match_d == mod(PD-DIRECTIONS(d),360)) & (~boolFail));
         
         rasterHigh = getRaster(data,intersect(inx,indHigh), raster_params);
         subplot(8,4,3+4*(d-1))
         plotRaster(rasterHigh,raster_params,'b')
-        ylabel (num2str(angles(d)))
+        ylabel (num2str(DIRECTIONS(d)))
         xlabel('Time from movement')
         rasterLow = getRaster(data, intersect(inx,indLow), raster_params);
         subplot(8,4,4+4*(d-1))
         plotRaster(rasterLow,raster_params,'r')
-        ylabel (num2str(angles(d)))
+        ylabel (num2str(DIRECTIONS(d)))
         xlabel('Time from movement')
         
         subplot(3,4,11)
