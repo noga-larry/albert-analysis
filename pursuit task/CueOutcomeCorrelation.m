@@ -19,9 +19,11 @@ lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
+   
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
-    
+    cellID(ii) = data.info.cell_ID;
+
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
@@ -34,7 +36,6 @@ for ii = 1:length(cells)
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     
-    h(ii) = task_info(lines(ii)).cue_differentiating;
     cueResoponse(ii) = (mean(mean(rasterHigh)) - mean(mean(rasterLow)))*1000;
     
     % reward
@@ -52,16 +53,18 @@ end
 %%
 figure;
 N = length(req_params.cell_type);
+h = cellID<50000;
 
 for i = 1:length(req_params.cell_type)
     
     subplot(2,ceil(N/2),i)  
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType)& h);
     scatter(cueResoponse(indType),rewardResoponse(indType)); hold on
-    [r,p] = corr(cueResoponse(indType)',rewardResoponse(indType)','type','Spearman')
-    indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
-    scatter(cueResoponse(indType),rewardResoponse(indType)); hold on
+    [r,p] = corr(cueResoponse(indType)',rewardResoponse(indType)'...
+        ,'type','Spearman')
+    
     xlabel('cue: 75-25');ylabel('reward: R-NR')
     
     %[r,p] = corr(cueResoponse(find(h))',rewardResoponse(find(h))','type','Spearman')

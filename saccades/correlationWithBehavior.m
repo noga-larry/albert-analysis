@@ -89,7 +89,7 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'reward'; %% if reward than correlation will be calculated with previous trial!!!
+raster_params.align_to = 'cue'; %% if reward than correlation will be calculated with previous trial!!!
 raster_params.SD = 10;
 raster_params.smoothing_margins = 0;
 
@@ -370,3 +370,92 @@ for d = 1:2 %PD and Null
     end
 end
 legend(req_params.cell_type)
+
+%% BY PERCENTILES
+
+
+clear 
+
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
+
+PRECENILES = [0:10:100]; 
+
+req_params.grade = 7;
+req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
+req_params.task = 'saccade_8_dir_75and25';
+req_params.ID = 4000:6000;
+req_params.num_trials = 90;
+req_params.remove_question_marks = 1;
+
+raster_params.align_to = 'targetMovementOnset';
+raster_params.SD = 10;
+raster_params.smoothing_margins = 0;
+
+raster_params.time_before = 400;
+raster_params.time_after = -100;
+
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+percentile_response = nan(length(cells),length(PRECENILES)-1);
+
+for ii = 1:length(cells)
+    
+    data = importdata(cells{ii});
+    data = getBehavior(data,supPath);
+    
+    cellType{ii} = data.info.cell_type;
+    cellID(ii) = data.info.cell_ID;
+    
+    inx = find(~[data.trials.fail]);
+    
+    RTs = saccadeRTs(data,inx);
+    response = mean(getRaster(data, inx, raster_params))*1000;
+
+    ranges = prctile(RTs,PRECENILES); 
+    
+    for j =1:length(PRECENILES)-1
+        in_range = find(RTs>=ranges(j) & RTs<=ranges(j+1));
+        percentile_response(ii,j) = mean(response(in_range));
+    end
+    
+end
+
+%%
+
+figure;
+N = length(req_params.cell_type);
+
+for i = 1:length(req_params.cell_type)
+      subplot(2,ceil(N/2),i)  
+      indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+      plot(percentile_response(indType,:)')
+      title([req_params.cell_type{i}])
+
+end  
+
+
+%%
+figure; hold on
+
+for ii = 1:length(cells)
+      correlaion(ii) = ...
+          corr(PRECENILES(1:end-1)',percentile_response(ii,:)',...
+          'type','Spearman') 
+
+end
+
+
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    plotHistForFC(correlaion(indType),-1:0.1:1)
+    title([req_params.cell_type{i}])
+    
+end
+
+legend(req_params.cell_type)
+
+

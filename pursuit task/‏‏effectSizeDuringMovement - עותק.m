@@ -8,9 +8,9 @@ req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 300;
+raster_params.time_before = 0;
 raster_params.time_after = 800;
-raster_params.smoothing_margins = 100;
+raster_params.smoothing_margins = 0;
 bin_sz = 50;
  
 ts = -raster_params.time_before:raster_params.time_after;

@@ -7,11 +7,11 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.num_trials = 70;
+req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 299;
+raster_params.time_before = 399;
 raster_params.time_after = 2000;
 raster_params.smoothing_margins = 0;
 BIN_SIZE = 50;
@@ -35,6 +35,8 @@ for ii = 1:length(cells)
     ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
+    match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
+
     
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
@@ -42,7 +44,7 @@ for ii = 1:length(cells)
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),...
-            {match_p,match_d},...
+            {match_p,match_d,match_po},...
             'partial',false, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
@@ -57,7 +59,7 @@ end
 f = figure; hold on
 ax1 = subplot(1,3,1); title('Direction'); hold on
 ax2 = subplot(1,3,2);title('Reward'); hold on
-ax3 = subplot(1,3,3); title('Interaction'); hold on
+ax3 = subplot(1,3,3); title('Prev outcome'); hold on
 
 
 for i = 1:length(req_params.cell_type)
@@ -77,7 +79,9 @@ for i = 1:length(req_params.cell_type)
     xlabel('time')
 end
 
-legend(req_params.cell_type)
+legend(ax1,req_params.cell_type)
+legend(ax2,req_params.cell_type)
+legend(ax3,req_params.cell_type)
 
 %% CUE
 
@@ -111,9 +115,11 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
     
-    [~,match_p] = getProbabilities (data);
+
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    match_p = match_p(find(~boolFail))';
+    ind = find(~boolFail);
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+    match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
     
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
@@ -122,10 +128,11 @@ for ii = 1:length(cells)
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),...
-            {match_p},...
-            'partial',false, 'includeTime',false);
+            {match_p,match_po},...
+            'partial',true, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
+        omegaPO(ii,t) = omegas(2).value;
         overAllExplained(ii,t) = omegas(end).value;
     end
     
@@ -146,6 +153,19 @@ end
 
 legend(req_params.cell_type)
 
+f = figure; hold on
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    errorbar(ts,nanmean(omegaPO(indType,:)),nanSEM(omegaPO(indType,:)))
+    xlabel('time')
+    
+end
+
+legend(req_params.cell_type)
+
 %% Outcome
 
 clear 
@@ -159,8 +179,8 @@ req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'reward';
-raster_params.time_before = 299;
-raster_params.time_after = 750;
+raster_params.time_before = 399;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
 BIN_SIZE = 50;
 
@@ -232,7 +252,10 @@ for i = 1:length(req_params.cell_type)
     
 end
 
-legend(req_params.cell_type)
+legend(ax1,req_params.cell_type)
+legend(ax2,req_params.cell_type)
+legend(ax3,req_params.cell_type)
+legend(ax4,req_params.cell_type)
 
 
 
