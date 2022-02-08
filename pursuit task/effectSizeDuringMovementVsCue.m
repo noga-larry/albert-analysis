@@ -1,20 +1,18 @@
-clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.ID = 4000:6000;
+req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
-
-raster_params.cue_time = 500;
-raster_params.time_before = 299;
-raster_params.time_after = 500;
+raster_params.time_before = 0;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
-bin_sz = 50;
+
+BINE_SIZE = 50;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -25,82 +23,61 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
+    cellType{ii} = task_info(lines(ii)).cell_type;
    
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    match_p = match_p(find(~boolFail))';
-    [~,match_d] = getDirections (data);
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    match_d = match_d(find(~boolFail))';
+    boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
+    ind = find(~boolFail);
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     
-    raster_params.allign_to = 'targetMovementOnset';
+    raster_params.align_to = 'targetMovementOnset';
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = reshape(raster,bin_sz,size(raster,1)/bin_sz,size(raster,2));
-    response = (squeeze(sum(response))/bin_sz)*1000;
+    response = downSampleToBins(raster',BINE_SIZE)'*(1000/BINE_SIZE);
     
-    groupT = repmat((1:size(response,1))',1,size(response,2));
-    groupR = repmat(match_p',size(response,1),1);
-    groupD = repmat(match_d',size(response,1),1);
-
-    [p,tbl,stats,terms] = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-        'model','interaction','display','off');
+    omegas = calOmegaSquare(response,{match_p,match_d},'partial',true);
     
-    totVar = tbl{9,2};
-    msw = tbl{8,5};
-      
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-    omegaT(1,ii) = omega(tbl,2);
-    omegaR(1,ii) = omega(tbl,3)+omega(tbl,5);
-    omegaD(1,ii) = omega(tbl,4)+omega(tbl,6);
+    omegaT(1,ii) = omegas(1).value;
+    omegaR(1,ii) = omegas(2).value + omegas(4).value;
     
-    raster_params.allign_to = 'cue';
+    raster_params.align_to = 'cue';
     raster = getRaster(data,find(~boolFail),raster_params);
-    response = reshape(raster,bin_sz,size(raster,1)/bin_sz,size(raster,2));
-    response = (squeeze(sum(response))/bin_sz)*1000;
-        
-    [p,tbl,stats,terms] = anovan(response(:),{groupT(:),groupR(:),groupD(:)},...
-        'model','interaction','display','off');
+    response = downSampleToBins(raster',BINE_SIZE)'*(1000/BINE_SIZE);
     
-    totVar = tbl{9,2};
-    msw = tbl{8,5};
+    omegas = calOmegaSquare(response,{match_p},'partial',true);
     
-    omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
-    omegaT(2,ii) = omega(tbl,2);
-    omegaR(2,ii) = omega(tbl,3)+omega(tbl,5);
-    omegaD(2,ii) = omega(tbl,4)+omega(tbl,6);
+    omegaT(2,ii) = omegas(1).value;
+    omegaR(2,ii) = omegas(2).value + omegas(3).value;
     
 end
 
 %%
 figure;
-subplot(3,1,1)
-scatter(omegaT(1,:),omegaT(2,:),'filled'); 
-p = signrank(omegaT(1,:),omegaT(2,:));
-title(['time ,p = ' num2str(p)])
-xlabel('movement')
-ylabel('cue')
-refline(1,0)
- makeSquareAxis()
 
-subplot(3,1,2)
-scatter(omegaR(1,:),omegaR(2,:),'filled'); 
-p = signrank(omegaR(1,:),omegaR(2,:));
-title(['reward,p = ' num2str(p)])
-xlabel('movement')
-ylabel('cue')
-makeSquareAxis()
-refline(1,0)
+N = length(req_params.cell_type);
+figure;
 
 
-subplot(3,1,3)
-scatter(omegaD(1,:),omegaD(2,:),'filled'); 
-p = signrank(omegaD(1,:),omegaD(2,:));
-title(['direction ,p = ' num2str(p)])
-xlabel('movement')
-ylabel('cue')
-makeSquareAxis()
-refline(1,0)
+for i = 1:length(req_params.cell_type)
 
-
-
-
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    subplot(2,N,i)
+    scatter(omegaT(1,indType),omegaT(2,indType),'filled');
+    p = signrank(omegaT(1,indType),omegaT(2,indType));
+    title(['time ,p = ' num2str(p)])
+    subtitle(req_params.cell_type{i})
+    xlabel('movement')
+    ylabel('cue')    
+    equalAxis()
+    refline(1,0)
+    
+    subplot(2,N,N+i)
+    scatter(omegaR(1,indType),omegaR(2,indType),'filled');
+    p = signrank(omegaR(1,indType),omegaR(2,indType));
+    title(['reward,p = ' num2str(p)])
+    subtitle(req_params.cell_type{i})
+    xlabel('movement')
+    ylabel('cue')
+    equalAxis()
+    refline(1,0)
+end
