@@ -10,8 +10,8 @@ req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'cue';
-raster_params.time_before = 299;
-raster_params.time_after = 500;
+raster_params.time_before = 0;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
 bin_sz = 50;
 
@@ -65,7 +65,7 @@ ax1 = subplot(1,2,1); title('Reward')
 ax2 = subplot(1,2,2);title('Time')
 
 
-bins = linspace(-0.2,1.4,100);
+bins = linspace(-0.2,1,50);
 
 for i = 1:length(req_params.cell_type)
     

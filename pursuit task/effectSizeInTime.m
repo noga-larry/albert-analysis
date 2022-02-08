@@ -44,7 +44,7 @@ for ii = 1:length(cells)
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),...
-            {match_p,match_d,match_po},...
+            {match_p,match_d},...
             'partial',false, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
@@ -59,12 +59,14 @@ end
 f = figure; hold on
 ax1 = subplot(1,3,1); title('Direction'); hold on
 ax2 = subplot(1,3,2);title('Reward'); hold on
-ax3 = subplot(1,3,3); title('Prev outcome'); hold on
+ax3 = subplot(1,3,3); title('Interaction'); hold on
+
+h = cellID<inf
 
 
 for i = 1:length(req_params.cell_type)
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    indType = find(strcmp(req_params.cell_type{i}, cellType) & h');
     
     axes(ax1)
     errorbar(ts,nanmean(omegaD(indType,:)),nanSEM(omegaD(indType,:)))
@@ -128,11 +130,11 @@ for ii = 1:length(cells)
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),...
-            {match_p,match_po},...
+            {match_p},...
             'partial',true, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
-        omegaPO(ii,t) = omegas(2).value;
+        %omegaPO(ii,t) = omegas(2).value;
         overAllExplained(ii,t) = omegas(end).value;
     end
     

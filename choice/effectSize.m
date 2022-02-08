@@ -9,8 +9,8 @@ req_params.task = 'choice';
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 300;
+raster_params.align_to = 'cue';
+raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 bin_sz = 50;
@@ -83,7 +83,10 @@ end
 title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward')
-legend(req_params.cell_type)
+legend(ax1,req_params.cell_type)
+legend(ax2,req_params.cell_type)
+legend(ax3,req_params.cell_type)
+
 sgtitle(raster_params.align_to,'Interpreter', 'none');
 
 kruskalwallis(omegaT,cellType)

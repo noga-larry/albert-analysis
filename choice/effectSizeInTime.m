@@ -12,11 +12,11 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 req_params.num_trials = 100;
 
-raster_params.align_to = 'reward';
+raster_params.align_to = 'cue';
 raster_params.time_before = 1999;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 0;
-BIN_SIZE = 100;
+BIN_SIZE = 50;
 
 ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
@@ -79,11 +79,11 @@ for i = 1:length(req_params.cell_type)
     xlabel('time')
     
     axes(ax2)
-    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaO(indType,:)))
+    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaR(indType,:)))
     xlabel('time')
     
     axes(ax3)
-    errorbar(ts,nanmean(omegaRD(indType,:)),nanSEM(omegaRO(indType,:)))
+    errorbar(ts,nanmean(omegaRD(indType,:)),nanSEM(omegaRD(indType,:)))
     xlabel('time')
 end
 
