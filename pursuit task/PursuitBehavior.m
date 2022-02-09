@@ -10,7 +10,7 @@ req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks =0;
-req_params.remove_repreats = false;
+req_params.remove_repeats = false;
 
 behavior_params.time_after = 300;
 behavior_params.time_before = 0;

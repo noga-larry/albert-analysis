@@ -93,12 +93,34 @@ end
 
 
 %%
-filename = 'C:\noga\TD complex spike analysis\cell_db_noga_gil.xlsx';
-A = {task_info.save_name}';
-sheet = 1;
-xlRange = 'X2';
-xlswrite(filename,A,sheet,xlRange)
+clear
+[~,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
 
+
+
+d = dir([MaestroPath '\albert']); d = d(23:97);
+prefix = {d.name};
+task_info = listSessionsFromTrials(MaestroPath,prefix)
+
+req_params.num_trials = 20;
+req_params.remove_repeats =false;
+lines = findLinesInDB (task_info, req_params);
+
+task_info = getData('Golda behavior before recording' , lines);
+%%
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Golda behavior before recording');
+
+req_params.num_trials = 20;
+req_params.remove_repeats =false;
+lines = findLinesInDB (task_info, req_params);
+
+for i =1:length(lines)
+    data = importdata([supPath '\' task_info(lines(i)).task '\' task_info(lines(i)).save_name '.mat']);
+    task_info(lines(i)).probabilities = getProbabilities(data);
+    task_info(lines(i)).directions = getDirections(data);
+end
 
 %% Remove spikelets 
 
