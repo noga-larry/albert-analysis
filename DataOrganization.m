@@ -106,16 +106,15 @@ task_info = listSessionsFromTrials(MaestroPath,prefix)
 req_params.num_trials = 20;
 req_params.remove_repeats =false;
 lines = findLinesInDB (task_info, req_params);
-
-task_info = getData('Golda behavior before recording' , lines);
+task_info = getData('Albert behavior before recording' , lines);
 %%
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Golda behavior before recording');
+    loadDBAndSpecifyDataPaths('Albert behavior before recording');
 
 req_params.num_trials = 20;
 req_params.remove_repeats =false;
 lines = findLinesInDB (task_info, req_params);
-
+lines(142)=[];
 for i =1:length(lines)
     data = importdata([supPath '\' task_info(lines(i)).task '\' task_info(lines(i)).save_name '.mat']);
     task_info(lines(i)).probabilities = getProbabilities(data);
