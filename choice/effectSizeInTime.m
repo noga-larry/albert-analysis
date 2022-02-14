@@ -12,7 +12,7 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 req_params.num_trials = 100;
 
-raster_params.align_to = 'cue';
+raster_params.align_to = 'reward';
 raster_params.time_before = 1999;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 0;
@@ -41,22 +41,25 @@ for ii = 1:length(cells)
     ind = find(~boolFail); %| ~[data.trials.previous_completed];    ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
+    match_o = getOutcome (data,ind,'omitNonIndexed',true);
     
     match_d = match_d(1,:);
-    match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);    
+    %match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);    
+    match_p = match_p(1,:);
     
-    raster = getRaster(data,find(~boolFail),raster_params);
+    raster = getRaster(data,ind,raster_params);
     response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
        
     for t=1:length(ts)
         
         omegas = calOmegaSquare(response(t,:),...
-            {match_p,match_d},...
+            {match_p,match_d,match_o},...
             'partial',false, 'includeTime',false);
         
         omegaR(ii,t) = omegas(1).value;
         omegaD(ii,t) = omegas(2).value;
         omegaRD(ii,t) = omegas(3).value;
+        omegaSup(ii,t) = omegas(5).value;
         overAllExplained(ii,t) = omegas(end).value;
     end
 end
@@ -64,9 +67,10 @@ end
 %%
 
 f = figure; hold on
-ax1 = subplot(1,3,1); title('Direction'); hold on
-ax2 = subplot(1,3,2);title('Reward'); hold on
-ax3 = subplot(1,3,3); title('Interaction'); hold on
+ax1 = subplot(1,4,1); title('Direction'); hold on
+ax2 = subplot(1,4,2);title('Reward'); hold on
+ax3 = subplot(1,4,3); title('Interaction'); hold on
+ax4 = subplot(1,4,4); title('Suprise'); hold on
 
 bool = cellID<inf
 
@@ -85,6 +89,11 @@ for i = 1:length(req_params.cell_type)
     axes(ax3)
     errorbar(ts,nanmean(omegaRD(indType,:)),nanSEM(omegaRD(indType,:)))
     xlabel('time')
+    
+    axes(ax4)
+    errorbar(ts,nanmean(omegaSup(indType,:)),nanSEM(omegaSup(indType,:)))
+    xlabel('time')
+    
 end
 
 legend(req_params.cell_type)

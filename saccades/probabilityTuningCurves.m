@@ -1,10 +1,9 @@
 % Probability Tuning curves
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear 
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'SNR';
 req_params.task = 'saccade_8_dir_75and25';
 req_params.ID = 4000:5000;
 req_params.num_trials = 50;
@@ -78,7 +77,6 @@ for ii = 1:length(cells)
 end
 
 
-save ('C:\Users\Noga\Documents\Vermis Data\task_info','task_info');
 
 
 figure;
@@ -132,7 +130,6 @@ for d = 1:length(angles)
     if d==1
         ylimits = get(gca,'YLim') 
     end
-    ylim([ylimits])
     legend('25','75')
 end
 title(['Not Tuned, n = ' num2str(length(ind))]);
@@ -151,7 +148,6 @@ for d = 1:length(angles)
     if d==1
         ylimits = get(gca,'YLim') 
     end
-    ylim([ylimits])
     legend('25','75')
 end
 title([' Tuned, n = ' num2str(length(ind))]);

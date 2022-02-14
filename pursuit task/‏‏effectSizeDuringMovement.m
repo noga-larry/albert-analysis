@@ -3,7 +3,7 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
+req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 
@@ -37,7 +37,7 @@ for ii = 1:length(cells)
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
 
-    omegas = calOmegaSquare(response,{match_d,match_p}); 
+    omegas = calOmegaSquare(response,{match_d,match_p},'partial',true);
     
     omegaT(ii) = omegas(1).value;
     omegaD(ii) = omegas(2).value + omegas(4).value;

@@ -5,7 +5,7 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
@@ -30,8 +30,9 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
+    cellID(ii) = data.info.cell_ID;
     
-        boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     ind = find(~boolFail);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
@@ -219,7 +220,7 @@ for ii = 1:length(cells)
         omegaR(ii,t) = omegas(1).value;
         omegaD(ii,t) = omegas(2).value;
         omegaO(ii,t) = omegas(3).value;
-        omegaInter(ii,t) = sum([omegas(3:6).value]);
+        omegaInter(ii,t) = sum([omegas(5).value]);
         overAllExplained(ii,t) = omegas(end).value;
     end
 end
@@ -230,7 +231,7 @@ f = figure; hold on
 ax1 = subplot(1,4,1); title('Direction'); hold on; ax1.YLim = [-0.05 0.1]
 ax2 = subplot(1,4,2);title('Reward'); hold on; ax2.YLim = [-0.05 0.1]
 ax3 = subplot(1,4,3); title('Outcome'); hold on; ax3.YLim = [-0.05 0.1]
-ax4 = subplot(1,4,4); title('Interactions'); hold on; ax4.YLim = [-0.05 0.1]
+ax4 = subplot(1,4,4); title('Prob*Outcome'); hold on; ax4.YLim = [-0.05 0.1]
 
 for i = 1:length(req_params.cell_type)
     

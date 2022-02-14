@@ -72,7 +72,7 @@ clear
 d = dir(dataPath); d = d(3:end);
 dfolders = d([d(:).isdir]);
 
-for d=1:length(dfolders)
+for d=2:length(dfolders)
     
     mkdir([dataPath '\' dfolders(d).name '\behavior\'])
     
@@ -80,6 +80,10 @@ for d=1:length(dfolders)
     files = files(~[files(:).isdir]);
     for i =1:length(files)
         data = importdata([dataPath '\' dfolders(d).name '\' files(i).name]);
+        
+        if isfield(data.trials,'hPos')
+            continue
+        end
         behavior_data = getBehaviorShadowFile(data,MaestroPath);
         behavior_name = [erase(files(i).name,'.mat')...
             ' behavior.mat'];
@@ -96,8 +100,6 @@ end
 clear
 [~,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
-
-
 
 d = dir([MaestroPath '\albert']); d = d(23:97);
 prefix = {d.name};

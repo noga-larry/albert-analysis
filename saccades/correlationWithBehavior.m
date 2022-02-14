@@ -11,7 +11,7 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'cue';%% if reward than correlation will be calculated with previous trial!!!
+raster_params.align_to = 'targetMovementOnset';%% if reward than correlation will be calculated with previous trial!!!
 raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.SD = 10;
@@ -89,7 +89,7 @@ req_params.ID = 4000:6000;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'cue'; %% if reward than correlation will be calculated with previous trial!!!
+raster_params.align_to = 'targetMovementOnset'; %% if reward than correlation will be calculated with previous trial!!!
 raster_params.SD = 10;
 raster_params.smoothing_margins = 0;
 
