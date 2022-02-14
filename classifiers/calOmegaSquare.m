@@ -1,15 +1,20 @@
 function omega = calOmegaSquare(response,labels,varargin)
 
 p = inputParser;
+
 defaultPartial = false;
 addOptional(p,'partial',defaultPartial,@islogical);
 
 defaultIncludeTime = true;
 addOptional(p,'includeTime',defaultIncludeTime,@islogical);
 
+defaultModel = 'interaction';
+addOptional(p,'model',defaultModel,@ischar);
+
 parse(p,varargin{:})
 partial = p.Results.partial;
 includeTime = p.Results.includeTime;
+model = p.Results.model;
 
 if includeTime
     groups{1} = repmat((1:size(response,1))',1,size(response,2));
@@ -25,7 +30,7 @@ for i = 1:length(groups)
     groups{i} = tmp(:);
 end
 
-[~,tbl,~,~] = anovan(response(:),groups,'model','interaction','display','off');
+[~,tbl,~,~] = anovan(response(:),groups,'model',model,'display','off');
 %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
 
 %     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
@@ -45,7 +50,7 @@ else
 end
 
 c=0;
-for i = 2:(length(tbl)-3)
+for i = 2:(length(tbl)-2)
     c = c+1;
     omega(c).value = omegafun(tbl,i);
     omega(c).variable = tbl{i,1};
