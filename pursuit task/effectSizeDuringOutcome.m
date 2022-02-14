@@ -37,12 +37,13 @@ for ii = 1:length(cells)
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
     
-    omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true);
+    omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true,'model','full');
     
     omegaT(ii) = omegas(1).value;
     omegaR(ii) = omegas(2).value + omegas(5).value;
     omegaD(ii) = omegas(3).value + omegas(6).value;
     omegaO(ii) = omegas(4).value + omegas(7).value;
+    omegaSup(ii) = omegas(9).value + omegas(12).value;
     
     overAllExplained(ii) = omegas(10).value;
     
@@ -58,7 +59,7 @@ ax1 = subplot(1,5,1); title('Direction')
 ax2 = subplot(1,5,2);title('Time')
 ax3 = subplot(1,5,3); title('Reward prob')
 ax4 = subplot(1,5,4); title('Outcome')
-%ax5 = subplot(1,5,5); title('Interactions')
+ax5 = subplot(1,5,5); title('Interactions')
 
 bins = linspace(-0.2,1,100);
 
@@ -82,16 +83,17 @@ for i = 1:length(req_params.cell_type)
     plotHistForFC(omegaO(indType),bins); hold on
     xlabel('Effect size')
     
-%    axes(ax5)
-%     plotHistForFC(omegaIntr(indType),bins); hold on
-%     xlabel('Effect size')
-%     
+   axes(ax5)
+    plotHistForFC(omegaSup(indType),bins); hold on
+    xlabel('Effect size')
+    
 end
 
 title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward Prob')
 title(ax4,'Outcome')
+title(ax4,'suprise')
 legend(req_params.cell_type)
 
 
