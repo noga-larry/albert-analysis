@@ -3,7 +3,7 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR', 'BG msn'};
+req_params.cell_type = {'PC ss', 'CRB','SNR', 'BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 70;
@@ -25,18 +25,18 @@ list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    cellType{ii} = data.info.cell_type;
+    cellType{ii} = task_info(lines(ii)).cell_type;
     
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     ind = find(~boolFail);    
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+    match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
 
     omegas = calOmegaSquare(response,{match_p});
     omegaT(ii) = omegas(1).value;
     omegaR(ii) = omegas(2).value + omegas(3).value;
-    
 end
 
 %%
@@ -84,30 +84,50 @@ title(ax2,'Time')
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
-%% 
-figure;
+%% comparisoms fron input-output figure
+figure
+
+effect_size = omegaT
+
+x1 = subplot(2,2,1); hold on
+x2 = subplot(2,2,2); hold on
+x3 = subplot(2,2,3); hold on
+x4 = subplot(2,2,4); hold on
+
+indType = find(strcmp('SNR', cellType));
+plot(x1,3,effect_size(indType),'ob')
+ci = bootci(2000,@median,effect_size(indType))
+errorbar(x2,3,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+indType = find(strcmp('BG msn', cellType));
+plot(x1,4,effect_size(indType),'or')
+ci = bootci(2000,@median,effect_size(indType))-median(effect_size(indType))
+errorbar(x2,4,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+p = ranksum(effect_size(find(strcmp('SNR', cellType))),effect_size(find(strcmp('BG msn', cellType))))
+title(x2,['p = ' num2str(p) ', n_{SNR} = ' num2str(sum(strcmp('SNR', cellType))) ...
+    ', n_{msn} = ,' num2str(sum(strcmp('BG msn', cellType)))])
 
 
-subplot(2,2,1)
-scatter(ss_error(:,1),ss_error(:,2))
-refline(1,0)
-title('Error')
-xlabel('MATLAB'); ylabel('Mine')
+indType = find(strcmp('PC ss', cellType));
+plot(x3,3,effect_size(indType),'ob')
+ci = bootci(2000,@median,effect_size(indType)) - median(effect_size(indType))
+errorbar(x4,3,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
 
-subplot(2,2,2)
-scatter(ss_a(:,1),ss_a(:,2))
-refline(1,0)
-title('Time')
-xlabel('MATLAB'); ylabel('Mine')
 
-subplot(2,2,3)
-scatter(ss_b(:,1),ss_b(:,2))
-refline(1,0)
-title('Reward')
-xlabel('MATLAB'); ylabel('Mine')
+indType = find(strcmp('CRB', cellType));
+plot(x3,4,effect_size(indType),'or')
+ci = bootci(2000,@median,effect_size(indType))
+errorbar(x4,4,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
 
-subplot(2,2,4)
-scatter(ss_ab(:,1),ss_ab(:,2))
-refline(1,0)
-title('Interaction')
-xlabel('MATLAB'); ylabel('Mine')
+p = ranksum(effect_size(find(strcmp('PC ss', cellType))),effect_size(find(strcmp('CRB', cellType))))
+title(['p = ' num2str(p) ', n_{ss} = ' num2str(sum(strcmp('PC ss', cellType))) ...
+    ', n_{crb} = ,' num2str(sum(strcmp('CRB', cellType)))])
+
+input_output = cellfun(@(x)~isempty(x),regexp('PC ss|SNR',cellType)) 
+bg_crb = cellfun(@(x)~isempty(x),regexp('PC ss|CRB',cellType)) 
+Data = [omegaR',input_output',bg_crb']
+out = SRH_test(Data,'area','input_output')
+
+%%
+
