@@ -5,22 +5,25 @@ clear
 
 figure 
 req_params.grade = 7;
-%req_params.cell_type = 'SNR';
-req_params.num_trials = 50;
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
+req_params.cell_type = {'BG msn'};
+req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
-req_params.ID = 4501;
 req_params.remove_repeats = false;
+%req_params.ID = 5450:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 raster_params.time_before = 399;
-raster_params.time_after = 800;
+raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
 
 comparison_window = 100:800;
 DIRECTIONS = 0:45:315;
+PROBABILITIES = [25 75];
 ts = -raster_params.time_before:raster_params.time_after;
 
 for ii=1:length(cells)
@@ -39,13 +42,15 @@ for ii=1:length(cells)
     rasterLow = getRaster(data,indLow,raster_params);
     rasterHigh = getRaster(data,indHigh,raster_params);
     psthLow = raster2psth(rasterLow,raster_params);
-    psthHigh = raster2psth(rasterHigh,raster_params);    
+    psthHigh = raster2psth(rasterHigh,raster_params);
     
-    sgtitle([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
-        
+    
     subplot(4,4,1)
+    
     plotRaster(rasterLow,raster_params,'r')
     xlabel('Time from cue')
+    title([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
+    
     subplot(4,4,2)
     plotRaster(rasterHigh,raster_params,'b')
     xlabel('Time from cue')
@@ -56,7 +61,8 @@ for ii=1:length(cells)
     
     % reward
     raster_params.align_to = 'reward';
-
+    
+    
     indLowR = find (match_p == 25 & match_o & (~boolFail));
     indLowNR = find (match_p == 25 & (~match_o) & (~boolFail));
     indHighR = find (match_p == 75 & match_o & (~boolFail));
@@ -86,12 +92,29 @@ for ii=1:length(cells)
     plotRaster(rasterHighR,raster_params,'b')
     xlabel('Time from reward')
     title ('Reward')
-    subplot(4,2,7)
+    
+    subplot(4,4,14)
+    
     plot(ts,psthHighR,'b');  hold on
     plot(ts,psthHighNR,'--b')
     plot(ts,psthLowNR,'--r');
     plot(ts,psthLowR,'r'); hold off
     xlabel('Time from reward')
+    legend('R','NR')
+    
+    subplot(4,4,13)
+    
+    indR = find (match_o & (~boolFail));
+    indNR = find ((~match_o) & (~boolFail));
+    
+    rasterR = getRaster(data,indR,raster_params);
+    rasterNR = getRaster(data,indNR,raster_params);
+    
+    psthR = raster2psth(rasterR,raster_params);
+    psthNR = raster2psth(rasterNR,raster_params);
+    
+    plot(ts,psthR,'b');  hold on
+    plot(ts,psthNR,'r'); hold off
     legend('R','NR')
     
     
@@ -104,35 +127,24 @@ for ii=1:length(cells)
     
     for d = 1:length(DIRECTIONS)
         
-        inx = find ((match_d == mod(PD+DIRECTIONS(d),360) | match_d == mod(PD-DIRECTIONS(d),360)) & (~boolFail));
+        inx = find (match_d == DIRECTIONS(d)& ~boolFail);
         
-        rasterHigh = getRaster(data,intersect(inx,indHigh), raster_params);
-        subplot(8,4,3+4*(d-1))
-        plotRaster(rasterHigh,raster_params,'b')
-        ylabel (num2str(DIRECTIONS(d)))
-        xlabel('Time from movement')
-        rasterLow = getRaster(data, intersect(inx,indLow), raster_params);
-        subplot(8,4,4+4*(d-1))
-        plotRaster(rasterLow,raster_params,'r')
+        raster = getRaster(data,intersect(inx,indHigh), raster_params);
+        subplot(11,2,2+2*(d-1))
+        plotRaster(raster,raster_params)
         ylabel (num2str(DIRECTIONS(d)))
         xlabel('Time from movement')
         
-        subplot(3,4,11)
-        psthHigh = raster2psth(rasterHigh,raster_params)-mean(TC);
+        subplot(3,2,6)
+        psthHigh = raster2psth(raster,raster_params);
         plot(ts,psthHigh,'Color',colors(d,:)); hold on
         title ('75')
         
-        subplot(3,4,12)
-        psthLow = raster2psth(rasterLow,raster_params)-mean(TC);
-        plot(ts,psthLow,'Color',colors(d,:)); hold on
-        title ('25')
-        xlabel('Time from movement')
         
     end
     
-    subplot(3,4,11); hold off
-    subplot(3,4,12); hold off
-    legend('0','45','90','125','180')
+    subplot(3,2,6); hold off
+    legend('0','45','90','135','180','225','270','315')
     pause
 end
 

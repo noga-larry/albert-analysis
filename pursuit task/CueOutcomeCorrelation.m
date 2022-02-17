@@ -11,7 +11,7 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
 raster_params.time_before = 0;
-raster_params.time_after = 500;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
 
 ts = -raster_params.time_before:raster_params.time_after;

@@ -60,30 +60,31 @@ end
 N = length(req_params.cell_type);
 figure; 
 
-h = cellID<5000
+h = cellID<inf
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
     
     subplot(2,N,i)
     scatter(omegaR(1,indType),omegaR(2,indType),'filled','k'); hold on
-    p = signrank(omegaR(1,indType),omegaR(2,indType));
+    p1 = signrank(omegaR(1,indType),omegaR(2,indType))
+    [r,p2] = corr(omegaR(1,indType)',omegaR(2,indType)','type','Spearman');
     xlabel('saccade')
     ylabel('pursuit')
     equalAxis()
     refline(1,0)
     title(['reward ' req_params.cell_type{i}])
-    subtitle(['p = ' num2str(p)])
+    subtitle(['signkrank: p = ' num2str(p1) ' | corr: r = ' num2str(r) ', p = ' num2str(p2)])
         
     subplot(2,N,N+i)
     scatter(omegaD(1,indType),omegaD(2,indType),'filled','k'); hold on
-    p = signrank(omegaD(1,indType),omegaD(2,indType));
+    p1 = signrank(omegaD(1,indType),omegaD(2,indType));
+    [r,p2] = corr(omegaD(1,indType)',omegaD(2,indType)','type','Spearman');
     xlabel('saccade')
     ylabel('pursuit')
     equalAxis()
     refline(1,0)
     title(['Diretion ' req_params.cell_type{i}])
-    subtitle(['p = ' num2str(p)])
-
+    subtitle(['signkrank: p = ' num2str(p1) ' | corr: r = ' num2str(r) ', p = ' num2str(p2)])
     
 end
