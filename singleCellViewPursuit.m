@@ -3,16 +3,20 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
+
+PROBABILITIES = [25,75]; 
+
 figure 
 req_params.grade = 6;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.cell_type = {'PC ss'};
+req_params.cell_type = { 'CRB'};
+
 
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-%req_params.ID = 5198;
+req_params.ID = 5400:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -38,28 +42,32 @@ for ii=1:length(cells)
     boolFail = [data.trials.fail];
     
     raster_params.align_to = 'cue';
-    indLow = find (match_p == 25 & (~boolFail));
-    indHigh = find (match_p == 75 & (~boolFail));
-    rasterLow = getRaster(data,indLow,raster_params);
-    rasterHigh = getRaster(data,indHigh,raster_params);
-    psthLow = raster2psth(rasterLow,raster_params);
-    psthHigh = raster2psth(rasterHigh,raster_params);
+    col = {'r','b'}; 
     
     
-    subplot(4,4,1)
-    
-    plotRaster(rasterLow,raster_params,'r')
+    ax = subplot(4,2,3);
+    cla(ax)
+    hold(ax,'on')
     xlabel('Time from cue')
-    title([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
+        
+    for p = 1:length(PROBABILITIES)
+        
+        ind = find (match_p == PROBABILITIES(p) & (~boolFail));
+        raster = getRaster(data,ind,raster_params);
+        [psth,sem] = raster2psth(raster,raster_params);    
+        
+        subplot(4,4,p)
+        
+        plotRaster(raster,raster_params,col{p})
+        xlabel('Time from cue')
+        title([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
+        
+        errorbar(ax,ts,psth,sem,col{p})
+        
+    end
     
-    subplot(4,4,2)
-    plotRaster(rasterHigh,raster_params,'b')
-    xlabel('Time from cue')
-    subplot(4,2,3)
-    plot(ts,psthLow,'r'); hold on
-    plot(ts,psthHigh,'b'); hold off
-    xlabel('Time from cue')
     
+     
     % reward
     raster_params.align_to = 'reward';
     
@@ -130,7 +138,7 @@ for ii=1:length(cells)
         
         inx = find (match_d == DIRECTIONS(d)& ~boolFail);
         
-        raster = getRaster(data,intersect(inx,indHigh), raster_params);
+        raster = getRaster(data,inx, raster_params);
         subplot(11,2,2+2*(d-1))
         plotRaster(raster,raster_params)
         ylabel (num2str(DIRECTIONS(d)))
