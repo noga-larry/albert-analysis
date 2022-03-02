@@ -50,7 +50,7 @@ else
 end
 
 c=0;
-for i = 2:(length(tbl)-2)
+for i = 2:(size(tbl,1)-2)
     c = c+1;
     omega(c).value = omegafun(tbl,i);
     omega(c).variable = tbl{i,1};

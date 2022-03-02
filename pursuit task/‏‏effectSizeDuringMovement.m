@@ -2,10 +2,12 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
+req_params.cell_type ={'BG msn'};
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
+req_params.ID = [4006,4012,4055,4062,4063,4064,4068,4069,4077,4078,4079,4081,4086,4093,4110,4111,4114,4153,4156,4164,4178,4179,4184,4198,4212,4223,4235,4395,4396,4397,4400,4419,4425,4425,4426,4426,4426,4427,4427,4428,4428,4429,4435,4446,4447,4479,4506,4506,4510,4514,4526,4542,4998,4999,5000,5010,5013,5017,5018,5020,5021,5022,5024,5025,5026,5030,5030,5031,5031,5032,5033,5035,5036,5040,5042,5043,5049,5051,5052,5059,5060,5061,5063,5065,5066,5067,5068,5070,5071,5072,5073,5075,5077,5085,5088,5089,5091,5092,5093,5095,5097,5098,5101,5102,5103,5104,5105,5112,5116,5117,5159,5247,5251,5366,5367,5376,5377,5392,5418,5418,5418,5418,5440,5442,5462,5463,5466,5467]
+req_params.remove_repeats = false
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;
@@ -43,10 +45,11 @@ for ii = 1:length(cells)
     omegaD(ii) = omegas(2).value + omegas(4).value;
     omegaR(ii) = omegas(3).value + omegas(5).value;
     
-    overAllExplained(ii) = omegas(6).value;
+    overAllExplained(ii) = omegas(end).value;
     
-    if omegaD(ii)>0.6
+    if omegaD(ii)>1
         list = [list, data.info.cell_ID];
+        pause
     end
     
 end
@@ -68,7 +71,7 @@ p = signrank(omegaT,omegaD);
 title(['p_{movement} = ' num2str(p)])
 xlabel('$\eta^2$ time','interpreter','latex')
 ylabel('direction+time*direcion')
- refline(1,0)
+refline(1,0)
 
 subplot(3,1,3)
 scatter(omegaR,omegaD,'filled'); 
@@ -149,7 +152,7 @@ for i = 1:length(req_params.cell_type)
     plotHistForFC(omegaR(indType),bins); hold on
     xlabel('Effect size')
 end
-kruskalwallis(omegaT,cellType)
+kruskalwallis(omegaD,cellType)
 title(ax1,'Direction')
 title(ax2,'Time')
 title(ax3,'Reward')
@@ -175,7 +178,7 @@ title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) 
 %% comparisoms fron input-output figure
 figure
 
-effect_size = omegaT
+effect_size = omegaD
 
 
 x1 = subplot(2,2,1); hold on

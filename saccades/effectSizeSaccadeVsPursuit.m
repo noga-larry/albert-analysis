@@ -3,15 +3,14 @@ clear
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+req_params.cell_type = {'BG msn'};
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-
 req_params.num_trials = 70;
+
 req_params.task = 'saccade_8_dir_75and25';
 lines_choice = findLinesInDB (task_info, req_params);
 
-req_params.num_trials = 100;
 req_params.task = 'pursuit_8_dir_75and25';
 lines_single = findLinesInDB (task_info, req_params);
 
@@ -27,7 +26,7 @@ ts = -raster_params.time_before:raster_params.time_after;
 lines = findSameNeuronInTwoLinesLists(task_info,lines_choice,lines_single);
 
 omegaR = nan(2,length(lines));
-
+omegaD = nan(2,length(lines));
 for ii = 1:length(lines)
     
     cells = findPathsToCells (supPath,task_info,[lines(ii).line1, lines(ii).line2]);
@@ -47,7 +46,7 @@ for ii = 1:length(lines)
         raster = getRaster(data,ind,raster_params);
         response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
         
-        omegas = calOmegaSquare(response,{match_d,match_p});
+        omegas = calOmegaSquare(response,{match_d,match_p},'partial',true);
         
         omegaD(j,ii) = omegas(2).value + omegas(4).value;
         omegaR(j,ii) = omegas(3).value + omegas(5).value;

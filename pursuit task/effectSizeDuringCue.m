@@ -2,12 +2,15 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
+PLOT_CELL = true;
+
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'CRB','SNR', 'BG msn'};
+req_params.cell_type = {'PC ss'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 70;
+req_params.ID = 4243;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
+req_params.remove_repeats = 0;
 
 raster_params.align_to = 'cue';
 raster_params.time_before = 0;
@@ -26,6 +29,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
     
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     ind = find(~boolFail);    
@@ -34,9 +38,22 @@ for ii = 1:length(cells)
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
 
-    omegas = calOmegaSquare(response,{match_p});
+    omegas = calOmegaSquare(response,{match_p},'partial',true);
     omegaT(ii) = omegas(1).value;
     omegaR(ii) = omegas(2).value + omegas(3).value;
+
+    if PLOT_CELL
+        prob = unique(match_p);
+        for p = 1:length(prob)
+            subplot(2,ceil(length(prob)/2),p)
+            plotRaster(raster(:, match_p==prob(p)),raster_params)
+            subtitle(num2str(prob(p)))
+        end
+        title([cellType{ii} 'ID: ' num2str(cellID(ii)) 'omega R: ' num2str(omegaR(ii)) ', omega T:' num2str(omegaT(ii))])
+        if omegaR(ii)>0.01
+            pause
+        end
+    end
 end
 
 %%

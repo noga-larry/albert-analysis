@@ -4,14 +4,15 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 figure 
-req_params.grade = 7;
+req_params.grade = 6;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.cell_type = {'BG msn'};
+req_params.cell_type = {'PC ss'};
+
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.num_trials = 100;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-%req_params.ID = 5450:6000;
+%req_params.ID = 5198;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
