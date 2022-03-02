@@ -99,7 +99,7 @@ legend(req_params.cell_type)
 %% comparisoms fron input-output figure
 figure
 
-effect_size = omegaO
+effect_size = omegaT
 
 x1 = subplot(2,2,1); hold on
 x2 = subplot(2,2,2); hold on

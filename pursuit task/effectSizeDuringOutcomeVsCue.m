@@ -40,7 +40,7 @@ for ii = 1:length(cells)
     omegaT(1,ii) = omegas(1).value;
     omegaO(1,ii) = omegas(2).value + omegas(4).value;
     
-    raster_params.align_to = 'cue';
+    raster_params.align_to = 'targetMovementOnset';
     raster = getRaster(data,find(~boolFail),raster_params);
     response = downSampleToBins(raster',BINE_SIZE)'*(1000/BINE_SIZE);
     
@@ -67,7 +67,7 @@ for i = 1:length(req_params.cell_type)
     [r,p] = corr(omegaT(1,indType)',omegaT(2,indType)','type','Spearman','Rows','Pairwise');
     title(['time , r = ' num2str(r) ', p = ' num2str(p)])
     subtitle(req_params.cell_type{i})
-    xlabel('movement')
+    xlabel('outcome')
     ylabel('cue')    
     equalAxis()
     refline(1,0)
@@ -75,9 +75,9 @@ for i = 1:length(req_params.cell_type)
     subplot(2,N,N+i)
     scatter(omegaO(1,indType),omegaO(2,indType),'filled');
     [r,p] = corr(omegaO(1,indType)',omegaO(2,indType)','type','Spearman','Rows','Pairwise');
-    title(['outcome , r = ' num2str(r) ', p = ' num2str(p)])
+    title(['reward , r = ' num2str(r) ', p = ' num2str(p)])
     subtitle(req_params.cell_type{i})
-    xlabel('movement')
+    xlabel('outcome')
     ylabel('cue')
     equalAxis()
     refline(1,0)

@@ -7,7 +7,7 @@ load('sessionMap.mat')
 K_FOLD = 10;
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss','PC cs', 'CRB','SNR', 'BG msn'};
+req_params.cell_type = {'PC ss', 'CRB','SNR', 'BG msn'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 % req_params.ID = [4135, 4208, 4209, 4343, 4390, 4569,...
 %     4570,4602, 4604, 4605, 4623, 4625, 4658, 4701,...

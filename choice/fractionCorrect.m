@@ -5,6 +5,57 @@ clear all
 req_params.grade = 7;
 req_params.cell_type = 'PC ss|CRB|SNR|BG';
 req_params.task = 'choice';
+req_params.num_trials = 80;
+req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
+req_params.ID = 5000:6000;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+PROBABILITIES  = [0:25:100];
+
+fracChoice = nan(length(lines),length(PROBABILITIES),length(PROBABILITIES));
+
+for ii = 1:length(cells)
+    
+    data = importdata(cells{ii});
+    [~,match_p_tmp] = getProbabilities (data);
+    [~,match_d] = getDirections (data);
+    boolFail = [data.trials.fail];
+    
+    match_p = match_p_tmp;
+    
+%     match_p(1,match_d(1,:)==90) = match_p_tmp(2,match_d(1,:)==90);
+%     match_p(2,match_d(1,:)==90) = match_p_tmp(1,match_d(1,:)==90);
+    
+    for j = 1:length(PROBABILITIES)
+        for  k = 1:length(PROBABILITIES)
+            
+            boolProb = (match_p(1,:) == PROBABILITIES(k) & ...
+                match_p(2,:) == PROBABILITIES(j));
+            ind = find(boolProb & ~boolFail);
+            fracChoice(ii,j,k) = ...
+                mean([data.trials(ind).choice]);
+        end
+    end
+end
+
+%%
+figure
+subplot(2,1,1)
+imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanmean(fracChoice)))
+colorbar
+subplot(2,1,2)
+imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanSEM(fracChoice)))
+colorbar
+%%
+clear all
+[task_info,supPath,MaestroPath] = ...
+    loadDBAndSpecifyDataPaths('Vermis');
+
+req_params.grade = 7;
+req_params.cell_type = 'PC ss|CRB|SNR|BG';
+req_params.task = 'choice';
 req_params.ID = 4000:5845;
 req_params.num_trials = 80;
 req_params.remove_question_marks = 0;
@@ -12,9 +63,9 @@ req_params.remove_repeats = 0;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
-probabilities  = [0:25:100];
+PROBABILITIES  = [0:25:100];
 
-fracChoice = nan(length(lines),length(probabilities),length(probabilities));
+fracChoice = nan(length(lines),length(PROBABILITIES),length(PROBABILITIES));
 
 for ii = 1:length(cells)
     
@@ -23,20 +74,21 @@ for ii = 1:length(cells)
     boolFail = [data.trials.fail];
     condCounter = 1;
     
-    for j = 1:length(probabilities)
-        for  k = j+1:length(probabilities)
-            boolProb = (match_p(1,:) == probabilities(k) & ...
-                match_p(2,:) == probabilities(j));
+    for j = 1:length(PROBABILITIES)
+        for  k = j+1:length(PROBABILITIES)
+            boolProb = (match_p(1,:) == PROBABILITIES(k) & ...
+                match_p(2,:) == PROBABILITIES(j));
             ind = find(boolProb & ~boolFail);
-            fracCorrect(ii,condCounter) = ...
+            fracChoice(ii,condCounter) = ...
                 mean([data.trials(ind).choice]);
-            probCondition(1,condCounter) = probabilities(j);
-            probCondition(2,condCounter) = probabilities(k);
-            leg{condCounter} = [num2str(probabilities(j)) ' vs ' num2str(probabilities(k))];
+            probCondition(1,condCounter) = PROBABILITIES(j);
+            probCondition(2,condCounter) = PROBABILITIES(k);
+            leg{condCounter} = [num2str(PROBABILITIES(j)) ' vs ' num2str(PROBABILITIES(k))];
             condCounter = condCounter+1;
         end
     end
 end
+
 
 %%
 
@@ -59,12 +111,12 @@ col = varycolor(length(leg));
 
 for j=1:length(leg)
     errorbar(x_axis(j),...
-        mean(fracCorrect(:,j)),...
-        std(fracCorrect(:,j)),...
+        mean(fracChoice(:,j)),...
+        std(fracChoice(:,j)),...
         'Color',col(j,:),'Marker','*') 
 end
 legend(leg)
-mdl = fitlm(x_axis,mean(fracCorrect));
+mdl = fitlm(x_axis,mean(fracChoice));
 
 ylabel('fraction correct')
 xlabel(regress_by)
@@ -87,9 +139,9 @@ req_params.remove_repeats = 0;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
-probabilities  = [0:25:100];
+PROBABILITIES  = [0:25:100];
 
-fracChoice = nan(length(lines),length(probabilities),length(probabilities));
+fracChoice = nan(length(lines),length(PROBABILITIES),length(PROBABILITIES));
 
 for ii = 1:length(cells)
     
@@ -97,10 +149,10 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     
-    for j = 1:length(probabilities)
-        for  k = 1:length(probabilities)
+    for j = 1:length(PROBABILITIES)
+        for  k = 1:length(PROBABILITIES)
             
-            currentProbability = sort([probabilities(j),probabilities(k)],'descend');
+            currentProbability = sort([PROBABILITIES(j),PROBABILITIES(k)],'descend');
             probabilityBool = (match_p(1,:) == currentProbability(1) & ...
                 match_p(2,:) == currentProbability(2));
             ind = find(probabilityBool & ~boolFail);
@@ -114,5 +166,5 @@ for ii = 1:length(cells)
 end
 
 figure;
-h = imagesc(probabilities,probabilities,squeeze(nanmean(fracChoice)));
+h = imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanmean(fracChoice)));
 xticks(0:25:100);yticks(0:25:100); colorbar
