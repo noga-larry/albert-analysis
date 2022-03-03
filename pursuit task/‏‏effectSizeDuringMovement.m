@@ -54,40 +54,6 @@ for ii = 1:length(cells)
     
 end
 
-%%
-
-figure;
-subplot(3,1,1)
-scatter(omegaT,omegaR,'filled'); 
-p = signrank(omegaT,omegaR);
-xlabel('time')
-ylabel('reward+time*reward')
-refline(1,0)
-title(['p_{reward} = ' num2str(p)])
-
-subplot(3,1,2)
-scatter(omegaT,omegaD,'filled'); 
-p = signrank(omegaT,omegaD);
-title(['p_{movement} = ' num2str(p)])
-xlabel('$\eta^2$ time','interpreter','latex')
-ylabel('direction+time*direcion')
-refline(1,0)
-
-subplot(3,1,3)
-scatter(omegaR,omegaD,'filled'); 
-p = signrank(omegaR,omegaD)
-title(['p = ' num2str(p)])
-xlabel('reward+time*reward')
-ylabel('direction+time*direcion')
-refline(1,0)
-
-figure;
-
-bins = -0.1:0.02:1;
-plotHistForFC(omegaT,bins,'g'); hold on
-plotHistForFC(omegaR,bins,'r'); hold on
-plotHistForFC(omegaD,bins,'b'); hold on
-legend('T','R','D')
 
 %%
 N = length(req_params.cell_type);

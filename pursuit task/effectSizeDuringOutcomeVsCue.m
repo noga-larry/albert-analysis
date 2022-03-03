@@ -82,3 +82,23 @@ for i = 1:length(req_params.cell_type)
     equalAxis()
     refline(1,0)
 end
+
+%% scatters
+
+figure;
+N = length(req_params.cell_type);
+for i = 1:length(req_params.cell_type)
+    
+    subplot(2,ceil(N/2),i)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    scatter(omegaT(indType),omegaO(indType),'filled','k'); hold on
+    p = signrank(omegaT(indType),omegaR(indType));
+    xlabel('time')
+    ylabel('reward+time*reward')
+    subtitle(['p = ' num2str(p)])
+    equalAxis() 
+    refline(1,0)
+ 
+    title(req_params.cell_type{i})
+end
