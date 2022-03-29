@@ -3,6 +3,7 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 PLOT_CELL = false;
+EPOCH = 'cue'; 
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
@@ -15,19 +16,14 @@ req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-omegaT = nan(1,length(cells));
-omegaR = nan(1,length(cells));
-
 list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;    
-
-    omegas = effectSizeInEpoch(data,'cue');
-    omegaT(ii) = omegas(1).value;
-    omegaR(ii) = omegas(2).value + omegas(3).value;
+    
+    effects(ii) = effectSizeInEpoch(data,EPOCH);
 
     if PLOT_CELL
         prob = unique(match_p);
@@ -37,9 +33,6 @@ for ii = 1:length(cells)
             subtitle(num2str(prob(p)))
         end
         title([cellType{ii} 'ID: ' num2str(cellID(ii)) 'omega R: ' num2str(omegaR(ii)) ', omega T:' num2str(omegaT(ii))])
-        if omegaR(ii)>0.01
-            pause
-        end
     end
 end
 
@@ -64,27 +57,22 @@ end
 
 
 %%
-f = figure; f.Position = [10 80 700 500];
-ax1 = subplot(1,2,1); title('Reward')
-ax2 = subplot(1,2,2);title('Time')
+figure;
 
 
 bins = linspace(-0.2,1,50);
+f = fields(effects);
 
-for i = 1:length(req_params.cell_type)
-    
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
-    
-    axes(ax1)
-    plotHistForFC(omegaR(indType),bins); hold on
-    
-    axes(ax2)
-    plotHistForFC(omegaT(indType),bins); hold on
-    
+for j = 1:length(f)
+    for i = 1:length(req_params.cell_type)
+        
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+        subplot(length(f),1,j)
+        plotHistForFC([effects(indType).(f{j})],bins); hold on
+    end
+    title(f{j})
 end
 
-title(ax1,'Reward')
-title(ax2,'Time')
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
