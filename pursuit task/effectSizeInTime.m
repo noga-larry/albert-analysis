@@ -12,7 +12,7 @@ req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
-raster_params.time_after = 2000;
+raster_params.time_after = 1200;
 raster_params.smoothing_margins = 0;
 BIN_SIZE = 50;
 

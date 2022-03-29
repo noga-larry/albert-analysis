@@ -1,14 +1,14 @@
 clear all
 
 [task_info,supPath,MaestroPath] =...
-    loadDBAndSpecifyDataPaths('Golda');
+    loadDBAndSpecifyDataPaths('Vermis');
 
 NUM_COND = 20;
 req_params.remove_repeats = 0;
 req_params.grade = 7;
 req_params.cell_type = 'CRB|PC|BG|SNR';
 req_params.task = 'choice';
-req_params.ID = 4000:5845;
+req_params.ID = 5000:6000;
 req_params.num_trials = 180;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = 0;
@@ -32,7 +32,7 @@ for ii = 1:length(cells)
     
     condCounter = 0;
     data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
+    data = getBehavior(data,supPath);
     
     [probabilities,match_p] = getProbabilities (data);
     [~,match_d] = getDirections(data);

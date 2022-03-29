@@ -7,7 +7,7 @@ clear; clc
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'SNR';
+req_params.cell_type = 'BG masn';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 req_params.ID = 4000:6000;
@@ -49,10 +49,10 @@ clear; clc
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.cell_type = 'SNR';
+req_params.cell_type = 'BG msn';
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
-req_params.ID = 4000:5000;
+req_params.ID = 5000:6000;
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;

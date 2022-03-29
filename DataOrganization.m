@@ -216,7 +216,7 @@ req_params.remove_question_marks = 0;
 req_params.num_trials = 50;
 req_params.remove_repeats = 0;
 
-req_params.cell_type = 'BG';
+req_params.cell_type = 'BG|SNR';
 lines1 = findLinesInDB (task_info, req_params);
 req_params.cell_type = 'PC ss|CRB'
 lines2 = findLinesInDB (task_info, req_params);

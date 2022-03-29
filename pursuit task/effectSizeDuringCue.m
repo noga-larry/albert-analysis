@@ -12,12 +12,6 @@ req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = 0;
 
-raster_params.align_to = 'cue';
-raster_params.time_before = 0;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-bin_sz = 50;
-
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -29,16 +23,9 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
-    cellID(ii) = data.info.cell_ID;
-    
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    ind = find(~boolFail);    
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
-    raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+    cellID(ii) = data.info.cell_ID;    
 
-    omegas = calOmegaSquare(response,{match_p},'partial',true);
+    omegas = effectSizeInEpoch(data,'cue');
     omegaT(ii) = omegas(1).value;
     omegaR(ii) = omegas(2).value + omegas(3).value;
 

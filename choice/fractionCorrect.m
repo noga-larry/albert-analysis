@@ -8,7 +8,7 @@ req_params.task = 'choice';
 req_params.num_trials = 80;
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
-req_params.ID = 5000:6000;
+req_params.ID = 4000:5000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -42,12 +42,13 @@ end
 
 %%
 figure
-subplot(2,1,1)
 imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanmean(fracChoice)))
 colorbar
-subplot(2,1,2)
-imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanSEM(fracChoice)))
-colorbar
+
+
+% subplot(2,1,2)
+% imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanSEM(fracChoice)))
+% colorbar
 %%
 clear all
 [task_info,supPath,MaestroPath] = ...
