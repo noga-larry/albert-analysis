@@ -9,13 +9,13 @@ PROBABILITIES = [25,75];
 figure 
 req_params.grade = 6;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-
+req_params.cell_type = {'CRB'};
 
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.num_trials = 50;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.ID = 4243;
+req_params.ID = 4600:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -29,6 +29,8 @@ comparison_window = 100:800;
 DIRECTIONS = 0:45:315;
 PROBABILITIES = [25 75];
 ts = -raster_params.time_before:raster_params.time_after;
+
+f = figure;
 
 for ii=1:length(cells)
     
@@ -59,7 +61,7 @@ for ii=1:length(cells)
         
         plotRaster(raster,raster_params,col{p})
         xlabel('Time from cue')
-        title([num2str(data.info.cell_ID) ' - ' data.info.cell_type ])
+        title([num2str(data.info.cell_ID) ' - ' data.info.cell_type ', ' data.info.task], 'Interpreter', 'none');
         
         errorbar(ax,ts,psth,sem,col{p})
         
@@ -129,8 +131,18 @@ for ii=1:length(cells)
     % direction
     raster_params.align_to = 'targetMovementOnset';
 
-    TC = getTC(data, 0:45:315,1:length(data.trials), comparison_window);
-    [PD,indPD] = centerOfMass (TC, 0:45:315);
+    
+    
+    inx = find (~boolFail);
+    [~,p] = sort(match_d(inx))
+    inx = inx(p);
+    
+    raster = getRaster(data,inx, raster_params);
+    subplot(2,2,2)
+    plotRaster(raster,raster_params,match_d(inx))
+    xlabel('Time from movement')
+    
+    subplot(2,2,4)
     colors = varycolor(length(DIRECTIONS));
     
     for d = 1:length(DIRECTIONS)
@@ -138,21 +150,13 @@ for ii=1:length(cells)
         inx = find (match_d == DIRECTIONS(d)& ~boolFail);
         
         raster = getRaster(data,inx, raster_params);
-        subplot(11,2,2+2*(d-1))
-        plotRaster(raster,raster_params)
-        ylabel (num2str(DIRECTIONS(d)))
-        xlabel('Time from movement')
-        
-        subplot(3,2,6)
         psthHigh = raster2psth(raster,raster_params);
-        plot(ts,psthHigh,'Color',colors(d,:)); hold on
-        title ('75')
-        
+        plot(ts,psthHigh,'Color',colors(d,:)); hold on        
         
     end
-    
-    subplot(3,2,6); hold off
+    hold off
     legend('0','45','90','135','180','225','270','315')
     pause
+    arrayfun(@cla,f.Children)
 end
 
