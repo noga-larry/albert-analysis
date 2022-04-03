@@ -5,17 +5,17 @@ clear
 
 
 PROBABILITIES = [25,75]; 
+OUTCOMES =[0,1]; 
 
 figure 
-req_params.grade = 6;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.cell_type = {'CRB'};
+req_params.grade = 7;
+req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.num_trials = 100;
+req_params.num_trials = 10;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.ID = 4600:6000;
+req_params.ID = 4752;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -23,7 +23,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 raster_params.time_before = 399;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
 comparison_window = 100:800;
 DIRECTIONS = 0:45:315;
@@ -71,62 +71,42 @@ for ii=1:length(cells)
      
     % reward
     raster_params.align_to = 'reward';
+    ax1 = subplot(4,4,13); hold on
+    ax2 = subplot(4,4,14); hold on
+    
+    marker = {'--','-'}; 
+    
+    for i = 1:length(OUTCOMES)
+        inx = find(match_o==OUTCOMES(i) & ~boolFail); 
+        raster = getRaster(data,inx,raster_params);
+        psth = raster2psth(raster,raster_params);
+        plot(ax1,ts,psth,col{i})
+        xlabel('Time from reward')
+        
+        subplot(8,4,17+4*OUTCOMES(i))
+        plotRaster(raster,raster_params,col{i})
+        xlabel('Time from reward')
+        
+        inx = find (~boolFail);
+        [~,p] = sort(match_p(inx))
+        inx = inx(p);
+        raster = getRaster(data,inx,raster_params);
+        
+        subplot(8,4,18+4*OUTCOMES(i))
+        plotRaster(raster,raster_params,col{i})
+        xlabel('Time from reward')
+        
+        for p = 1:length(PROBABILITIES)
+            inx = find (match_p == PROBABILITIES(p) & (~boolFail) & match_o==OUTCOMES(i));
+            raster = getRaster(data,inx,raster_params);
+            psth = raster2psth(raster,raster_params);
+            plot(ax2,ts,psth,[col{p} marker{i}] )
+        end
+        legend('R','NR')
+    end
     
     
-    indLowR = find (match_p == 25 & match_o & (~boolFail));
-    indLowNR = find (match_p == 25 & (~match_o) & (~boolFail));
-    indHighR = find (match_p == 75 & match_o & (~boolFail));
-    indHighNR = find (match_p == 75 & (~match_o) & (~boolFail));
-    
-    rasterLowR = getRaster(data,indLowR,raster_params);
-    rasterLowNR = getRaster(data,indLowNR,raster_params);
-    rasterHighR = getRaster(data,indHighR,raster_params);
-    rasterHighNR = getRaster(data,indHighNR,raster_params);
-    
-    psthLowR = raster2psth(rasterLowR,raster_params);
-    psthLowNR = raster2psth(rasterLowNR,raster_params);
-    psthHighR = raster2psth(rasterHighR,raster_params);
-    psthHighNR = raster2psth(rasterHighNR,raster_params);
-    
-    subplot(8,4,17)
-    plotRaster(rasterLowR,raster_params,'r')
-    title ('Reward')
-    subplot(8,4,21)
-    plotRaster(rasterLowNR,raster_params,'r')
-    title ('No Reward')
-    xlabel('Time from reward')
-    subplot(8,4,22)
-    plotRaster(rasterHighNR,raster_params,'b')
-    title ('No reward')
-    subplot(8,4,18)
-    plotRaster(rasterHighR,raster_params,'b')
-    xlabel('Time from reward')
-    title ('Reward')
-    
-    subplot(4,4,14)
-    
-    plot(ts,psthHighR,'b');  hold on
-    plot(ts,psthHighNR,'--b')
-    plot(ts,psthLowNR,'--r');
-    plot(ts,psthLowR,'r'); hold off
-    xlabel('Time from reward')
-    legend('R','NR')
-    
-    subplot(4,4,13)
-    
-    indR = find (match_o & (~boolFail));
-    indNR = find ((~match_o) & (~boolFail));
-    
-    rasterR = getRaster(data,indR,raster_params);
-    rasterNR = getRaster(data,indNR,raster_params);
-    
-    psthR = raster2psth(rasterR,raster_params);
-    psthNR = raster2psth(rasterNR,raster_params);
-    
-    plot(ts,psthR,'b');  hold on
-    plot(ts,psthNR,'r'); hold off
-    legend('R','NR')
-    
+
     
     % direction
     raster_params.align_to = 'targetMovementOnset';

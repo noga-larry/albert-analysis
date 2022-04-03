@@ -8,6 +8,7 @@ req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 %req_params.ID = [4006,4012,4055,4062,4063,4064,4068,4069,4077,4078,4079,4081,4086,4093,4110,4111,4114,4153,4156,4164,4178,4179,4184,4198,4212,4223,4235,4395,4396,4397,4400,4419,4425,4425,4426,4426,4426,4427,4427,4428,4428,4429,4435,4446,4447,4479,4506,4506,4510,4514,4526,4542,4998,4999,5000,5010,5013,5017,5018,5020,5021,5022,5024,5025,5026,5030,5030,5031,5031,5032,5033,5035,5036,5040,5042,5043,5049,5051,5052,5059,5060,5061,5063,5065,5066,5067,5068,5070,5071,5072,5073,5075,5077,5085,5088,5089,5091,5092,5093,5095,5097,5098,5101,5102,5103,5104,5105,5112,5116,5117,5159,5247,5251,5366,5367,5376,5377,5392,5418,5418,5418,5418,5440,5442,5462,5463,5466,5467]
 req_params.remove_repeats = false
+req_params.ID = 4797;
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 0;
@@ -17,6 +18,7 @@ bin_sz = 50;
  
 ts = -raster_params.time_before:raster_params.time_after;
 
+EPOCH =  'targetMovementOnset';
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -31,21 +33,8 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    boolFail = [data.trials.fail]; %| ~[data.trials.previous_completed];
-    ind = find(~boolFail);
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
+    effects(ii) = effectSizeInEpoch(data,EPOCH);
     
-    raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
-
-    omegas = calOmegaSquare(response,{match_d,match_p},'partial',true);
-    
-    omegaT(ii) = omegas(1).value;
-    omegaD(ii) = omegas(2).value + omegas(4).value;
-    omegaR(ii) = omegas(3).value + omegas(5).value;
-    
-    overAllExplained(ii) = omegas(end).value;
     
     if omegaD(ii)>1
         list = [list, data.info.cell_ID];
@@ -95,38 +84,24 @@ for i = 1:length(req_params.cell_type)
 end
 
 %%
-f = figure; f.Position = [10 80 700 500];
-ax1 = subplot(1,3,1); title('Direction')
-ax2 = subplot(1,3,2);title('Time')
-ax3 = subplot(1,3,3); title('Reward')
+figure;
+
 
 bins = linspace(-0.2,1,50);
+f = fields(effects);
 
-for i = 1:length(req_params.cell_type)
-    
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
-    
-    axes(ax1)
-    plotHistForFC(omegaD(indType),bins); hold on
-    xlabel('Effect size')
-    
-    axes(ax2)
-    plotHistForFC(omegaT(indType),bins); hold on
-    xlabel('Effect size')
-    
-    axes(ax3)
-    plotHistForFC(omegaR(indType),bins); hold on
-    xlabel('Effect size')
+for j = 1:length(f)
+    for i = 1:length(req_params.cell_type)
+        
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+        subplot(length(f),1,j)
+        plotHistForFC([effects(indType).(f{j})],bins); hold on
+    end
+    title(f{j})
 end
-kruskalwallis(omegaD,cellType)
-title(ax1,'Direction')
-title(ax2,'Time')
-title(ax3,'Reward')
-legend(ax1,req_params.cell_type)
-legend(ax2,req_params.cell_type)
-legend(ax3,req_params.cell_type)
 
-
+legend(req_params.cell_type)
+sgtitle('Cue','Interpreter', 'none');
 sgtitle('Motion','Interpreter', 'none');
 %%
 
