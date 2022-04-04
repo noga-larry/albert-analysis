@@ -43,19 +43,39 @@ SSe = tbl{end-1,2};
 N = length(response(:));
 
 if partial
-    omegafun = @(tbl,dim) (tbl{dim,3}*(tbl{dim,5}-msw))/...
-        (tbl{dim,3}*tbl{dim,5}+(N-tbl{dim,3})*msw);
+%     omegafun = @(tbl,dim) (tbl{dim,3}*(tbl{dim,5}-msw))/...
+%         (tbl{dim,3}*tbl{dim,5}+(N-tbl{dim,3})*msw);
+    omegafun = @(tbl,dim) (sum([tbl{dim,2}])-(sum([tbl{dim,3}])*msw))/...
+        (sum([tbl{dim,2}])+(N-sum([tbl{dim,3}]))*msw);
+
 else
     omegafun = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
 end
 
-c=0;
-for i = 2:(size(tbl,1)-2)
-    c = c+1;
-    omega(c).value = omegafun(tbl,i);
-    omega(c).variable = tbl{i,1};
+if includeTime
+    c=0;
+    for i = 1:length(groups)
+        inx1 = find(strcmp({tbl{:,1}},['X' num2str(i)]));
+        inx2 = find(strcmp({tbl{:,1}},['X1*X' num2str(i)]));        
+        c = c+1;
+        omega(c).value = omegafun(tbl,[inx1 inx2]);
+        omega(c).variable = tbl{inx1,1};
+    end
+    omega(c+1).variable = 'Total';
+    omega(c+1).value = (totVar - SSe)/totVar;
+else
+    c=0;
+    for i = 2:(size(tbl,1)-2)
+        c = c+1;
+        omega(c).value = omegafun(tbl,i);
+        omega(c).variable = tbl{i,1};
+    end
+    omega(c+1).variable = 'Total';
+    omega(c+1).value = (totVar - SSe)/totVar;
+    
 end
-omega(c+1).variable = 'Total';
-omega(c+1).value = (totVar - SSe)/totVar;
+
+
+
 %omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
 

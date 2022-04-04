@@ -8,7 +8,8 @@ EPOCH = 'cue';
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-%req_params.ID = 5455;
+
+req_params.ID = 4000:5000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = 0;
@@ -79,7 +80,7 @@ sgtitle('Cue','Interpreter', 'none');
 %% comparisoms fron input-output figure
 figure
 
-effect_size = omegaT
+effect_size = [effects.reward];
 
 x1 = subplot(2,2,1); hold on
 x2 = subplot(2,2,2); hold on
@@ -118,7 +119,7 @@ title(['p = ' num2str(p) ', n_{ss} = ' num2str(sum(strcmp('PC ss', cellType))) .
 
 input_output = cellfun(@(x)~isempty(x),regexp('PC ss|SNR',cellType)) 
 bg_crb = cellfun(@(x)~isempty(x),regexp('PC ss|CRB',cellType)) 
-Data = [omegaR',input_output',bg_crb']
+Data = [effect_size',input_output',bg_crb']
 out = SRH_test(Data,'area','input_output')
 
 %%

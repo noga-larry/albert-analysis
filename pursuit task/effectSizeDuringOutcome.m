@@ -1,13 +1,15 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
+EPOCH = 'reward';
+
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'reward';
+raster_params.align_to = EPOCH;
 raster_params.time_before = 0;
 raster_params.time_after = 500;
 raster_params.smoothing_margins = 100;
@@ -18,34 +20,14 @@ ts = -raster_params.time_before:raster_params.time_after;
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-omegaT = nan(1,length(cells));
-omegaR = nan(1,length(cells));
-omegaD = nan(1,length(cells));
-omegaO = nan(1,length(cells));
 
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     cellType{ii} = data.info.cell_type;
     
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    ind = find(~boolFail);
-    raster = getRaster(data,find(~boolFail),raster_params);
-    response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
-    
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
-    
-    omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true,'model','interaction');
-    
-    omegaT(ii) = omegas(1).value;
-    omegaR(ii) = omegas(2).value + omegas(5).value;
-    omegaD(ii) = omegas(3).value + omegas(6).value;
-    omegaO(ii) = omegas(4).value + omegas(7).value;
-    %omegaSup(ii) = omegas(9).value + omegas(12).value;
-    
-    overAllExplained(ii) = omegas(10).value;
+    effects(ii) = effectSizeInEpoch(data,EPOCH);    
+
     
     if mod(ii,50)==0
         disp(ii)
@@ -99,7 +81,7 @@ legend(req_params.cell_type)
 %% comparisoms fron input-output figure
 figure
 
-effect_size = omegaT
+effect_size = [effects.outcome];
 
 x1 = subplot(2,2,1); hold on
 x2 = subplot(2,2,2); hold on
@@ -138,5 +120,5 @@ title(['p = ' num2str(p) ', n_{ss} = ' num2str(sum(strcmp('PC ss', cellType))) .
 
 input_output = cellfun(@(x)~isempty(x),regexp('PC ss|SNR',cellType)) 
 bg_crb = cellfun(@(x)~isempty(x),regexp('PC ss|CRB',cellType)) 
-Data = [omegaR',input_output',bg_crb']
+Data = [effect_size',input_output',bg_crb']
 out = SRH_test(Data,'area','input_output')

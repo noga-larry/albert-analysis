@@ -18,15 +18,18 @@ end
 
 ind = find(~boolFail);
 
-[~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+if strcmp(data.info.task,'rwd_direction_tuning') % FLOCCULUS TASK!
+    [~,match_p] = getRewardSize (data,ind,'omitNonIndexed',true);
+elseif strcmp(data.info.task,'choice')
+    match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);  
+    match_d = match_d(1,:);
+else
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
+end
+            
 match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
 [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
 [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
-
-if strcmp(data.info.task,'choice')
-    match_d = match_d(1,:);
-    match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);
-end
 
 raster = getRaster(data,find(~boolFail),raster_params);
 response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
@@ -37,23 +40,23 @@ switch epoch
         if strcmp(data.info.task,'choice')
             omegas = calOmegaSquare(response,{match_d,match_p},'partial',true);
             effectSizes.time = omegas(1).value;
-            effectSizes.direction = omegas(2).value+omegas(4).value;
-            effectSizes.reward = omegas(3).value+omegas(5).value;
+            effectSizes.direction = omegas(2).value;
+            effectSizes.reward = omegas(3).value;
         else
             omegas = calOmegaSquare(response,{match_p},'partial',true);
             effectSizes.time = omegas(1).value;
-            effectSizes.reward = omegas(2).value+omegas(3).value;            
-        end     
+            effectSizes.reward = omegas(2).value;
+        end
 
     case 'targetMovementOnset'
         omegas = calOmegaSquare(response,{match_d,match_p},'partial',true);
         effectSizes.time = omegas(1).value;
-        effectSizes.direction = omegas(2).value+omegas(4).value;
-        effectSizes.reward = omegas(3).value+omegas(5).value;
-    case 'reward'        
-        omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true,'model','interaction');   
+        effectSizes.direction = omegas(2).value;
+        effectSizes.reward = omegas(3).value;
+    case 'reward'
+        omegas = calOmegaSquare(response,{match_p,match_d,match_o},'partial',true,'model','interaction');
         effectSizes.time = omegas(1).value;
-        effectSizes.reward = omegas(2).value + omegas(5).value;
-        effectSizes.direction = omegas(3).value + omegas(6).value;
-        effectSizes.outcome = omegas(4).value + omegas(7).value;        
+        effectSizes.reward = omegas(2).value;
+        effectSizes.direction = omegas(3).value;
+        effectSizes.outcome = omegas(4).value;        
 end
