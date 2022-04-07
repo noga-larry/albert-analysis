@@ -9,11 +9,6 @@ req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = EPOCH;
-raster_params.time_before = 0;
-raster_params.time_after = 500;
-raster_params.smoothing_margins = 100;
-bin_sz = 50;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -122,3 +117,26 @@ input_output = cellfun(@(x)~isempty(x),regexp('PC ss|SNR',cellType))
 bg_crb = cellfun(@(x)~isempty(x),regexp('PC ss|CRB',cellType)) 
 Data = [effect_size',input_output',bg_crb']
 out = SRH_test(Data,'area','input_output')
+
+
+%%
+
+%%
+N = length(req_params.cell_type);
+figure; 
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    
+    subplot(1,N,i)
+    scatter([effects(indType).time],[effects(indType).outcome],'filled','k'); hold on
+    p = signrank([effects(indType).time],[effects(indType).outcome]);
+    ylabel('outcome+time*outcome')
+    xlabel('time')
+    equalAxis()
+    refline(1,0)
+    title(req_params.cell_type{i})
+    subtitle(['p = ' num2str(p)])
+    
+end

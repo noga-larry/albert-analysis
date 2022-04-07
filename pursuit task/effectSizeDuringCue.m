@@ -9,7 +9,7 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 
-req_params.ID = 4000:5000;
+req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = 0;
@@ -45,15 +45,15 @@ for i = 1:length(req_params.cell_type)
     subplot(2,ceil(N/2),i)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
-    scatter(omegaT(indType),omegaR(indType),'filled','k'); hold on
-    p = signrank(omegaT(indType),omegaR(indType));
+    scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
+    p = signrank([effects(indType).time],[effects(indType).reward]);
     xlabel('time')
     ylabel('reward+time*reward')
-    subtitle(['p = ' num2str(p)])
-    equalAxis() 
+    equalAxis()
     refline(1,0)
- 
     title(req_params.cell_type{i})
+    subtitle(['p = ' num2str(p)])
+
 end
 
 

@@ -6,7 +6,7 @@ clear
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 5818;
+req_params.ID = 4797;
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
@@ -70,15 +70,15 @@ for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType) & h');
     
     axes(ax1)
-    errorbar(ts,nanmean(omegaD(indType,:)),nanSEM(omegaD(indType,:)))
+    errorbar(ts,nanmean(omegaD(indType,:),1),nanSEM(omegaD(indType,:),1))
     xlabel('time')
     
     axes(ax2)
-    errorbar(ts,nanmean(omegaR(indType,:)),nanSEM(omegaR(indType,:)))
+    errorbar(ts,nanmean(omegaR(indType,:),1),nanSEM(omegaR(indType,:),1))
     xlabel('time')
     
     axes(ax3)
-    errorbar(ts,nanmean(omegaRD(indType,:)),nanSEM(omegaRD(indType,:)))
+    errorbar(ts,nanmean(omegaRD(indType,:),1),nanSEM(omegaRD(indType,:),1))
     xlabel('time')
 end
 
