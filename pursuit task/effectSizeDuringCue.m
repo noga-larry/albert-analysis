@@ -62,16 +62,16 @@ figure;
 
 
 bins = linspace(-0.2,1,50);
-f = fields(effects);
+flds = fields(effects);
 
-for j = 1:length(f)
+for j = 1:length(flds)
     for i = 1:length(req_params.cell_type)
         
         indType = find(strcmp(req_params.cell_type{i}, cellType));
-        subplot(length(f),1,j)
-        plotHistForFC([effects(indType).(f{j})],bins); hold on
+        subplot(length(flds),1,j)
+        plotHistForFC([effects(indType).(flds{j})],bins); hold on
     end
-    title(f{j})
+    title(flds{j})
 end
 
 legend(req_params.cell_type)
