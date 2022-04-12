@@ -6,24 +6,12 @@ req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'choice';
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.num_trials = 100;
+req_params.num_trials = 120;
 
-raster_params.align_to = 'cue';
-raster_params.time_before = 0;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-
-BIN_SIZE = 50;
-PROBABILITIES = 0:25:100;
+epoch = 'cue';
  
-ts = -raster_params.time_before:raster_params.time_after;
-
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
-
-omegaT = nan(1,length(cells));
-omegaR = nan(1,length(cells));
-omegaD = nan(1,length(cells));
 
 list = [];
 for ii = 1:length(cells)

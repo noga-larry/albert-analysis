@@ -12,7 +12,7 @@ req_params.remove_repeats = false;
 raster_params.time_before = 399;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
-raster_params.align_to = 'cue';
+raster_params.align_to = '';
 
 lines = findCspkSspkPairs(task_info,req_params);
 

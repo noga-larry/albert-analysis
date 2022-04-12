@@ -7,11 +7,9 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.num_trials = 120;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.ID = 4000:6000;
-
-
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -91,8 +89,8 @@ errorbar(x2,3,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
 
 indType = find(strcmp('BG msn', cellType));
 plot(x1,4,effect_size(indType),'or')
-ci = bootci(2000,@median,effect_size(indType))-median(effect_size(indType))
-errorbar(x2,4,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+ci = bootci(2000,@nanmedian,effect_size(indType))-nanmedian(effect_size(indType));
+errorbar(x2,4,nanmedian(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
 
 p = ranksum(effect_size(find(strcmp('SNR', cellType))),effect_size(find(strcmp('BG msn', cellType))))
 title(x2,['p = ' num2str(p) ', n_{SNR} = ' num2str(sum(strcmp('SNR', cellType))) ...

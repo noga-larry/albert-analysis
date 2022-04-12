@@ -22,14 +22,16 @@ ind = find(~boolFail);
 if strcmp(data.info.task,'rwd_direction_tuning') % FLOCCULUS TASK!
     [~,match_p] = getRewardSize (data,ind,'omitNonIndexed',true);
 elseif strcmp(data.info.task,'choice')
+    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     match_d = match_d(1,:);
 else
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
 end
 
 match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
-[~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
 [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
 
 raster = getRaster(data,find(~boolFail),raster_params);
@@ -69,7 +71,7 @@ for t=1:length(ts)
             effectSizes(t).reward = omegas(1).value;
             effectSizes(t).direction = omegas(2).value;
             effectSizes(t).outcome = omegas(3).value;
-            effectSizes(t).interactions = sum([omegas(4:6).value]);
+            effectSizes(t).interactions = omegas(4).value;
 
     end
 end

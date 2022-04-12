@@ -65,14 +65,14 @@ if includeTime
     omega(c+1).value = (totVar - SSe)/totVar;
 else
     c=0;
-    for i = 2:(size(tbl,1)-2)
+    for i = 1:length(groups)
         c = c+1;
-        omega(c).value = omegafun(tbl,i);
-        omega(c).variable = tbl{i,1};
+        omega(c).value = omegafun(tbl,i+1);
+        omega(c).variable = tbl{i+1,1};
     end
-    omega(c+1).variable = 'Total';
-    omega(c+1).value = (totVar - SSe)/totVar;
-    
+    omega(c+1).variable = 'Interactions';
+    omega(c+1).value = omegafun(tbl,[(length(groups)+2):(length(tbl)-2)]);
+   
 end
 
 

@@ -9,9 +9,9 @@ probabilities = [0:25:100];
 col = varycolor(10);
 
 req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
+req_params.cell_type = 'BG msn';
 req_params.task = 'choice';
-req_params.ID = 4000:5845;
+req_params.ID = 5046;
 req_params.num_trials = 100;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = 0;
@@ -45,7 +45,7 @@ for ii=1:length(cells)
         raster = getRaster(data,ind(sort_inx),raster_params);
         
         subplot(2,2,d)
-        plotRaster(raster,raster_params)
+        plotRaster(raster,raster_params,'k')
         title(num2str(angles(d)))
         
         ax{d} = subplot(2,2,2+d); hold on

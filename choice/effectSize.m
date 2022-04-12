@@ -5,10 +5,10 @@ PROBABILITIES = 0:25:100;
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.task = 'choice';
-req_params.num_trials = 70;
+req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 
-EPOCH = 'cue';
+EPOCH = 'reward';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -48,7 +48,7 @@ sgtitle('Cue','Interpreter', 'none');
 
 %%
 
-bool = cellID<5000
+bool = cellID>5000
 
 
 N = length(req_params.cell_type);
@@ -58,8 +58,8 @@ for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType) & bool);
     
     subplot(3,N,i)
-    scatter(omegaT(indType),omegaR(indType),'filled','k'); hold on
-    p = signrank(omegaT(indType),omegaR(indType));
+    scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
+    p = signrank([effects(indType).time],[effects(indType).reward]);
     xlabel('time')
     ylabel('reward+time*reward')
     equalAxis()
@@ -68,8 +68,8 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p)])
         
     subplot(3,N,i+N)
-    scatter(omegaT(indType),omegaD(indType),'filled','k'); hold on
-    p = signrank(omegaT(indType),omegaD(indType));
+    scatter([effects(indType).time],[effects(indType).direction],'filled','k'); hold on
+    p = signrank([effects(indType).time],[effects(indType).direction]);
     xlabel('time')
     ylabel('direction+time*direcion')
     equalAxis()
@@ -78,10 +78,10 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p)])
     
     subplot(3,N,i+2*N)
-    scatter(omegaD(indType),omegaR(indType),'filled','k'); hold on
-    p = signrank(omegaD(indType),omegaR(indType));
-    ylabel('reward+time*reward')
-    xlabel('direction+time*direcion')
+    scatter([effects(indType).reward],[effects(indType).direction],'filled','k'); hold on
+    p = signrank([effects(indType).reward],[effects(indType).direction]);
+    xlabel('reward+time*reward')
+    ylabel('direction+time*direcion')
     equalAxis()
     refline(1,0)
     title(req_params.cell_type{i})

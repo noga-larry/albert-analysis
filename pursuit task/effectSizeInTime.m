@@ -2,12 +2,12 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-PLOT_CELL = true;
+PLOT_CELL = false;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
+req_params.ID = 4797;
 
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -56,6 +56,7 @@ flds = fields(effectSizes);
 
 h = cellID<inf
 
+figure
 for f = 1:length(flds)
     
     subplot(1,length(flds),f); hold on
