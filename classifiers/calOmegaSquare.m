@@ -5,6 +5,9 @@ p = inputParser;
 defaultPartial = false;
 addOptional(p,'partial',defaultPartial,@islogical);
 
+defaultSstype = 2;
+addOptional(p,'sstype',defaultSstype,@isnumeric);
+
 defaultIncludeTime = true;
 addOptional(p,'includeTime',defaultIncludeTime,@islogical);
 
@@ -15,6 +18,7 @@ parse(p,varargin{:})
 partial = p.Results.partial;
 includeTime = p.Results.includeTime;
 model = p.Results.model;
+sstype = p.Results.sstype;
 
 if includeTime
     groups{1} = repmat((1:size(response,1))',1,size(response,2));
@@ -30,7 +34,7 @@ for i = 1:length(groups)
     groups{i} = tmp(:);
 end
 
-[~,tbl,~,~] = anovan(response(:),groups,'model',model,'display','off');
+[~,tbl,~,~] = anovan(response(:),groups,'model',model,'display','off','sstype',sstype);
 %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
 
 %     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
@@ -70,9 +74,10 @@ else
         omega(c).value = omegafun(tbl,i+1);
         omega(c).variable = tbl{i+1,1};
     end
-    omega(c+1).variable = 'Interactions';
-    omega(c+1).value = omegafun(tbl,[(length(groups)+2):(length(tbl)-2)]);
-   
+    if length(groups)>1
+        omega(c+1).variable = 'Interactions';
+        omega(c+1).value = omegafun(tbl,[(length(groups)+2):(size(tbl,1)-2)]);
+    end
 end
 
 

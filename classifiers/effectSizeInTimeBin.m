@@ -1,4 +1,13 @@
-function [effectSizes, ts] = effectSizeInTimeBin(data,epoch)
+function [effectSizes, ts] = effectSizeInTimeBin(data,epoch,varargin)
+
+
+p = inputParser;
+
+defaultPrevOut = false;
+addOptional(p,'prevOut',defaultPrevOut,@islogical);
+
+parse(p,varargin{:})
+prev_out = p.Results.prevOut;
 
 raster_params.time_before = 399;
 raster_params.time_after = 1200;
@@ -20,6 +29,7 @@ end
 ind = find(~boolFail);
 
 if strcmp(data.info.task,'rwd_direction_tuning') % FLOCCULUS TASK!
+    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     [~,match_p] = getRewardSize (data,ind,'omitNonIndexed',true);
 elseif strcmp(data.info.task,'choice')
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
@@ -66,8 +76,13 @@ for t=1:length(ts)
             effectSizes(t).interactions = omegas(3).value;
             
         case 'reward'
+            if strcmp(data.info.task,'choice')
             omegas = calOmegaSquare(response(t,:),{match_p,match_d,match_o},...
                 'partial',true,'model','interaction', 'includeTime',false);
+            else
+                omegas = calOmegaSquare(response(t,:),{match_p,match_d,match_o},...
+                    'partial',true,'model','interaction', 'includeTime',false);
+            end
             effectSizes(t).reward = omegas(1).value;
             effectSizes(t).direction = omegas(2).value;
             effectSizes(t).outcome = omegas(3).value;

@@ -72,5 +72,6 @@ for f = 1:length(flds)
         title(flds{f})
         
     end
+    legend(req_params.cell_type)
 end
 

@@ -23,8 +23,9 @@ if strcmp(data.info.task,'rwd_direction_tuning') % FLOCCULUS TASK!
 elseif strcmp(data.info.task,'choice')
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    
-    match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);
+    match_p = match_p(1,:);
+
+    %match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);
     match_d = match_d(1,:);
 else
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
@@ -58,7 +59,7 @@ switch epoch
         effectSizes.direction = omegas(2).value;
         effectSizes.reward = omegas(3).value;
     case 'reward'
-        omegas = calOmegaSquare(response,{match_d,match_o,match_p},'partial',true,'model','interaction');
+        omegas = calOmegaSquare(response,{match_o,match_p},'partial',true,'model','interaction');
         effectSizes.time = omegas(1).value;
         effectSizes.reward = omegas(2).value;
         effectSizes.direction = omegas(3).value;

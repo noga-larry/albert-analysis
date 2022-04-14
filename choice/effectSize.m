@@ -48,7 +48,7 @@ sgtitle('Cue','Interpreter', 'none');
 
 %%
 
-bool = cellID>5000
+bool = cellID<5000
 
 
 N = length(req_params.cell_type);
