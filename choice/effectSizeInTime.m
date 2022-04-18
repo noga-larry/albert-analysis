@@ -10,7 +10,7 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 req_params.num_trials = 120;
 
-raster_params.align_to = 'reward';
+epoch = 'reward';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -27,8 +27,7 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effectSizes(ii,:),ts] = effectSizeInTimeBin...
-        (data,raster_params.align_to);
+    [effectSizes(ii,:),ts] = effectSizeInTimeBin(data,epoch);
 end
 
 %%

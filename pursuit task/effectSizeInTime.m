@@ -6,8 +6,8 @@ PLOT_CELL = false;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4797;
+req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
+req_params.ID = 5818;
 
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -27,7 +27,7 @@ for ii = 1:length(cells)
     cellID(ii) = data.info.cell_ID;  
     
     [effectSizes(ii,:),ts] = effectSizeInTimeBin...
-        (data,raster_params.align_to);
+        (data,raster_params.align_to,'prevOut',false);
     
     if PLOT_CELL
         
@@ -69,7 +69,7 @@ for f = 1:length(flds)
         
         errorbar(ts,nanmean(a,1), nanSEM(a,1))
         xlabel(['time from ' raster_params.align_to ' (ms)' ])
-        title(flds{f})
+        title(flds{f}, 'Interpreter', 'none')
         
     end
     legend(req_params.cell_type)

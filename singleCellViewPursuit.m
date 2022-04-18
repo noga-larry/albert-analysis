@@ -15,7 +15,7 @@ req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.num_trials = 10;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.ID = [4351 4797 5215 5236 5263 5318 5320 5790];
+req_params.ID = 5818;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

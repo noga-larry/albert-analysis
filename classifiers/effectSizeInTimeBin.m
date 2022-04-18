@@ -28,21 +28,7 @@ end
 
 ind = find(~boolFail);
 
-if strcmp(data.info.task,'rwd_direction_tuning') % FLOCCULUS TASK!
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    [~,match_p] = getRewardSize (data,ind,'omitNonIndexed',true);
-elseif strcmp(data.info.task,'choice')
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-    match_p = (match_p(1,:)/25)*length(PROBABILITIES)+(match_p(2,:)/25);
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    match_d = match_d(1,:);
-else
-    [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
-    [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
-end
-
-match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
-[match_o] = getOutcome (data,ind,'omitNonIndexed',true);
+groups = createGroups(data,epoch,ind,prev_out);
 
 raster = getRaster(data,find(~boolFail),raster_params);
 response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
@@ -57,36 +43,40 @@ for t=1:length(ts)
         case 'cue'
             
             if strcmp(data.info.task,'choice')
-                omegas = calOmegaSquare(response(t,:),{match_d,match_p},'partial',...
+                omegas = calOmegaSquare(response(t,:),groups,'partial',...
                     true, 'includeTime',false);
                 effectSizes(t).direction = omegas(1).value;
                 effectSizes(t).reward = omegas(2).value;
-                effectSizes(t).interactions = omegas(3).value;
             else
-                omegas = calOmegaSquare(response(t,:),{match_p},'partial',true,...
+                omegas = calOmegaSquare(response(t,:),groups,'partial',true,...
                     'includeTime',false);
                 effectSizes(t).reward = omegas(1).value;
             end
             
         case 'targetMovementOnset'
-            omegas = calOmegaSquare(response(t,:),{match_d,match_p},'partial',true,...
+            omegas = calOmegaSquare(response(t,:),groups,'partial',true,...
                 'includeTime',false);
             effectSizes(t).direction = omegas(1).value;
             effectSizes(t).reward = omegas(2).value;
-            effectSizes(t).interactions = omegas(3).value;
             
         case 'reward'
-            if strcmp(data.info.task,'choice')
-            omegas = calOmegaSquare(response(t,:),{match_p,match_d,match_o},...
+            omegas = calOmegaSquare(response(t,:),groups,...
                 'partial',true,'model','interaction', 'includeTime',false);
-            else
-                omegas = calOmegaSquare(response(t,:),{match_p,match_d,match_o},...
-                    'partial',true,'model','interaction', 'includeTime',false);
-            end
             effectSizes(t).reward = omegas(1).value;
             effectSizes(t).direction = omegas(2).value;
             effectSizes(t).outcome = omegas(3).value;
-            effectSizes(t).interactions = omegas(4).value;
-
+            
+            
+    end   
+    
+    if prev_out
+        effectSizes(t).prev_out = omegas(end-1).value;
     end
+    
+    if length(groups)>1
+        effectSizes(t).interactions = omegas(end).value;
+    end
+end
+
+
 end

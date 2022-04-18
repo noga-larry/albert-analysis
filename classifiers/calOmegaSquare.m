@@ -59,14 +59,15 @@ end
 if includeTime
     c=0;
     for i = 1:length(groups)
-        inx1 = find(strcmp({tbl{:,1}},['X' num2str(i)]));
-        inx2 = find(strcmp({tbl{:,1}},['X1*X' num2str(i)]));        
+        inx1 = find(strcmp(tbl(:,1),['X' num2str(i)]));
+        inx2 = find(strcmp(tbl(:,1),['X1*X' num2str(i)]));        
         c = c+1;
         omega(c).value = omegafun(tbl,[inx1 inx2]);
         omega(c).variable = tbl{inx1,1};
     end
-    omega(c+1).variable = 'Total';
-    omega(c+1).value = (totVar - SSe)/totVar;
+    inx = findRegexpInCell(tbl(:,1),'(X[2-9]\*)|(X1\*X[2-9]\*X[2-9])');
+    omega(c+1).variable = 'Interactions';
+    omega(c+1).value = omegafun(tbl,inx);
 else
     c=0;
     for i = 1:length(groups)

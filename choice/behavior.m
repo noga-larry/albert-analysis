@@ -2,13 +2,13 @@ clear all
 
 [task_info,supPath,MaestroPath] =...
     loadDBAndSpecifyDataPaths('Vermis');
-
+PROBABILITIES = 0:25:100;
 NUM_COND = 20;
 req_params.remove_repeats = 0;
 req_params.grade = 7;
 req_params.cell_type = 'CRB|PC|BG|SNR';
 req_params.task = 'choice';
-req_params.ID = 5000:6000;
+req_params.ID = 4000:6000;
 req_params.num_trials = 180;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = 0;
@@ -23,7 +23,7 @@ displayTime = behavior_params.time_after+behavior_params.time_before+1;
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-probabilities  = [0:25:100];
+PROBABILITIES  = [0:25:100];
 velH = nan(NUM_COND,length(cells),displayTime);
 velV = nan(NUM_COND,length(cells),displayTime);
 fracCorrect = nan(NUM_COND,length(cells));
@@ -34,14 +34,14 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
     
-    [probabilities,match_p] = getProbabilities (data);
+    [~,match_p] = getProbabilities (data);
     [~,match_d] = getDirections(data);
     boolFail = [data.trials.fail] & ~[data.trials.choice];
     
-    for j = 1:length(probabilities)
-        for  k = j+1:length(probabilities)
-            boolProb = (match_p(1,:) == probabilities(k) & ...
-                match_p(2,:) == probabilities(j));
+    for j = 1:length(PROBABILITIES)
+        for  k = j+1:length(PROBABILITIES)
+            boolProb = (match_p(1,:) == PROBABILITIES(k) & ...
+                match_p(2,:) == PROBABILITIES(j));
             condCounter = condCounter+1;
             boolDir = match_d(1,:)==90;
             
@@ -69,21 +69,21 @@ fracCorrect = fracCorrect(2:2:end,:);
 %%
 condCounter = 0;
 
-for j = 1:length(probabilities)
-    for  k = j+1:length(probabilities)
+for j = 1:length(PROBABILITIES)
+    for  k = j+1:length(PROBABILITIES)
         condCounter = condCounter+1;
         
-        probCondition(1,condCounter) = probabilities(j);
-        probCondition(2,condCounter) = probabilities(k);
+        probCondition(1,condCounter) = PROBABILITIES(j);
+        probCondition(2,condCounter) = PROBABILITIES(k);
         
-        leg{condCounter} = [num2str(probabilities(j)) ...
-            ' vs ' num2str(probabilities(k))];
+        leg{condCounter} = [num2str(PROBABILITIES(j)) ...
+            ' vs ' num2str(PROBABILITIES(k))];
         
         
         condCounter = condCounter+1;
         
-        probCondition(1,condCounter) = probabilities(j);
-        probCondition(2,condCounter) = probabilities(k);
+        probCondition(1,condCounter) = PROBABILITIES(j);
+        probCondition(2,condCounter) = PROBABILITIES(k);
         
         leg{condCounter} = '';
         
@@ -96,12 +96,14 @@ c = varycolor(length(leg)/2);
 col = nan(length(leg),3);
 col(1:2:end,:) = c; col(2:2:end,:) = c;
 for j=1:length(leg)
-    plot(aveVelH(j,:)',aveVelV(j,:)','Color',col(j,:))
+    
+    [rotH, rotV] = rotateEyeMovement(aveVelH(j,:)',aveVelV(j,:)',45);
+    plot(rotH, rotV,'Color',col(j,:))
 end
 
 
 legend(leg,'Location','northwest')
-equalAxis
+equalAxis()
 xlabel('Horizontal Vel')
 ylabel('Vertical Vel')
 
@@ -149,6 +151,25 @@ ylabel('angle difference (deg)')
 xlabel(regress_by)
 title(['R^2_{adjusted} = ' num2str(mdl.Rsquared.Adjusted)])
 
+
+figure;
+bias_M = nan(length(PROBABILITIES));
+ave_angle_diff = mean(angle_difference,2);
+x = probCondition(:,1:2:end)
+for j = 1:length(PROBABILITIES)
+    for  k = j+1:length(PROBABILITIES)
+        ind = find(x(1,:)==PROBABILITIES(j) & ...
+            x(2,:)==PROBABILITIES(k));
+        bias_M(j,k)=ave_angle_diff(ind);
+        
+    end
+end
+
+figure
+imagesc(PROBABILITIES,PROBABILITIES,bias_M)
+xticks(PROBABILITIES)
+yticks(PROBABILITIES)
+colorbar
 %%
 figure; hold on
 for j=1:length(leg)
