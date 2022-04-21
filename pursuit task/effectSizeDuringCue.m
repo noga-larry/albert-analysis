@@ -7,10 +7,10 @@ EPOCH = 'cue';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25';
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 
-req_params.ID = 5545;
-req_params.num_trials = 50;
+req_params.ID = 4000:6000;
+req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = 0;
 
@@ -78,6 +78,19 @@ legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
 %% comparisoms fron input-output figure
+
+inputOutputFig([effects.reward],cellType)
+
+
+
+
+
+
+
+
+
+
+%%
 figure
 
 effect_size = [effects.reward];

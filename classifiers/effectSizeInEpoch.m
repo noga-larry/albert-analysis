@@ -29,7 +29,16 @@ ind = find(~boolFail);
 groups = createGroups(data,epoch,ind,prev_out);
 
 raster = getRaster(data,find(~boolFail),raster_params);
+
+p = randperm(size(raster,2));
+raster = raster(:,p);
+raster = [binornd(1,0.01,100, size(raster,2)); binornd(1,0.02, 100, size(raster,2));...
+    binornd(1,0.03,100, size(raster,2)); binornd(1,0.04, 100, size(raster,2));...
+    binornd(1,0.05,100, size(raster,2)); binornd(1,0.06, 100, size(raster,2));...
+    binornd(1,0.07,100, size(raster,2)); binornd(1,0.08, 101, size(raster,2))];
+
 response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+
 
 switch epoch
     case 'cue'
@@ -59,4 +68,6 @@ switch epoch
         effectSizes.outcome = omegas(4).value;        
 end
 
-effectSizes.interactions = omegas(end).value;
+if length(groups)>1
+    effectSizes.interactions = omegas(end).value;
+end
