@@ -11,7 +11,7 @@ addOptional(p,'sstype',defaultSstype,@isnumeric);
 defaultIncludeTime = true;
 addOptional(p,'includeTime',defaultIncludeTime,@islogical);
 
-defaultModel = 'interaction';
+defaultModel = 'full';
 addOptional(p,'model',defaultModel,@ischar);
 
 parse(p,varargin{:})

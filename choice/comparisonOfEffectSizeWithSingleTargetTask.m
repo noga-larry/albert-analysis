@@ -10,7 +10,7 @@ req_params.cell_type = {'PC ss', 'CRB','SNR', 'BG msn'};
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
-epoch = 'reward';
+epoch = 'targetMovementOnset';
 
 req_params.num_trials = 120;
 req_params.task = 'choice';
@@ -37,10 +37,26 @@ for ii = 1:length(lines)
         if d==1
             assert(strcmp(data.info.task,'choice'))
         end
+       
         
-        [effectSizesInTime(ii,d,:),ts] = effectSizeInTimeBin(data,epoch);
+        [eff_time,ts] = effectSizeInTimeBin(data,epoch);
+        eff = effectSizeInEpoch(data,epoch);
         
-        [effectSizes(ii,d)] = effectSizeInEpoch(data,epoch);
+        if strcmp(epoch,'cue') & ~strcmp(data.info.task,'choice')
+            eff.direction =NaN;
+            eff.interactions =NaN;
+            for i=1:length(eff_time)
+                eff_time(i).direction =NaN;
+                eff_time(i).interactions =NaN;
+            end
+        end
+        
+        eff_time = orderfields(eff_time);
+        eff = orderfields(eff);
+        
+        effectSizesInTime(ii,d,:) = eff_time;
+        
+        [effectSizes(ii,d)] = eff;
        
     end
 end
@@ -95,9 +111,14 @@ for f = 1:length(flds)
         indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
         
         scatter([effectSizes(indType,1).(flds{f})],[effectSizes(indType,2).(flds{f})])
+        if ~all(isnan([effectSizes(indType,2).(flds{f})]))
+            p = signrank([effectSizes(indType,1).(flds{f})],[effectSizes(indType,2).(flds{f})]);
+        else
+            p=NaN;
+        end
         ylabel('single');
         xlabel('choice')
-        title(['Type: ' req_params.cell_type{i} ' - ' flds{f}])
+        title(['Type: ' req_params.cell_type{i} ' - ' flds{f} ', p = ' num2str(p)])
         equalAxis()
         refline(1,0)
         

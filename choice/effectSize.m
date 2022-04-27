@@ -48,7 +48,7 @@ sgtitle('Cue','Interpreter', 'none');
 
 %%
 
-bool = cellID<5000
+bool = cellID<inf
 
 
 N = length(req_params.cell_type);
@@ -88,3 +88,50 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p)])
     
 end
+
+
+%%
+
+figure
+
+effect_size = [effects.outcome];
+
+x1 = subplot(2,2,1); hold on
+x2 = subplot(2,2,2); hold on
+x3 = subplot(2,2,3); hold on
+x4 = subplot(2,2,4); hold on
+
+indType = find(strcmp('SNR', cellType));
+plot(x1,3,effect_size(indType),'ob')
+ci = bootci(2000,@median,effect_size(indType))
+errorbar(x2,3,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+indType = find(strcmp('BG msn', cellType));
+plot(x1,4,effect_size(indType),'or')
+ci = bootci(2000,@median,effect_size(indType))-median(effect_size(indType))
+errorbar(x2,4,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+p = ranksum(effect_size(find(strcmp('SNR', cellType))),effect_size(find(strcmp('BG msn', cellType))))
+title(x2,['p = ' num2str(p) ', n_{SNR} = ' num2str(sum(strcmp('SNR', cellType))) ...
+    ', n_{msn} = ,' num2str(sum(strcmp('BG msn', cellType)))])
+
+
+indType = find(strcmp('PC ss', cellType));
+plot(x3,3,effect_size(indType),'ob')
+ci = bootci(2000,@median,effect_size(indType)) - median(effect_size(indType))
+errorbar(x4,3,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+
+indType = find(strcmp('CRB', cellType));
+plot(x3,4,effect_size(indType),'or')
+ci = bootci(2000,@median,effect_size(indType))
+errorbar(x4,4,median(effect_size(indType)),ci(1),ci(2),'LineWidth',4)
+
+p = ranksum(effect_size(find(strcmp('PC ss', cellType))),effect_size(find(strcmp('CRB', cellType))))
+title(['p = ' num2str(p) ', n_{ss} = ' num2str(sum(strcmp('PC ss', cellType))) ...
+    ', n_{crb} = ,' num2str(sum(strcmp('CRB', cellType)))])
+
+input_output = cellfun(@(x)~isempty(x),regexp('PC ss|SNR',cellType)) 
+bg_crb = cellfun(@(x)~isempty(x),regexp('PC ss|CRB',cellType)) 
+Data = [effect_size',input_output',bg_crb']
+out = SRH_test(Data,'area','input_output')

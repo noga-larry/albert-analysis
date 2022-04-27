@@ -27,7 +27,8 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effectSizes(ii,:),ts] = effectSizeInTimeBin(data,epoch);
+    [effectSizes(ii,:),ts,low(ii)] = effectSizeInTimeBin(data,epoch,'prevOut',false);
+
 end
 
 %%
@@ -35,7 +36,7 @@ end
 flds = fields(effectSizes);
 figure
 
-h = cellID<inf
+h = ~low & cellID<inf
 
 for f = 1:length(flds)
     
@@ -48,7 +49,7 @@ for f = 1:length(flds)
         a = reshape([effectSizes(indType,:).(flds{f})],length(indType),length(ts));
         
         errorbar(ts,nanmean(a,1), nanSEM(a,1))
-        xlabel(['time from ' raster_params.align_to ' (ms)' ])
+        xlabel(['time from ' epoch ' (ms)' ])
         title(flds{f})
         
     end

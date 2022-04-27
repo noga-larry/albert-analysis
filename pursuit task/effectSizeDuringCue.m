@@ -79,7 +79,7 @@ sgtitle('Cue','Interpreter', 'none');
 
 %% comparisoms fron input-output figure
 
-inputOutputFig([effects.reward],cellType)
+inputOutputFig([effects.direction],cellType)
 
 
 

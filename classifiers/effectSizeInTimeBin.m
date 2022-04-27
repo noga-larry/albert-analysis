@@ -1,6 +1,10 @@
-function [effectSizes, ts] = effectSizeInTimeBin(data,epoch,varargin)
+function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
 
+MINIMAL_RATE_IN_BIN =0.001;
+BIN_SIZE = 100;
+PROBABILITIES = 0:25:100;
 
+low=0;
 p = inputParser;
 
 defaultPrevOut = false;
@@ -13,9 +17,7 @@ raster_params.time_before = 399;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 0;
 
-BIN_SIZE = 50;
 
-PROBABILITIES = 0:25:100;
 
 raster_params.align_to = epoch;
 
@@ -37,6 +39,10 @@ response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
 ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
 for t=1:length(ts)
+    
+    if mean(response(t,:))<MINIMAL_RATE_IN_BIN;
+        low = 1;
+    end
     
     switch epoch
         
