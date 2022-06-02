@@ -11,7 +11,7 @@ req_params.num_trials = 100;
 req_params.remove_repeats = false;
 req_params.ID = 4000:6000;
 
-raster_params.align_to = 'cue';
+raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 200;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 300;
@@ -174,7 +174,7 @@ for i = 1:length(req_params.cell_type)
     xlabel(['Time from ' raster_params.align_to ])
     ylabel('Accuracy')
     ylim([0 1])
-    yline(0.2)
+    yline(0.5)
 end
 
 legend('correct', 'error')

@@ -10,7 +10,8 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 req_params.num_trials = 120;
 
-epoch = 'reward';
+
+epoch = 'cue';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

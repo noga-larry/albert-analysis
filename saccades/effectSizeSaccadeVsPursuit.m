@@ -6,7 +6,7 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.num_trials = 70;
+req_params.num_trials = 100;
 
 req_params.task = 'saccade_8_dir_75and25';
 lines_choice = findLinesInDB (task_info, req_params);
@@ -14,15 +14,7 @@ lines_choice = findLinesInDB (task_info, req_params);
 req_params.task = 'pursuit_8_dir_75and25';
 lines_single = findLinesInDB (task_info, req_params);
 
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 0;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-bin_sz = 50;
-
-EPOCH = raster_params.align_to;
-ts = -raster_params.time_before:raster_params.time_after;
+EPOCH = 'targetMovementOnset';
 
 lines = findSameNeuronInTwoLinesLists(task_info,lines_choice,lines_single);
 
@@ -49,7 +41,7 @@ end
 N = length(req_params.cell_type);
 figure;
 
-h = cellID<inf
+h = cellID>5000
 
 flds = fields(effects);
 for j=1:length(flds)

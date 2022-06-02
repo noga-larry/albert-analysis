@@ -4,15 +4,16 @@ clear
 PROBABILITIES = [25,75];
 
 req_params.grade = 7;
-req_params.ID = 4243;
+req_params.ID = 5287;
 req_params.remove_question_marks = 1;
-req_params.num_trials = 50;
+req_params.num_trials = 10;
 req_params.remove_repeats = false;
 
+req_params.task = 'pursuit_8_dir_75and25';
 raster_params.time_before = 399;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 100;
-raster_params.align_to = '';
+raster_params.align_to = 'cue';
 
 lines = findCspkSspkPairs(task_info,req_params);
 

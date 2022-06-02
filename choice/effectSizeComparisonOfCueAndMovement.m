@@ -1,17 +1,11 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
-PROBABILITIES = 0:25:100;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'choice';
 req_params.num_trials = 70;
 req_params.remove_question_marks = 1;
-
-raster_params.time_before = 0;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-bin_sz = 50;
 
 ts = -raster_params.time_before:raster_params.time_after;
 

@@ -7,12 +7,12 @@ PLOT_CELL = false;
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-%req_params.ID = 5818;
+req_params.ID = 5287;
 
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'reward';
+raster_params.align_to = 'cue';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

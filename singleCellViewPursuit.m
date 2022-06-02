@@ -12,10 +12,10 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.num_trials = 10;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
-req_params.ID = 5818;
+req_params.ID = 5287;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

@@ -1,21 +1,29 @@
-N = 1000;
-T =20; 
+REPEATS = 1000;
+T = 100; 
 L = 2:10;
+
+ettaEffectSize = nan(REPEATS,length(L));
+omegaEffectSize = nan(REPEATS,length(L));
+
 for j=1:length(L)
-    for ii = 1:N
+    for ii = 1:REPEATS
         
         response = randn(1,T);     
         group = mod(1:T,L(j));
         
-        [p,tbl,stats,terms] = anovan(response(:),{group(:)},...
-            'model','interaction','display','off');
+        [~,tbl,~,~] = anovan(response(:),{group},'model','full','display','off','sstype',2);
         
-        SST = tbl{4,2};
-        msw = tbl{3,5};
+        totVar = tbl{end,2};
+        msw = tbl{end-1,5};
+        SSe = tbl{end-1,2};
+        N = length(response(:));
         
-        omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+SST);
-        etta = @(tbl,dim) tbl{dim,2}/SST;
-        omegaEffectSize(ii,j) = omega(tbl,2);
+        omegafun = @(tbl,dim) (sum([tbl{dim,2}])-(sum([tbl{dim,3}])*msw))/...
+            (sum([tbl{dim,2}])+(N-sum([tbl{dim,3}]))*msw);
+        
+        etta = @(tbl,dim) tbl{dim,2}/(tbl{dim,2}+tbl{end-1,2});
+        
+        omegaEffectSize(ii,j) = omegafun(tbl,2);
         ettaEffectSize(ii,j) = etta(tbl,2);
     end
     

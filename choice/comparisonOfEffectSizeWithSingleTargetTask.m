@@ -10,7 +10,7 @@ req_params.cell_type = {'PC ss', 'CRB','SNR', 'BG msn'};
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
-epoch = 'targetMovementOnset';
+epoch = 'cue';
 
 req_params.num_trials = 120;
 req_params.task = 'choice';
@@ -47,7 +47,7 @@ for ii = 1:length(lines)
             eff.interactions =NaN;
             for i=1:length(eff_time)
                 eff_time(i).direction =NaN;
-                eff_time(i).interactions =NaN;
+                eff_time(i).interactions = NaN;
             end
         end
         
@@ -112,13 +112,17 @@ for f = 1:length(flds)
         
         scatter([effectSizes(indType,1).(flds{f})],[effectSizes(indType,2).(flds{f})])
         if ~all(isnan([effectSizes(indType,2).(flds{f})]))
-            p = signrank([effectSizes(indType,1).(flds{f})],[effectSizes(indType,2).(flds{f})]);
+            p1 = signrank([effectSizes(indType,1).(flds{f})],[effectSizes(indType,2).(flds{f})]);
         else
-            p=NaN;
+            p1=NaN;
         end
-        ylabel('single');
-        xlabel('choice')
-        title(['Type: ' req_params.cell_type{i} ' - ' flds{f} ', p = ' num2str(p)])
+        
+        [r,p2] = corr([effectSizes(indType,1).(flds{f})]',[effectSizes(indType,2).(flds{f})]','type','Spearman')
+
+        xlabel('single');
+        ylabel('choice')
+        title(['Type: ' req_params.cell_type{i} ' - ' flds{f} ', p = ' num2str(p1)...
+            '| r = ' num2str(r) ', p = ' num2str(p2) ])
         equalAxis()
         refline(1,0)
         

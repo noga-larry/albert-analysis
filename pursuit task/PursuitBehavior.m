@@ -2,13 +2,13 @@
 
 clear 
 
-[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
 req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 50;
+req_params.ID = 5000:6000;
+req_params.num_trials = 70;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = false;
 
@@ -23,7 +23,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
+    data = getBehavior(data,supPath);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     indLow = find (match_p == 25 & (~boolFail));

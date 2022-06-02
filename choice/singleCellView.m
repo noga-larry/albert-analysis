@@ -1,17 +1,17 @@
-clear all
+%clear all
 
 
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Golda');
+    loadDBAndSpecifyDataPaths('Vermis');
 
 angles = [0,90];
 probabilities = [0:25:100];
 col = varycolor(10);
 
 req_params.grade = 7;
-req_params.cell_type = 'BG msn';
+%req_params.cell_type = 'BG msn';
 req_params.task = 'choice';
-req_params.ID = 5106;
+req_params.ID = 4357;
 req_params.num_trials = 100;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = 0;
@@ -20,7 +20,7 @@ raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 10;
-raster_params.align_to = 'cue';
+raster_params.align_to = 'reward';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

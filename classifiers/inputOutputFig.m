@@ -14,8 +14,6 @@ effecsForDisplay(indNegative) = -log(-effect(indNegative));
 posBins = linspace(min(effecsForDisplay(indPositive)), max(effecsForDisplay(indPositive)), 40);
 negBins = linspace(min(effecsForDisplay(indNegative)), max(effecsForDisplay(indNegative)), 10);
 
-
-
 uniqueCellTypes = uniqueRowsCA(cellType');
 col = varycolor(length(uniqueCellTypes));
 

@@ -214,7 +214,6 @@ for ii = 1:length(cells )
     psthHigh(ii,:) = raster2psth(rasterHigh,raster_params);
     
     
-    
 end
 
 figure;
@@ -246,20 +245,20 @@ clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
 WINDOW_SIZE = 50;
-NUM_COMPARISONS = 1; 
+NUM_COMPARISONS = 2; 
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.num_trials = 80;
+
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 
 raster_params.align_to = 'cue';
-raster_params.time_before = 300;
-raster_params.time_after = 500;
+raster_params.time_before = 399;
+raster_params.time_after = 1200;
 raster_params.smoothing_margins = 0; % ms in each side
-raster_params.SD = 15;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -271,6 +270,9 @@ ts = -(raster_params.time_before - ceil(WINDOW_SIZE/2)): ...
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
+    
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     
@@ -279,82 +281,30 @@ for ii = 1:length(cells)
     raster = getRaster(data,ind,raster_params);
     
     func = @(raster) sigFunc(raster,match_p(ind));
-    returnTrace(ii,:) = ...
+    returnTrace(ii,:,:) = ...
         runningWindowFunction(raster,func,WINDOW_SIZE,NUM_COMPARISONS);
 
 end
 
+%%
 figure;
-plot(ts,mean(returnTrace))
+for j=1:NUM_COMPARISONS
+    subplot(NUM_COMPARISONS,1,j); hold on
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    plot(ts,squeeze(mean(returnTrace(indType,:,j),1)),'*')
+end
 xlabel('Time from cue')
 ylabel('Frac significiant')
 
 
-sgtitle(req_params.cell_type)
-
-
-%% Etta squared as function of time
-
-clear all
-
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-
-req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 20;
-req_params.remove_question_marks = 1;
-
-raster_params.allign_to = 'cue';
-raster_params.cue_time = 500;
-raster_params.time_before = 300;
-raster_params.time_after = 500;
-raster_params.smoothing_margins = 50; % ms in each side
-
-lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,lines);
-
-ts = -raster_params.time_before : raster_params.time_after;
-
-
-HighTail = nan(length(cells),length(ts));
-LowTail =nan(length(cells),length(ts));
-
-timeWindow = -raster_params.smoothing_margins:...
-    raster_params.smoothing_margins;
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-    
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail] | ~[ data.trials.previous_completed];
-    
-    indLow = find (match_p == 25 & (~boolFail));
-    indHigh = find (match_p == 75 & (~boolFail));
-    rasterLow = getRaster(data,indLow,raster_params);
-    rasterHigh = getRaster(data,indHigh,raster_params);
-    
-    for t = 1:length(ts)
-        runningWindow = raster_params.smoothing_margins + t + timeWindow;
-        spksHigh = sum(rasterHigh(runningWindow,:));
-        spksLow = sum(rasterLow(runningWindow,:));
-        tot_mean = mean([spksHigh, spksLow]);
-        ssb = length(spksHigh)*((mean(spksHigh) - tot_mean)^2) + ...
-            length(spksLow)*((mean(spksLow) - tot_mean)^2);
-        sst = sum(([spksHigh, spksLow]-tot_mean).^2);
-        etta(ii,t) = ssb/sst;
-    end
+legend(req_params.cell_type)
 end
 
-aveEtta = nanmean(etta);
-semEtta = nanstd(etta)/length(cells); 
-figure;
-errorbar(ts,aveEtta,semEtta); 
-xlabel('Time from cue')
-ylabel('Etta')
+
+%% correlation of response - how consistent is it
+
 
 
 %%
@@ -363,9 +313,9 @@ function h = sigFunc(raster,match_p)
 % comparison 25 vs 75
 spk1 = sum(raster(:,match_p==25));
 spk2 = sum(raster(:,match_p==75));
-p = ranksum(spk1,spk2);
+p1 = ranksum(spk1,spk2,'tail','left');
 
-h = p'<0.05;
-
+p2 = ranksum(spk1,spk2,'tail','right');
+h = [p1 ,p2]'<0.05;
 end
 

@@ -1,12 +1,13 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
-PROBABILITIES = 0:25:100;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.task = 'choice';
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
+req_params.remove_repeats = false;
+
 
 EPOCH = 'reward';
 
@@ -94,7 +95,11 @@ end
 
 figure
 
-effect_size = [effects.outcome];
+effect_size = [effects.direction];
+
+
+inputOutputFig([effects.direction],cellType)
+
 
 x1 = subplot(2,2,1); hold on
 x2 = subplot(2,2,2); hold on
