@@ -1,49 +1,20 @@
 function inputOutputfig(effect, cellType)
 
 figure; 
-NUM_BINS = 50;
 REPEATS = 10000;
 
+pops = {'SNR','BG msn','PC ss','CRB'};
+cols = {'r','y','b','g'};
 
-indPositive = find(effect>0);
-indNegative= find(effect<=0);
+x1 = subplot(3,1,1); hold on
+x2 = subplot(3,1,2); hold on
 
-effecsForDisplay(indPositive) = log(effect(indPositive));
-effecsForDisplay(indNegative) = -log(-effect(indNegative));
 
-posBins = linspace(min(effecsForDisplay(indPositive)), max(effecsForDisplay(indPositive)), 40);
-negBins = linspace(min(effecsForDisplay(indNegative)), max(effecsForDisplay(indNegative)), 10);
-
-uniqueCellTypes = uniqueRowsCA(cellType');
-col = varycolor(length(uniqueCellTypes));
-
-subplot(2,1,1); hold on
-leg = {};
-tit ='';
-for i = 1:length(uniqueCellTypes)
-    
-    indType = find(strcmp(uniqueCellTypes{i}, cellType));
-    
-    [countsPositive, centersPositive] = hist(effecsForDisplay(intersect(indType,indPositive)), posBins);
-    [countsNegative, centersNegative] = hist(effecsForDisplay(intersect(indType,indNegative)), negBins);
-    
-    normalization = sum(countsPositive)+sum(countsNegative);
-    countsPositive = countsPositive/normalization;
-    countsNegative = countsNegative/normalization;
-    
-    plot(centersPositive,countsPositive,'Color',col(i,:))
-    plot(centersNegative,countsNegative,'Color',col(i,:))
-    
-    leg{end+1} = uniqueCellTypes{i};
-    leg{end+1} = uniqueCellTypes{i};
-    
-    tit = [tit ' ' uniqueCellTypes{i} ' = ' num2str(length(indType)) ];
+for i = 1:length(pops)
+    indType = find(strcmp(pops{i}, cellType));
+    plot(x1,i,effect(indType),['o' cols{i}])
+    errorbar(x2,i,mean(effect(indType)),nanSEM(effect(indType)),cols{i},'LineWidth',4)
 end
-
-title(tit)
-legend(leg)
-
-
 
 % bootstrap interaction test
 effectForTest = effect;
@@ -69,7 +40,7 @@ for i = 1:REPEATS
     ssb(i) = ssb_stat(p_vec, cellType);
 end
 
-subplot(2,1,2); hold on
+subplot(3,1,3); hold on
 
 histogram(ssb,'Normalization','Probability')
 xline(ssb_true,'r','LineWidth',2)

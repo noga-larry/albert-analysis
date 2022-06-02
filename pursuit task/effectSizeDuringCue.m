@@ -82,14 +82,6 @@ sgtitle('Cue','Interpreter', 'none');
 inputOutputFig([effects.reward],cellType)
 
 
-
-
-
-
-
-
-
-
 %%
 figure
 
