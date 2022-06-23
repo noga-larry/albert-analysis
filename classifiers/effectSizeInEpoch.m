@@ -26,7 +26,9 @@ end
 
 ind = find(~boolFail);
 
-groups = createGroups(data,epoch,ind,prev_out);
+[groups, group_names]= createGroups(data,epoch,ind,prev_out);
+group_names = {'time', group_names{:}};
+
 
 raster = getRaster(data,find(~boolFail),raster_params);
 
@@ -44,28 +46,29 @@ switch epoch
     case 'cue'
         
         if strcmp(data.info.task,'choice')
-            omegas = calOmegaSquare(response,groups,'partial',true);
+            omegas = calOmegaSquare(response,groups,group_names,'partial',true);
             effectSizes.time = omegas(1).value;
             effectSizes.direction = omegas(2).value;
             effectSizes.reward = omegas(3).value;
         else
-            omegas = calOmegaSquare(response,groups,'partial',true);
+            omegas = calOmegaSquare(response,groups,group_names,'partial',true);
             effectSizes.time = omegas(1).value;
             effectSizes.reward = omegas(2).value;
         end
 
     case 'targetMovementOnset'
-        omegas = calOmegaSquare(response,groups,'partial',true);
+        omegas = calOmegaSquare(response,groups,group_names,'partial',true);
         effectSizes.time = omegas(1).value;
         effectSizes.direction = omegas(2).value;
         effectSizes.reward = omegas(3).value;
         
     case 'reward'
-        omegas = calOmegaSquare(response,groups,'partial',true);
+        omegas = calOmegaSquare(response,groups,group_names,'partial',true);
         effectSizes.time = omegas(1).value;
         effectSizes.reward = omegas(2).value;
         effectSizes.direction = omegas(3).value;
-        effectSizes.outcome = omegas(4).value;        
+        effectSizes.outcome = omegas(4).value;  
+        effectSizes.prediction = omegas(5).value;   
 end
 
 if length(groups)>1

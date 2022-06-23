@@ -1,4 +1,4 @@
-function omega = calOmegaSquare(response,labels,varargin)
+function omega = calOmegaSquare(response,labels,label_names, varargin)
 
 p = inputParser;
 
@@ -34,7 +34,7 @@ for i = 1:length(groups)
     groups{i} = tmp(:);
 end
 
-[~,tbl,~,~] = anovan(response(:),groups,'model',model,'display','off','sstype',sstype);
+[~,tbl,~,~] = anovan(response(:),groups,'varnames',label_names,'model',model,'display','off','sstype',sstype);
 %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
 
 %     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
@@ -59,21 +59,35 @@ end
 if includeTime
     c=0;
     for i = 1:length(groups)
-        inx1 = find(strcmp(tbl(:,1),['X' num2str(i)]));
-        inx2 = find(strcmp(tbl(:,1),['X1*X' num2str(i)]));        
+        inx1 = find(strcmp(tbl(:,1),label_names{i}));
+        inx2 = find(strcmp(tbl(:,1),['time*' label_names{i}]));        
         c = c+1;
         omega(c).value = omegafun(tbl,[inx1 inx2]);
         omega(c).variable = tbl{inx1,1};
     end
+    
+    inx1 = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
+    inx2 = find(strcmp(tbl(:,1),'directions*reward probability*reward outcome'));
+    
+
+    omega(c+1).variable = 'prediction error';
+    omega(c+1).value = omegafun(tbl,[inx1 inx2]);
+    
     inx = findRegexpInCell(tbl(:,1),'(X[2-9]\*)|(X1\*X[2-9]\*X[2-9])');
-    omega(c+1).variable = 'Interactions';
-    omega(c+1).value = omegafun(tbl,inx);
+    omega(c+2).variable = 'Interactions';
+    omega(c+2).value = omegafun(tbl,inx);
 else
     c=0;
     for i = 1:length(groups)
         c = c+1;
         omega(c).value = omegafun(tbl,i+1);
         omega(c).variable = tbl{i+1,1};
+    end
+    if any(strcmp(tbl(:,1),'reward probability*reward outcome'))
+        inx = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
+        omega(c+1).value = omegafun(tbl,inx);
+        omega(c+1).variable = 'prediction error';
+        c = c+1;
     end
     if length(groups)>1
         omega(c+1).variable = 'Interactions';

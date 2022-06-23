@@ -1,5 +1,5 @@
 
-function groups = createGroups(data,epoch,ind,prev_out)
+function [groups, group_names] = createGroups(data,epoch,ind,prev_out)
 
 PROBABILITIES = 0:25:100;
 
@@ -24,18 +24,24 @@ switch epoch
     case 'cue'
         if strcmp(data.info.task,'choice')
             groups = {match_d,match_p};
+            group_names = {'directions','reward probability'};
         else
             groups = {match_p};
+            group_names = {'reward probability'};
         end
     case 'targetMovementOnset'
         groups = {match_d,match_p};
+        group_names = {'directions','reward probability'};
         
     case 'reward'
         groups = {match_p,match_d,match_o};
+        group_names = {'directions','reward probability','reward outcome'};
 end
 
 if prev_out
     groups{end+1} =  match_po;
+    groups{end+1} = 'previous outcome';
+
 end
 
 

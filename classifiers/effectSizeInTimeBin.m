@@ -30,7 +30,9 @@ end
 
 ind = find(~boolFail);
 
-groups = createGroups(data,epoch,ind,prev_out);
+[groups, group_names] = createGroups(data,epoch,ind,prev_out);
+
+group_names = {'time', group_names{:}};
 
 raster = getRaster(data,find(~boolFail),raster_params);
 response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
@@ -49,28 +51,29 @@ for t=1:length(ts)
         case 'cue'
             
             if strcmp(data.info.task,'choice')
-                omegas = calOmegaSquare(response(t,:),groups,'partial',...
+                omegas = calOmegaSquare(response(t,:),groups, group_names, 'partial',...
                     true, 'includeTime',false);
                 effectSizes(t).direction = omegas(1).value;
                 effectSizes(t).reward = omegas(2).value;
             else
-                omegas = calOmegaSquare(response(t,:),groups,'partial',true,...
+                omegas = calOmegaSquare(response(t,:),groups, group_names, 'partial',true,...
                     'includeTime',false);
                 effectSizes(t).reward = omegas(1).value;
             end
             
         case 'targetMovementOnset'
-            omegas = calOmegaSquare(response(t,:),groups,'partial',true,...
+            omegas = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
                 'includeTime',false);
             effectSizes(t).direction = omegas(1).value;
             effectSizes(t).reward = omegas(2).value;
             
         case 'reward'
-            omegas = calOmegaSquare(response(t,:),groups,...
+            omegas = calOmegaSquare(response(t,:),groups, group_names,...
                 'partial',true,'model','interaction', 'includeTime',false);
             effectSizes(t).reward = omegas(1).value;
             effectSizes(t).direction = omegas(2).value;
             effectSizes(t).outcome = omegas(3).value;
+            effectSizes(t).prediction = omegas(4).value;
             
             
     end   
