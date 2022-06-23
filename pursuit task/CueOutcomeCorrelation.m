@@ -6,12 +6,12 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
-req_params.num_trials = 20;
+req_params.num_trials = 50;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
-raster_params.time_before = 0;
-raster_params.time_after = 800;
+raster_params.time_before = -100;
+raster_params.time_after = 300;
 raster_params.smoothing_margins = 0;
 
 ts = -raster_params.time_before:raster_params.time_after;

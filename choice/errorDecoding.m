@@ -6,12 +6,13 @@ DIRECTIONS = [0 90];
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','PC cs', 'CRB','SNR', 'BG msn'};
+req_params.cell_type = {'SNR'};
+
 req_params.task = 'choice';
 req_params.num_trials = 100;
 req_params.remove_repeats = false;
-req_params.ID = 4000:6000;
 
-raster_params.align_to = 'targetMovementOnset';
+raster_params.align_to = 'cue';
 raster_params.time_before = 200;
 raster_params.time_after = 1200;
 raster_params.smoothing_margins = 300;

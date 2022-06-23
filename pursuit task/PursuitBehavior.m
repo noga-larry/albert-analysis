@@ -4,23 +4,26 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
+SINGLE_SESSION = true;
+
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 5000:6000;
+req_params.task = 'saccade_8_dir_75and25';
+req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks =0;
 req_params.remove_repeats = false;
 
-behavior_params.time_after = 300;
+behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 15; % ms
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-for ii = 1:length(cells)
+h = figure;
+for ii = 1:1
     
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
@@ -32,23 +35,37 @@ for ii = 1:length(cells)
     velLow(ii,:) = meanVelocitiesRotated(data,behavior_params,indLow);
     velHigh(ii,:) = meanVelocitiesRotated(data,behavior_params,indHigh);
     
+    
+    if SINGLE_SESSION
+        cla;hold on
+        [~,~,hVel,~] = ...
+            meanPositionsRotated(data,behavior_params,indLow(10:20),...
+            'smoothIndividualTrials',true,'removeSaccades',false);
+        plot(hVel','r')
+                [~,~,hVel,~] = ...
+            meanPositionsRotated(data,behavior_params,indHigh(10:20),...
+            'smoothIndividualTrials',true,'removeSaccades',false);
+        plot(hVel','b')
+        pause
+    end
 end
 
-aveLow = mean(velLow);
-semLow = std(velLow)/sqrt(length(cells));
-aveHigh = mean(velHigh);
-semHigh = std(velHigh)/sqrt(length(cells));
+aveLow = mean(velLow,1);
+semLow = nanSEM(velLow,1);
+aveHigh = mean(velHigh,1);
+semHigh = nanSEM(velHigh,1);
 
-figure
 errorbar(aveLow,semLow,'r'); hold on
 errorbar(aveHigh,semHigh,'b')
 
 figure
 scatter(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
-signrank(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
+p = signrank(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2));
+
+
 xlabel('High');ylabel('Low')
 refline(1,0)
-
+title(['p = ' num2str(p) 'n = ' num2str(length(cells))])
 %% Seperated by direction
 
 clear all

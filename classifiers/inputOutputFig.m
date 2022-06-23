@@ -23,15 +23,15 @@ effectForTest = effect;
 
 
 inx = find(strcmp('CRB', cellType)|strcmp('PC ss', cellType));
-effectForTest(inx) = effectForTest(inx) - mean(effect(inx));
+effectForTest(inx) = effectForTest(inx) - nanmean(effect(inx));
 inx = find(strcmp('BG msn', cellType)|strcmp('SNR', cellType));
-effectForTest(inx) = effectForTest(inx) - mean(effect(inx));
+effectForTest(inx) = effectForTest(inx) - nanmean(effect(inx));
 
 % remove in\out mean
 inx = find(strcmp('CRB', cellType)|strcmp('BG msn', cellType));
-effectForTest(inx) = effectForTest(inx) - mean(effect(inx));
+effectForTest(inx) = effectForTest(inx) - nanmean(effect(inx));
 inx = find(strcmp('PC ss', cellType)|strcmp('SNR', cellType));
-effectForTest(inx) = effectForTest(inx) - mean(effect(inx));
+effectForTest(inx) = effectForTest(inx) - nanmean(effect(inx));
 
 
 ssb_true = ssb_stat(effectForTest, cellType);
@@ -51,9 +51,9 @@ end
 
 function ssb = ssb_stat(vec, labels)
 
-v = [mean(vec(strcmp('CRB', labels))),mean(vec(strcmp('PC ss', labels)))...
-    ,mean(vec(strcmp('SNR', labels))),mean(vec(strcmp('BG msn', labels)))];
-v = v - mean(vec);
+v = [nanmean(vec(strcmp('CRB', labels))),nanmean(vec(strcmp('PC ss', labels)))...
+    ,nanmean(vec(strcmp('SNR', labels))),nanmean(vec(strcmp('BG msn', labels)))];
+v = v - nanmean(vec);
 ssb = sum(v.^2);
 end
 

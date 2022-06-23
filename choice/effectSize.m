@@ -95,10 +95,10 @@ end
 
 figure
 
-effect_size = [effects.direction];
+effect_size = [effects.outcome];
 
 
-inputOutputFig([effects.direction],cellType)
+inputOutputFig(effect_size,cellType)
 
 
 x1 = subplot(2,2,1); hold on

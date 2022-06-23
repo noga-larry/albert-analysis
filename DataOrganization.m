@@ -21,6 +21,42 @@ for ii=1:length(task_info)
 end
 
 
+
+%% Get Data FLOC
+clear
+
+[~,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Floc');
+
+get_excel_info('C:\Users\noga.larry\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\cell_db_for_merav',...
+    task_DB_path)
+
+load (task_DB_path);
+for ii=1:length(task_info)
+    str_date = regexp(task_info(ii).session,'[0-9]*','match');
+    task_info(ii).date = str2num(str_date{1});
+    trial_num = getTrialsNumbers(task_info,ii);
+    task_info(ii).num_trials = length(trial_num);
+    if ~isnumeric(task_info(ii).grade)
+        task_info(ii).grade = 100;
+    end
+    
+    %task_info(ii).save_name = erase(task_info(ii).save_name,'''');
+end
+save ([task_DB_path '.mat'],'task_info')
+%%
+req_params.grade = 7;
+%req_params.cell_type = 'SNR';
+req_params.task = 'rwd_direction_tuning';
+req_params.cell_type = 'PC cs';
+req_params.remove_question_marks = 0;
+req_params.num_trials = 20;
+req_params.remove_repeats = 0;
+lines = findLinesInDB (task_info, req_params);
+
+task_info = getData('Floc' , lines,...
+    'numElectrodes',5,'includeBehavior',false);
+
 save ([task_DB_path '.mat'],'task_info')
 
 %%

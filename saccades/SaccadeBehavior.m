@@ -6,7 +6,7 @@ clear
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
+req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25';
 %req_params.ID = setdiff([5600:6000],[5574,5575]);
 req_params.ID = 4000:6000;

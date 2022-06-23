@@ -41,7 +41,7 @@ end
 N = length(req_params.cell_type);
 figure;
 
-h = cellID>5000
+h = cellID<inf;
 
 flds = fields(effects);
 for j=1:length(flds)
@@ -59,7 +59,8 @@ for j=1:length(flds)
         equalAxis()
         refline(1,0)
         title([flds{j} ' ' req_params.cell_type{i}])
-        subtitle(['signkrank: p = ' num2str(p1) ' | corr: r = ' num2str(r) ', p = ' num2str(p2)])
+        subtitle(['signkrank: p = ' num2str(p1) ' | corr: r = ' num2str(r) ...
+            ', p = ' num2str(p2), ', n = ' num2str(length(indType))])
 
         
     end
