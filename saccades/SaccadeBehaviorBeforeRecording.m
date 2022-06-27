@@ -1,6 +1,6 @@
 clear
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Albert behavior before recording');
+    loadDBAndSpecifyDataPaths('Golda behavior before recording');
 
 PROBABILITIES = [0:25:100];
 
@@ -8,7 +8,7 @@ req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 50;
 req_params.remove_repeats = false;
 
-behavior_params.time_after = 700;
+behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
@@ -47,7 +47,7 @@ legend('0','25','50','75','100')
 
 clear
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Albert behavior before recording');
+    loadDBAndSpecifyDataPaths('Golda behavior before recording');
 
 PROBABILITIES = [0:25:100];
 

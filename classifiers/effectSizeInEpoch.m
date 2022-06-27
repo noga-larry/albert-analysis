@@ -6,13 +6,16 @@ p = inputParser;
 defaultPrevOut = false;
 addOptional(p,'prevOut',defaultPrevOut,@islogical);
 
+defaultBinSize = 50;
+addOptional(p,'binSize',defaultBinSize,@isnumeric);
+
 parse(p,varargin{:})
 prev_out = p.Results.prevOut;
+bin_sz = p.Results.binSize;
 
 raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
-bin_sz = 50;
 
 raster_params.align_to = epoch;
 

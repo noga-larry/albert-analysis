@@ -45,10 +45,14 @@ for ii=1:length(task_info)
 end
 save ([task_DB_path '.mat'],'task_info')
 %%
+
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Floc');
+
 req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.task = 'rwd_direction_tuning';
-req_params.cell_type = 'PC cs';
+req_params.cell_type = {'PC ss','CRB'};
 req_params.remove_question_marks = 0;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;

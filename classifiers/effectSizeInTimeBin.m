@@ -1,7 +1,7 @@
 function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
 
 MINIMAL_RATE_IN_BIN =0.001;
-BIN_SIZE = 100;
+BIN_SIZE = 50;
 PROBABILITIES = 0:25:100;
 
 low=0;
@@ -32,7 +32,6 @@ ind = find(~boolFail);
 
 [groups, group_names] = createGroups(data,epoch,ind,prev_out);
 
-group_names = {'time', group_names{:}};
 
 raster = getRaster(data,find(~boolFail),raster_params);
 response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);

@@ -34,6 +34,10 @@ for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
+    if isempty(indType)
+        continue
+    end
+        
     subplot(3,N,i)
     scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
     p = signrank([effects(indType).time],[effects(indType).reward]);

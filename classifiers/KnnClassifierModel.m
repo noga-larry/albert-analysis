@@ -14,6 +14,7 @@ classdef KnnClassifierModel < ClassifierModel
         end
         
         function mdl = train(mdl,X,y)
+            
             mdl.knnObject = fitcknn(sum(X)',y,'NumNeighbors',mdl.NumNeighbors);
         end
         
