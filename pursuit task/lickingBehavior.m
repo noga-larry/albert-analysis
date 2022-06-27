@@ -59,7 +59,7 @@ PROBABILITIES = [25,75];
 req_params.grade = 7;
 req_params.cell_type = 'CRB|PC';
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 5000:6000;
+req_params.ID = 4000:6000;
 req_params.num_trials = 50;
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
@@ -68,7 +68,7 @@ behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 10; % ms
-behavior_params.align_to = 'targetMovementOnset';
+behavior_params.align_to = 'cue';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
 
@@ -82,12 +82,16 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
     
+
     data = importdata(cells{ii});
     data = getLicking(data,MaestroPath);
     match_po = getPreviousOutcomes(data);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     boolFail(1) = 1;
+    
+    cellID(ii) = data.info.cell_ID;
+
     
     for p = 1:length(PROBABILITIES)
         for j=1:2
@@ -100,6 +104,7 @@ for ii = 1:length(cells)
 end
 
 
+%%
 
 aveLicks = squeeze(mean(licks));
 semLicks = squeeze(nanSEM(licks));
@@ -115,6 +120,20 @@ for j=1:2
     xlabel(['Time from  ' behavior_params.align_to])
     ylabel('Fraction of trials with lick')
 end
+
+%%
+
+h = cellID<5000;
+aveLicks = squeeze(mean(licks(h,:,:,:),[1,3]));
+semLicks = squeeze(nanSEM(licks(h,:,:,:),[1,3]));
+col = {'r','b'};
+figure; hold on
+for i=1:length(PROBABILITIES)
+    errorbar(ts,squeeze(aveLicks(i,:)),squeeze(semLicks(i,:)),col{i})
+end
+ylim([0,1])
+xlabel(['Time from  ' behavior_params.align_to])
+ylabel('Fraction of trials with lick')
 
 
 %% 

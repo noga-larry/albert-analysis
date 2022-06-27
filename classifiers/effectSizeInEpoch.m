@@ -1,4 +1,4 @@
-function effectSizes = effectSizeInEpoch(data,epoch,varargin)
+function [effectSizes, time_significance] = effectSizeInEpoch(data,epoch,varargin)
 
 
 p = inputParser;
@@ -49,24 +49,24 @@ switch epoch
     case 'cue'
         
         if strcmp(data.info.task,'choice')
-            omegas = calOmegaSquare(response,groups,group_names,'partial',true);
+            [omegas, time_significance] = calOmegaSquare(response,groups,group_names,'partial',true);
             effectSizes.time = omegas(1).value;
             effectSizes.direction = omegas(2).value;
             effectSizes.reward = omegas(3).value;
         else
-            omegas = calOmegaSquare(response,groups,group_names,'partial',true);
+            [omegas, time_significance] = calOmegaSquare(response,groups,group_names,'partial',true);
             effectSizes.time = omegas(1).value;
             effectSizes.reward = omegas(2).value;
         end
 
     case 'targetMovementOnset'
-        omegas = calOmegaSquare(response,groups,group_names,'partial',true);
+        [omegas, time_significance] = calOmegaSquare(response,groups,group_names,'partial',true);
         effectSizes.time = omegas(1).value;
         effectSizes.direction = omegas(2).value;
         effectSizes.reward = omegas(3).value;
         
     case 'reward'
-        omegas = calOmegaSquare(response,groups,group_names,'partial',true);
+        [omegas, time_significance] = calOmegaSquare(response,groups,group_names,'partial',true);
         effectSizes.time = omegas(1).value;
         effectSizes.reward = omegas(2).value;
         effectSizes.direction = omegas(3).value;

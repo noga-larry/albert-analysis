@@ -50,12 +50,13 @@ for t=1:length(ts)
         case 'cue'
             
             if strcmp(data.info.task,'choice')
-                omegas = calOmegaSquare(response(t,:),groups, group_names, 'partial',...
-                    true, 'includeTime',false);
+                omegas = calOmegaSquare(response(t,:),groups, group_names, ...
+                    'partial', true, 'includeTime',false);
                 effectSizes(t).direction = omegas(1).value;
                 effectSizes(t).reward = omegas(2).value;
             else
-                omegas = calOmegaSquare(response(t,:),groups, group_names, 'partial',true,...
+                omegas = calOmegaSquare(response(t,:),groups, group_names,...
+                    'partial',true,...
                     'includeTime',false);
                 effectSizes(t).reward = omegas(1).value;
             end

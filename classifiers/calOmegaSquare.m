@@ -1,4 +1,4 @@
-function omega = calOmegaSquare(response,labels,label_names, varargin)
+function [omega, time_significance ] = calOmegaSquare(response,labels,label_names, varargin)
 
 p = inputParser;
 
@@ -41,6 +41,13 @@ end
 %     ss_a(ii,1) = tbl{2,2};ss_a(ii,2) = ss.X1;
 %     ss_b(ii,1) = tbl{3,2};ss_b(ii,2) = ss.X2;
 %     ss_ab(ii,1) = tbl{4,2};ss_ab(ii,2) = ss.interaction;
+
+inx = find(strcmp(tbl(:,1),'time'));
+
+if nargout>1
+    time_significance = tbl{inx,7}<0.05;
+end
+
 totVar = tbl{end,2};
 msw = tbl{end-1,5};
 SSe = tbl{end-1,2};
