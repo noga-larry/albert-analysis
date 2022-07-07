@@ -30,7 +30,6 @@ end
 
 figure;
 
-
 bins = linspace(-0.2,1,50);
 f = fields(effects);
 
@@ -49,6 +48,23 @@ sgtitle('Cue','Interpreter', 'none');
 
 %%
 
+
+x = [effects.reward];
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    p = signrank(x(indType));
+    disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
+    
+    
+end
+
+x = [effects.outcome];
+% ranksum for SNpr
+p = ranksum(x(find(strcmp('SNR', cellType))),...
+    x(find(~strcmp('SNR', cellType))))
+
+%%
 bool = cellID<inf
 
 
@@ -66,7 +82,7 @@ for i = 1:length(req_params.cell_type)
     equalAxis()
     refline(1,0)
     title(req_params.cell_type{i})
-    subtitle(['p = ' num2str(p)])
+    subtitle(['p = ' num2str(p) 'n = ' num2str(length(indType))])
         
     subplot(3,N,i+N)
     scatter([effects(indType).time],[effects(indType).direction],'filled','k'); hold on
@@ -76,7 +92,7 @@ for i = 1:length(req_params.cell_type)
     equalAxis()
     refline(1,0)
     title(req_params.cell_type{i})
-    subtitle(['p = ' num2str(p)])
+    subtitle(['p = ' num2str(p) 'n = ' num2str(length(indType))]) 
     
     subplot(3,N,i+2*N)
     scatter([effects(indType).reward],[effects(indType).direction],'filled','k'); hold on
@@ -86,7 +102,7 @@ for i = 1:length(req_params.cell_type)
     equalAxis()
     refline(1,0)
     title(req_params.cell_type{i})
-    subtitle(['p = ' num2str(p)])
+    subtitle(['p = ' num2str(p) 'n = ' num2str(length(indType))])
     
 end
 

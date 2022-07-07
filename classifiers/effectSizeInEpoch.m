@@ -32,7 +32,6 @@ ind = find(~boolFail);
 [groups, group_names]= createGroups(data,epoch,ind,prev_out);
 group_names = {'time', group_names{:}};
 
-
 raster = getRaster(data,find(~boolFail),raster_params);
 
 % p = randperm(size(raster,2));

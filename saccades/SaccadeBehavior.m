@@ -40,12 +40,19 @@ for ii = 1:length(cells)
         LenHigh(ii,d) = nanmean(Len);
         OverShootHigh(ii,d) = nanmean(OverShoot)-10;
         VelHigh(ii,d) = nanmean(Vel);
-    end       
+        
+        
+
+    end     
+    % RT STD
+    RT = saccadeRTs(data,find(~boolFail));
+    RT_std(ii) = nanstd(RT);
+    RT_ave(ii) = nanmean(RT);
 end
 
 %%
 
-ind = find(cellID < inf);
+ind = find(cellID > 5000);
 figure;
 subplot(2,2,1)
 aveLow = nanmean(RTLow(ind,:));

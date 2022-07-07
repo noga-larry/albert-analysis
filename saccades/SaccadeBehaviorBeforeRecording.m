@@ -1,6 +1,6 @@
 clear
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Golda behavior before recording');
+    loadDBAndSpecifyDataPaths('Albert behavior before recording');
 
 PROBABILITIES = [0:25:100];
 
@@ -35,13 +35,16 @@ for ii = 1:length(cells)
 end
 
 %%
-figure
+figure; subplot(2,1,1)
 ave = squeeze(nanmean(vel))';
 sem = squeeze(nanSEM(vel))';
 errorbar(ave,sem)
-
 legend('0','25','50','75','100')
 
+subplot(2,1,2)
+ave = squeeze(nanmean(vel(:,:,200:250),[1,3]));
+sem = squeeze(nanSEM(vel(:,:,200:250),[1,3]));
+errorbar(PROBABILITIES,ave,sem)
 
 %%
 

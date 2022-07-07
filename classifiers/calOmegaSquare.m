@@ -65,22 +65,23 @@ end
 
 if includeTime
     c=0;
+    not_inter_inx = [];
     for i = 1:length(groups)
         inx1 = find(strcmp(tbl(:,1),label_names{i}));
         inx2 = find(strcmp(tbl(:,1),['time*' label_names{i}]));        
         c = c+1;
         omega(c).value = omegafun(tbl,[inx1 inx2]);
         omega(c).variable = tbl{inx1,1};
+        not_inter_inx = [not_inter_inx inx1 inx2];
     end
     
     inx1 = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
-    inx2 = find(strcmp(tbl(:,1),'directions*reward probability*reward outcome'));
-    
+    inx2 = find(strcmp(tbl(:,1),'time*reward probability*reward outcome'));
 
     omega(c+1).variable = 'prediction error';
     omega(c+1).value = omegafun(tbl,[inx1 inx2]);
     
-    inx = findRegexpInCell(tbl(:,1),'(X[2-9]\*)|(X1\*X[2-9]\*X[2-9])');
+    inx = setdiff(3:(length(tbl)-2),not_inter_inx);
     omega(c+2).variable = 'Interactions';
     omega(c+2).value = omegafun(tbl,inx);
 else

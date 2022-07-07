@@ -64,7 +64,8 @@ task_info = getData('Floc' , lines,...
 save ([task_DB_path '.mat'],'task_info')
 
 %%
-clear
+clear; clc
+
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
 
@@ -73,12 +74,12 @@ for i=1:length(task_info)
         task_info(i).cell_type = 'SNR';
     elseif strcmp(task_info(i).cell_type,'SNR ')
         task_info(i).cell_type = 'SNR';
-    elseif strcmp(task_info(i).cell_type,'BG msn ')
-        task_info(i).cell_type = 'BG msn';
+    elseif strcmp(task_info(i).cell_type,'BG tan ')
+        task_info(i).cell_type = 'BG tan';
     elseif strcmp(task_info(i).cell_type,'PC  ss'  )
         task_info(i).cell_type = 'PC ss';        
-    elseif strcmp(task_info(i).cell_type,'PC  cs' )
-        task_info(i).cell_type = 'PC ss';
+    elseif strcmp(task_info(i).cell_type,'cs ' )
+        task_info(i).cell_type = 'cs';
     end
 end
 uniqueRowsCA({task_info.cell_type}')
@@ -88,19 +89,20 @@ save ([task_DB_path '.mat'],'task_info')
 
 %% get Data
 clear
+DATASET = 'Golda behavior before recording';
 [task_info,dataPath, MaestroPath,task_DB_path] =...
-    loadDBAndSpecifyDataPaths('Vermis');
+    loadDBAndSpecifyDataPaths(DATASET);
 
-req_params.grade = 7;
+%req_params.grade = 7;
 %req_params.cell_type = 'SNR';
-req_params.task = 'choice';
+req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.remove_question_marks = 0;
-req_params.ID = 4052;
+%req_params.ID = 4052;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
 
-task_info = getData('Vermis' , lines,...
+task_info = getData(DATASET , lines,...
     'numElectrodes',10,'includeBehavior',false);
 
 save ([task_DB_path '.mat'],'task_info')
@@ -151,7 +153,7 @@ lines = findLinesInDB (task_info, req_params);
 task_info = getData('Albert behavior before recording' , lines);
 %%
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Albert behavior before recording');
+    loadDBAndSpecifyDataPaths('Golda behavior before recording');
 
 req_params.num_trials = 20;
 req_params.remove_repeats =false;

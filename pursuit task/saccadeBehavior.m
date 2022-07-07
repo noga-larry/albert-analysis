@@ -70,17 +70,14 @@ xlabel('Time from cue')
 ylabel('Fraction of trials with saccade')
 
 %% reward
-clear all
+clear 
 
-MaestroPath = 'C:\Users\Noga\Music\DATA';
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
+req_params.ID = 5000:6000;
+req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
 behavior_params.time_after = 1500;
@@ -92,12 +89,16 @@ raster_params.align_to = 'reward';
 raster_params.time_before = -100;
 raster_params.time_after =300;
 raster_params.smoothing_margins = 0;
-
 windowEvent = -behavior_params.time_before:behavior_params.time_after;
 directionBorders = 0:45:360;
 timeAfterRewardForDirectionHist = 500; 
 
 lines = findLinesInDB(task_info,req_params);
+fitInd = cellfun(@(c) c==0,{task_info(lines).extended_behavior_fit},'uni',false);
+fitInd = [fitInd{:}];
+fitInd = find(fitInd);
+lines = lines(fitInd);
+
 cells = findPathsToCells (supPath,task_info,lines);
 
 sc = 0;
@@ -105,7 +106,7 @@ removeSaccadesCounter = 0;
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getExtendedBehavior(data,MaestroPath);
+    data = getExtendedBehavior(data,supPath,MaestroPath);
     
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
@@ -119,7 +120,7 @@ for ii = 1:length(cells)
     saccadeRate = nan(length(data.trials),length(windowEvent));
     blinkRate = nan(length(data.trials),length(windowEvent));
 
-    FirstSaccadeLatency = nan(length(data.trials));
+    FirstSaccadeLatency = nan(1,length(data.trials));
     directionHist= nan(length(data.trials),length(directionBorders)-1);
     saccdeSpeed = nan(length(data.trials));
     for t=find(~boolFail)
@@ -149,79 +150,84 @@ for ii = 1:length(cells)
             continue
         end
         FirstSaccadeLatency(t) = min(saccadesAfterReward);
-        
-        % direction hist
-        saccasdesIndsForDirectionHist = find(saccadesAlignedToReward>0 &...
-        saccadesAlignedToReward<timeAfterRewardForDirectionHist);
-        trialDirectionHist = zeros(1,length(directionBorders)-1);
-        trialSpeed = 0; saccCounter=0;
-        for s =1:length(saccasdesIndsForDirectionHist)
-            i = saccasdesIndsForDirectionHist(s);
-            tb = data.trials(t).extended_saccade_begin( i);
-            te = data.trials(t).extended_saccade_end( i);
-            if ~isempty(data.trials(t).extended_blink_begin) &&...
-                    any((data.trials(t).extended_blink_begin>=tb & data.trials(t).extended_blink_end<=te )...
-                    | (data.trials(t).extended_blink_begin<=tb & data.trials(t).extended_blink_end>=te) )
-                removeSaccadesCounter = removeSaccadesCounter+1;
-                continue
-            end
-            deltaH = data.trials(t).extended_hPos(te) - data.trials(t).extended_hPos(tb);
-            deltaV = data.trials(t).extended_vPos(te) - data.trials(t).extended_vPos(tb);
-            phi = atan2d(deltaV,deltaH);
-            phi = phi + 360*(phi<0);
-            trialDirectionHist = trialDirectionHist+diff(phi<directionBorders);
-            trialSpeed = trialSpeed + sqrt(deltaH^2+deltaV^2);
-            saccCounter = saccCounter+1;
-            sc= sc+1;
-        end
-        directionHist(t,:) = trialDirectionHist;
-        trialSpeed = trialSpeed/saccCounter;
-        saccdeSpeed(t,:) = trialSpeed;
-        
-    end
+    end 
     
-    saccadeRateLowR(ii,:) = gaussSmooth(nanmean(saccadeRate(indLowR,:)),behavior_params.SD);
-    saccadeRateHighR(ii,:) = gaussSmooth(nanmean(saccadeRate(indHighR,:)),behavior_params.SD);
-    saccadeRateLowNR(ii,:) = gaussSmooth(nanmean(saccadeRate(indLowNR,:)),behavior_params.SD);
-    saccadeRateHighNR(ii,:) = gaussSmooth(nanmean(saccadeRate(indHighNR,:)),behavior_params.SD);
-    
-    blinkRateLowR(ii,:) = gaussSmooth(nanmean(blinkRate(indLowR,:)),behavior_params.SD);
-    blinkRateHighR(ii,:) = gaussSmooth(nanmean(blinkRate(indHighR,:)),behavior_params.SD);
-    blinkRateLowNR(ii,:) = gaussSmooth(nanmean(blinkRate(indLowNR,:)),behavior_params.SD);
-    blinkRateHighNR(ii,:) = gaussSmooth(nanmean(blinkRate(indHighNR,:)),behavior_params.SD);
-    
-    
-    latencyLowR(ii) = nanmean(FirstSaccadeLatency(indLowR));
-    latencyHighR(ii) = nanmean(FirstSaccadeLatency(indHighR));
-    latencyLowNR(ii) = nanmean(FirstSaccadeLatency(indLowNR));
-    latencyHighNR(ii) = nanmean(FirstSaccadeLatency(indHighNR));
-    
-    latencyVarLowR(ii) = nanstd(FirstSaccadeLatency(indLowR));
-    latencyVarHighR(ii) = nanstd(FirstSaccadeLatency(indHighR));
-    latencyVarLowNR(ii) = nanstd(FirstSaccadeLatency(indLowNR));
-    latencyVarHighNR(ii) = nanstd(FirstSaccadeLatency(indHighNR));
-    
-    speedLowR(ii) = nanmean(saccdeSpeed(indLowR));
-    speedHighR(ii) = nanmean(saccdeSpeed(indHighR));
-    speedLowNR(ii) = nanmean(saccdeSpeed(indLowNR));
-    speedHighNR(ii) = nanmean(saccdeSpeed(indHighNR));
-    
-    
-    directionHistLowR(ii,:) = nansum(directionHist(indLowR,:))/nansum(nansum(directionHist(indLowR,:)));
-    directionHistHighR(ii,:) = nansum(directionHist(indHighR,:))/nansum(nansum(directionHist(indHighR,:)));
-    directionHistLowNR(ii,:) = nansum(directionHist(indLowNR,:))/nansum(nansum(directionHist(indLowNR,:)));
-    directionHistHighNR(ii,:) = nansum(directionHist(indHighNR,:))/nansum(nansum(directionHist(indHighNR,:)));
-    
-   
-    rasterLowR = getRaster(data,indLowR,raster_params);
-    rasterHighR = getRaster(data,indHighR,raster_params);
-    
-    rewardSpikesDifference(ii) = (mean(rasterLowR(:))-mean(rasterHighR(:)))*1000;
-    rewardLatencyDidderence(ii) = latencyLowR(ii)-latencyHighR(ii);
-    
-    
+    aveLatency(ii) = nanmean(FirstSaccadeLatency);
+    stdLatency(ii) = nanstd(FirstSaccadeLatency);
+%         % direction hist
+%         saccasdesIndsForDirectionHist = find(saccadesAlignedToReward>0 &...
+%         saccadesAlignedToReward<timeAfterRewardForDirectionHist);
+%         trialDirectionHist = zeros(1,length(directionBorders)-1);
+%         trialSpeed = 0; saccCounter=0;
+%         for s =1:length(saccasdesIndsForDirectionHist)
+%             i = saccasdesIndsForDirectionHist(s);
+%             tb = data.trials(t).extended_saccade_begin( i);
+%             te = data.trials(t).extended_saccade_end( i);
+%             if ~isempty(data.trials(t).extended_blink_begin) &&...
+%                     any((data.trials(t).extended_blink_begin>=tb & data.trials(t).extended_blink_end<=te )...
+%                     | (data.trials(t).extended_blink_begin<=tb & data.trials(t).extended_blink_end>=te) )
+%                 removeSaccadesCounter = removeSaccadesCounter+1;
+%                 continue
+%             end
+%             deltaH = data.trials(t).extended_hPos(te) - data.trials(t).extended_hPos(tb);
+%             deltaV = data.trials(t).extended_vPos(te) - data.trials(t).extended_vPos(tb);
+%             phi = atan2d(deltaV,deltaH);
+%             phi = phi + 360*(phi<0);
+%             trialDirectionHist = trialDirectionHist+diff(phi<directionBorders);
+%             trialSpeed = trialSpeed + sqrt(deltaH^2+deltaV^2);
+%             saccCounter = saccCounter+1;
+%             sc= sc+1;
+%         end
+%         directionHist(t,:) = trialDirectionHist;
+%         trialSpeed = trialSpeed/saccCounter;
+%         saccdeSpeed(t,:) = trialSpeed;
+%         
+%     end
+%     
+%     saccadeRateLowR(ii,:) = gaussSmooth(nanmean(saccadeRate(indLowR,:)),behavior_params.SD);
+%     saccadeRateHighR(ii,:) = gaussSmooth(nanmean(saccadeRate(indHighR,:)),behavior_params.SD);
+%     saccadeRateLowNR(ii,:) = gaussSmooth(nanmean(saccadeRate(indLowNR,:)),behavior_params.SD);
+%     saccadeRateHighNR(ii,:) = gaussSmooth(nanmean(saccadeRate(indHighNR,:)),behavior_params.SD);
+%     
+%     blinkRateLowR(ii,:) = gaussSmooth(nanmean(blinkRate(indLowR,:)),behavior_params.SD);
+%     blinkRateHighR(ii,:) = gaussSmooth(nanmean(blinkRate(indHighR,:)),behavior_params.SD);
+%     blinkRateLowNR(ii,:) = gaussSmooth(nanmean(blinkRate(indLowNR,:)),behavior_params.SD);
+%     blinkRateHighNR(ii,:) = gaussSmooth(nanmean(blinkRate(indHighNR,:)),behavior_params.SD);
+%     
+%     
+%     latencyLowR(ii) = nanmean(FirstSaccadeLatency(indLowR));
+%     latencyHighR(ii) = nanmean(FirstSaccadeLatency(indHighR));
+%     latencyLowNR(ii) = nanmean(FirstSaccadeLatency(indLowNR));
+%     latencyHighNR(ii) = nanmean(FirstSaccadeLatency(indHighNR));
+%     
+%     latencyVarLowR(ii) = nanstd(FirstSaccadeLatency(indLowR));
+%     latencyVarHighR(ii) = nanstd(FirstSaccadeLatency(indHighR));
+%     latencyVarLowNR(ii) = nanstd(FirstSaccadeLatency(indLowNR));
+%     latencyVarHighNR(ii) = nanstd(FirstSaccadeLatency(indHighNR));
+%     
+%     speedLowR(ii) = nanmean(saccdeSpeed(indLowR));
+%     speedHighR(ii) = nanmean(saccdeSpeed(indHighR));
+%     speedLowNR(ii) = nanmean(saccdeSpeed(indLowNR));
+%     speedHighNR(ii) = nanmean(saccdeSpeed(indHighNR));
+%     
+%     
+%     directionHistLowR(ii,:) = nansum(directionHist(indLowR,:))/nansum(nansum(directionHist(indLowR,:)));
+%     directionHistHighR(ii,:) = nansum(directionHist(indHighR,:))/nansum(nansum(directionHist(indHighR,:)));
+%     directionHistLowNR(ii,:) = nansum(directionHist(indLowNR,:))/nansum(nansum(directionHist(indLowNR,:)));
+%     directionHistHighNR(ii,:) = nansum(directionHist(indHighNR,:))/nansum(nansum(directionHist(indHighNR,:)));
+%     
+%    
+%     rasterLowR = getRaster(data,indLowR,raster_params);
+%     rasterHighR = getRaster(data,indHighR,raster_params);
+%     
+%     rewardSpikesDifference(ii) = (mean(rasterLowR(:))-mean(rasterHighR(:)))*1000;
+%     rewardLatencyDidderence(ii) = latencyLowR(ii)-latencyHighR(ii);
+%     
+%     
 end
-    
+mean(aveLatency)  
+mean(stdLatency)  
+
 %%
 aveLowR = nanmean(saccadeRateLowR);
 aveHighR = mean(saccadeRateHighR);

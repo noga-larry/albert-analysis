@@ -4,11 +4,11 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-SINGLE_SESSION = true;
+SINGLE_SESSION = false;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25';
+req_params.task = 'pursuit_8_dir_75and25';
 req_params.ID = 4000:6000;
 req_params.num_trials = 70;
 req_params.remove_question_marks =0;
@@ -23,7 +23,7 @@ lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 h = figure;
-for ii = 1:1
+for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
@@ -32,8 +32,10 @@ for ii = 1:1
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     
-    velLow(ii,:) = meanVelocitiesRotated(data,behavior_params,indLow);
-    velHigh(ii,:) = meanVelocitiesRotated(data,behavior_params,indHigh);
+    velLow(ii,:) = meanPositionsRotated(data,behavior_params,...
+        indLow,'removeSaccades',false);
+    velHigh(ii,:) = meanPositionsRotated(data,behavior_params,...
+        indHigh,'removeSaccades',false);
     
     
     if SINGLE_SESSION

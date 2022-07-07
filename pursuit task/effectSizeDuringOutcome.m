@@ -3,10 +3,10 @@ clear
 
 EPOCH = 'reward';
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
 
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.grade = 7;
+req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
+req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.ID = 4000:6000;
@@ -18,7 +18,7 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    cellType{ii} = data.info.cell_type;
+    cellType{ii} = task_info(lines(ii)).cell_type;
     
     effects(ii) = effectSizeInEpoch(data,EPOCH);    
 
@@ -79,6 +79,27 @@ effect_size = [effects.outcome];
 
 inputOutputFig([effects.reward],cellType)
 
+x = [effects.direction];
+% ranksum for SNpr
+p = ranksum(x(find(strcmp('SNR', cellType))),...
+    x(find(~strcmp('SNR', cellType))))
+
+
+x = [effects.prediction];
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    p = signrank(x(indType));
+    disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
+    
+    
+end
+
+x = [effects.outcome];
+% ranksum for SNpr
+p = ranksum(x(find(strcmp('SNR', cellType)|strcmp('BG msn', cellType))),...
+    x(find(strcmp('PC ss', cellType)|strcmp('CRB', cellType))))
+
 
 
 %%
@@ -91,12 +112,16 @@ for i = 1:length(req_params.cell_type)
     
     subplot(2,ceil(N/2),i)
     scatter([effects(indType).outcome],[effects(indType).prediction],'filled','k'); hold on
-    p = signrank([effects(indType).outcome],[effects(indType).prediction]);
+    p = permutationTestPaired ([effects(indType).outcome],...
+        [effects(indType).prediction],...
+        10000,@nanmean);
+    p = signrank ([effects(indType).outcome],...
+        [effects(indType).prediction]);
     xlabel('outcome+time*outcome')
     ylabel('prediction')
     equalAxis()
     refline(1,0)
     title(req_params.cell_type{i})
-    subtitle(['p = ' num2str(p)])
+    subtitle(['p = ' num2str(p) ', n = ' num2str(length(indType))])
     
 end
