@@ -41,7 +41,7 @@ end
 N = length(req_params.cell_type);
 figure;
 
-h = cellID<inf;
+h = cellID>5000;
 
 flds = fields(effects);
 for j=1:length(flds)

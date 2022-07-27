@@ -1,16 +1,14 @@
 
 clear 
-[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 PLOT_CELL = false;
 EPOCH = 'cue'; 
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.cell_type = {'CRB'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.task = 'saccade_8_dir_75and25';
-
+%req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 
 req_params.num_trials = 100;
@@ -26,8 +24,9 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;    
     
-    effects(ii) = effectSizeInEpoch(data,EPOCH);
-
+    [effects(ii), time_significance(ii)] = effectSizeInEpoch(data,EPOCH);    
+    task_info(lines(ii)).time_sig_cue = time_significance(ii);
+    
     if PLOT_CELL
         prob = unique(match_p);
         for p = 1:length(prob)
@@ -39,6 +38,9 @@ for ii = 1:length(cells)
     end
 end
 
+save ([task_DB_path '.mat'],'task_info')
+
+
 %%
 figure;
 N = length(req_params.cell_type);
@@ -46,6 +48,10 @@ for i = 1:length(req_params.cell_type)
     
     subplot(2,ceil(N/2),i)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    disp('Frac cell with insignificant time effect:')
+    disp ([req_params.cell_type{i} ': ' num2str(mean(time_significance(indType)))...
+        ', n = ' num2str(sum(time_significance(indType)))])
     
     scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
     p = signrank([effects(indType).time],[effects(indType).reward]);
@@ -61,7 +67,7 @@ end
 %% comparisoms fron input-output figure
 
 x = [effects.reward];
-inputOutputFig([effects.reward],cellType)
+inputOutputFig(x,cellType)
 
 % ranksum for SNpr
 p = ranksum(x(find(strcmp('SNR', cellType))),...
@@ -70,7 +76,7 @@ p = ranksum(x(find(strcmp('SNR', cellType))),...
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    p = signrank(effect(indType));
+    p = signrank(x(indType));
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
     
     

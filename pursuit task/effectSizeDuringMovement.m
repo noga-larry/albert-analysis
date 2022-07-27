@@ -1,10 +1,10 @@
 clear 
-[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+%req_params.cell_type = {'PC cs'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-%req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -12,7 +12,7 @@ req_params.remove_question_marks = 1;
 req_params.remove_repeats = true;
 %req_params.ID =5606;
  
-EPOCH =  'targetMovementOnset'; 
+EPOCH =  'cue'; 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -23,9 +23,10 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effects(ii), rel_cell(ii)] = effectSizeInEpoch(data,EPOCH);    
-   
+    [effects(ii), time_significance(ii)] = effectSizeInEpoch(data,EPOCH);    
+    task_info(lines(ii)).time_sig_motion = time_significance(ii);
 end
+save ([task_DB_path '.mat'],'task_info')
 
 
 %%
@@ -39,7 +40,8 @@ for i = 1:length(req_params.cell_type)
         continue
     end
     disp('Frac cell with insignificant time effect:')    
-    disp ([req_params.cell_type{i} ': ' num2str(mean(rel_cell(indType)))]) 
+    disp ([req_params.cell_type{i} ': ' num2str(mean(time_significance(indType)))...
+        ', n = ' num2str(sum(time_significance(indType)))]) 
     
     subplot(3,N,i)
     scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
@@ -111,15 +113,16 @@ title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) 
 
 %% comparisoms fron input-output figure
 
-inputOutputFig([effects.interactions],cellType)
-
 x = [effects.direction];
+
+inputOutputFig(x,cellType)
+
+
 % ranksum for SNpr
 p = ranksum(x(find(strcmp('SNR', cellType))),...
     x(find(~strcmp('SNR', cellType))))
 
 
-x = [effects.interactions];
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
