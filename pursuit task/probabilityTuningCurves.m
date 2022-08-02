@@ -3,9 +3,9 @@ clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC ss';
+req_params.cell_type = 'PC cs';
 req_params.task = 'saccade_8_dir_75and25';
-req_params.num_trials = 70;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.ID = 4000:6000;
 
@@ -37,6 +37,8 @@ for ii = 1:length(cells)
     inxHigh = find (match_p == 75 & (~boolFail));
     
     [~,match_d] = getDirections(data);
+    
+    % match_d = permVec(match_d);
     
     [TC,~,h(ii)] = getTC(data, directions,1:length(data.trials), comparison_window);
     [PD,indPD] = centerOfMass (TC, directions);
@@ -147,7 +149,7 @@ f = figure; f.Position = [10 80 700 500];
 
 ind = find(~h);
 for d = 1:length(angles)
-    subplot(2,5,d)
+    subplot(3,5,d)
     ave_Low = nanmean(squeeze(psth_Low(ind,d,:)));
     sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
     ave_High = mean(squeeze(psth_High(ind,d,:)));
@@ -166,7 +168,7 @@ legend( '25','75')
 
 ind = find(h);
 for d = 1:length(angles)
-    subplot(2,5,5+d)
+    subplot(3,5,5+d)
     ave_Low = mean(squeeze(psth_Low(ind,d,:)));
     sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
     ave_High = mean(squeeze(psth_High(ind,d,:)));
@@ -184,6 +186,25 @@ title([' Tuned, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
 legend( '25','75')
 
+ind = 1:length(h);
+for d = 1:length(angles)
+    subplot(3,5,10+d)
+    ave_Low = mean(squeeze(psth_Low(ind,d,:)));
+    sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
+    ave_High = mean(squeeze(psth_High(ind,d,:)));
+    sem_High = std(squeeze(psth_High(ind,d,:)))/sqrt(length(ind));
+    errorbar(ts,ave_Low,sem_Low,'r'); hold on
+    errorbar(ts,ave_High,sem_High,'b'); hold on
+    if d==1
+        ylimits = get(gca,'YLim')
+    end
+    ylim([ylimits])
+    legend( '25','75')
+    
+end
+title([' All, n = ' num2str(length(ind))]);
+xlabel('Time from movement')
+legend( '25','75')
 
 %%
 

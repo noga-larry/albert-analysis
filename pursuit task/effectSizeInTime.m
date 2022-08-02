@@ -6,13 +6,14 @@ PLOT_CELL = false;
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-%req_params.cell_type = {'PC cs'};
+req_params.cell_type = {'PC ss','CRB'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
-raster_params.align_to = 'reward';
+EPOCH = 'targetMovementOnset';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -25,10 +26,15 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;  
-    rel(ii) = task_info(lines(ii)).time_sig_outcome;
+    
+    switch EPOCH
+        case 'targetMovementOnset'
+            
+            rel(ii) = task_info(lines(ii)).time_sig_motion;
+    end
     
     [effectSizes(ii,:),ts] = effectSizeInTimeBin...
-        (data,raster_params.align_to,'prevOut',false);
+        (data,EPOCH,'prevOut',false);
     
     if PLOT_CELL
         
@@ -55,7 +61,7 @@ end
 flds = fields(effectSizes);
 
 
-h = cellID<inf & rel
+h = cellID<inf% & rel
 
 figure
 for f = 1:length(flds)
@@ -69,7 +75,7 @@ for f = 1:length(flds)
         a = reshape([effectSizes(indType,:).(flds{f})],length(indType),length(ts));
         
         errorbar(ts,nanmean(a,1), nanSEM(a,1))
-        xlabel(['time from ' raster_params.align_to ' (ms)' ])
+        xlabel(['time from ' EPOCH ' (ms)' ])
         title(flds{f}, 'Interpreter', 'none')
         
     end
