@@ -2,8 +2,8 @@ classdef PsthDistanceClassifierModel < ClassifierModel
     
     properties
         psthMap
-        SD = 30
-        smoothingMargins = 300
+        SD = 15;
+        smoothingMargins = 300;
     end
     
     methods
