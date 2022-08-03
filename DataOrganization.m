@@ -52,7 +52,7 @@ save ([task_DB_path '.mat'],'task_info')
 req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.task = 'rwd_direction_tuning';
-req_params.cell_type = {'PC ss','CRB'};
+req_params.cell_type = {'PC cs'};
 req_params.remove_question_marks = 0;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
@@ -67,7 +67,7 @@ save ([task_DB_path '.mat'],'task_info')
 clear; clc
 
 [task_info,dataPath, MaestroPath,task_DB_path] =...
-    loadDBAndSpecifyDataPaths('Vermis');
+    loadDBAndSpecifyDataPaths('Floc');
 
 for i=1:length(task_info)
     if contains(task_info(i).cell_type,'SNR') & contains(task_info(i).cell_type,'?')
@@ -76,10 +76,12 @@ for i=1:length(task_info)
         task_info(i).cell_type = 'SNR';
     elseif strcmp(task_info(i).cell_type,'BG tan ')
         task_info(i).cell_type = 'BG tan';
-    elseif strcmp(task_info(i).cell_type,'PC  ss'  )
+    elseif strcmp(task_info(i).cell_type,'PC ss '  )
         task_info(i).cell_type = 'PC ss';        
-    elseif strcmp(task_info(i).cell_type,'cs ' )
-        task_info(i).cell_type = 'cs';
+    elseif strcmp(task_info(i).cell_type,'PC cs ' )
+        task_info(i).cell_type = 'PC cs';
+    elseif strcmp(task_info(i).cell_type,'CRB ' )
+        task_info(i).cell_type = 'CRB';
     end
 end
 uniqueRowsCA({task_info.cell_type}')

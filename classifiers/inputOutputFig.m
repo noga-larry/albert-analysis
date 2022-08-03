@@ -13,7 +13,7 @@ x2 = subplot(3,1,2); hold on
 for i = 1:length(pops)
     indType = find(strcmp(pops{i}, cellType));
     plot(x1,i,effect(indType),['o' cols{i}])
-    errorbar(x2,i,mean(effect(indType)),nanSEM(effect(indType)),cols{i},'LineWidth',4)
+    errorbar(x2,i,nanmean(effect(indType)),nanSEM(effect(indType)),cols{i},'LineWidth',4)
 end
 
 % bootstrap interaction test
