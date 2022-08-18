@@ -9,7 +9,7 @@ req_params.cell_type = 'PC ss';
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
-req_params.num_trials = 50;
+req_params.num_trials = 100;
 req_params.task = 'choice';
 lines_choice = findLinesInDB (task_info, req_params);
 
