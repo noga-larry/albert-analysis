@@ -67,7 +67,17 @@ end
 
 %% comparisoms fron input-output figure
 
-x = [effects.reward];
+x = [effects.direction];
+
+p = bootstraspWelchANOVA(x', cellType');
+
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('BG msn', cellType))))
+
 
 
 inputOutputFig(x,cellType)

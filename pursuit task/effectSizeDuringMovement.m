@@ -3,9 +3,9 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.task = 'saccade_8_dir_75and25';
+%req_params.task = 'pursuit_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -48,7 +48,7 @@ for i = 1:length(req_params.cell_type)
     
     subplot(3,N,i)
     scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
-    p = signrank([effects(indType).time],[effects(indType).reward]);
+    p = bootstrapTTest([effects(indType).time],[effects(indType).reward]);
     xlabel('time')
     ylabel('reward+time*reward')
     equalAxis()
@@ -58,7 +58,7 @@ for i = 1:length(req_params.cell_type)
         
     subplot(3,N,i+N)
     scatter([effects(indType).time],[effects(indType).direction],'filled','k'); hold on
-    p = signrank([effects(indType).time],[effects(indType).direction]);
+    p = bootstrapTTest([effects(indType).time],[effects(indType).direction]);
     xlabel('time')
     ylabel('direction+time*direcion')
     equalAxis()
@@ -68,7 +68,7 @@ for i = 1:length(req_params.cell_type)
     
     subplot(3,N,i+2*N)
     scatter([effects(indType).reward],[effects(indType).direction],'filled','k'); hold on
-    p = signrank([effects(indType).direction],[effects(indType).reward]);
+    p = bootstrapTTest([effects(indType).direction],[effects(indType).reward]);
     xlabel('reward+time*reward')
     ylabel('direction+time*direcion')
     equalAxis()
@@ -117,6 +117,15 @@ title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) 
 
 x = [effects.direction];
 
+p = bootstraspWelchANOVA(x', cellType');
+
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('BG msn', cellType))))
+
 inputOutputFig(x,cellType)
 
 
@@ -125,12 +134,13 @@ p = ranksum(x(find(strcmp('SNR', cellType))),...
     x(find(~strcmp('SNR', cellType))))
 
 
+x = [effects.interactions];
+
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    p = signrank(x(indType));
+    p = bootstrapTTest(x(indType));
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
-    
     
 end
 %% SNR and floc
