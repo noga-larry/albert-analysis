@@ -7,7 +7,6 @@ EPOCH = 'cue';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-%req_params.cell_type = {'PC cs'};
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 %req_params.task = 'saccade_8_dir_75and25';
@@ -67,7 +66,7 @@ for i = 1:length(req_params.cell_type)
 
 end
 
-%% comparisoms fron input-output figure
+%% tests
 
 x = [effects.reward];
 
@@ -90,6 +89,32 @@ for i = 1:length(req_params.cell_type)
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
         
 end
+
+
+% time-significant
+
+x = [effects.reward];
+
+p = bootstraspWelchANOVA(x(time_significance)', cellType(time_significance)')
+
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('BG msn', cellType))))
+
+
+% floc
+load('floc data cue.mat')
+
+x = [effects.reward];
+x_floc = [floc_effects.reward];
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x_floc(find(strcmp('CRB', floc_type))))
+
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x_floc(find(strcmp('PC ss', floc_type))))
 %%
 figure;
 
@@ -110,16 +135,3 @@ end
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
-%% time-significant
-
-
-x = [effects.reward];
-
-p = bootstraspWelchANOVA(x', cellType')
-
-p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
-    x(find(time_significance & strcmp('PC ss', cellType))))
-p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
-    x(find(time_significance & strcmp('CRB', cellType))))
-p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
-    x(find(time_significance & strcmp('BG msn', cellType))))

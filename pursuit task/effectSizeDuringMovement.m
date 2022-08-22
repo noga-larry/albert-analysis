@@ -3,9 +3,9 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'SNR'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.task = 'saccade_8_dir_75and25';
+req_params.task = 'pursuit_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -113,7 +113,7 @@ legend('SS', 'CRB')
 title(['Over all: ranksum: P = ' num2str(p) ', n_{ss} = ' num2str(sum(indType)) ', n_{crb} = ' num2str(sum(~indType))])
 
 
-%% comparisoms fron input-output figure
+%% tests
 
 x = [effects.direction];
 
@@ -126,13 +126,6 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x(find(strcmp('BG msn', cellType))))
 
-inputOutputFig(x,cellType)
-
-
-% ranksum for SNpr
-p = ranksum(x(find(strcmp('SNR', cellType))),...
-    x(find(~strcmp('SNR', cellType))))
-
 
 x = [effects.direction];
 
@@ -143,42 +136,28 @@ for i = 1:length(req_params.cell_type)
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
     
 end
-%% SNR and floc
+
+%
+x = [effects.direction];
+
+p = bootstraspWelchANOVA(x(time_significance)', cellType(time_significance)')
+
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('BG msn', cellType))))
+
+
+% floc
 load('floc data motion.mat')
 
-x = [effects.direction];
-y = [floc_effects.direction];
-p = ranksum(x(find(strcmp('SNR', cellType))),...
-    y)
+x = [effects.reward];
+x_floc = [floc_eff.direction];
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x_floc(find(strcmp('CRB', floc_type))))
 
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x_floc(find(strcmp('PC ss', floc_type))))
 
-%% CV and
-raster_params.align_to = 'cue';
-raster_params.time_before = 200;
-raster_params.time_after = 600;
-raster_params.smoothing_margins = 0;
-req_params.num_trials = 50;
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-    
-    cellType{ii} = data.info.cell_type;
-    
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    
-    raster = getRaster(data,find(~boolFail),raster_params);
-    FR(ii) = mean(mean(raster)*1000);
-    CV2(ii) = nanmean(getCV2(data,find(~boolFail),raster_params));
-    CV(ii) = nanmean(getCV(data,find(~boolFail),raster_params));
-end
-
-figure; 
-scatter(FR(indType),overallExplained(indType),'k'); hold on
-scatter(FR(~indType),overallExplained(~indType),'m'); hold on
-legend('SS', 'CRB')
-
-xlabel('FR')
-ylabel('Sum of effects')
-[r1,p1] = corr(FR(indType)',overallExplained(indType)','type','Spearman')
-[r2,p2] = corr(FR(~indType)',overallExplained(~indType)','type','Spearman')
-title(['SS : r = ' num2str(r1) ', ' num2str(p1) ', CRB : r = ' num2str(r2) ', ' num2str(p2)])

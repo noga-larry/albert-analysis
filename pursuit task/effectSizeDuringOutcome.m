@@ -118,3 +118,23 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p) ', n = ' num2str(length(indType))])
     
 end
+
+
+%%
+
+inx = find([task_info(lines).time_sig_outcome])
+x = [effects.outcome];
+x = x(inx)
+
+relCellType = cellType(inx);
+
+p = bootstraspWelchANOVA(x', relCellType')
+
+p = bootstraspWelchTTest(x(find(strcmp('SNR', relCellType))),...
+    x(find(strcmp('PC ss', relCellType) | strcmp('CRB', relCellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('BG msn', relCellType))),...
+    x(find(strcmp('PC ss', relCellType) | strcmp('CRB', relCellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('CRB', relCellType))),...
+    x(find(strcmp('PC ss', relCellType))))
