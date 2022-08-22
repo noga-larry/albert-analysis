@@ -7,11 +7,13 @@ EPOCH = 'cue';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+%req_params.cell_type = {'PC cs'};
+
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 %req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 
-req_params.num_trials = 50;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
 lines = findLinesInDB (task_info, req_params);
@@ -67,7 +69,7 @@ end
 
 %% comparisoms fron input-output figure
 
-x = [effects.direction];
+x = [effects.reward];
 
 p = bootstraspWelchANOVA(x', cellType');
 
@@ -79,29 +81,14 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x(find(strcmp('BG msn', cellType))))
 
 
-
-inputOutputFig(x,cellType)
-
-% ranksum for SNpr
-[p,tbl,stats] = kruskalwallis(x,cellType);
-c = multcompare(stats, "CType","hsd")
-
-[p] = ranksum(x(find(strcmp('SNR', cellType))),...
-    x(find(strcmp('PC ss', cellType))))
-
-pop1 = 'SNR'; pop2 = 'BG msn';
-scores = [x(find(strcmp(pop1, cellType))),x(find(strcmp(pop2, cellType)))];
-labels = [zeros(1,length(find(strcmp(pop1, cellType)))),...
-    ones(1,length((find(strcmp(pop2, cellType)))))];
-[p] = permutationTest(scores,labels,10000,@mean,1)
+x = [effects.reward];
 
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    p = signrank(x(indType));
+    p = bootstrapTTest(x(indType));
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
-    
-    
+        
 end
 %%
 figure;
@@ -123,6 +110,16 @@ end
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
+%% time-significant
 
 
+x = [effects.reward];
 
+p = bootstraspWelchANOVA(x', cellType')
+
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & strcmp('BG msn', cellType))))

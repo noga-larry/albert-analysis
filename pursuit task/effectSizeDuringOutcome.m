@@ -6,10 +6,10 @@ EPOCH = 'reward';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
+%req_params.cell_type = {'PC cs'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
-req_params.ID = 4000:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -20,8 +20,8 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     
-    [effects(ii), time_significance(ii)] = effectSizeInEpoch(data,EPOCH);    
-    task_info(lines(ii)).time_sig_outcome = time_significance(ii); 
+    [effects(ii), tbl] = effectSizeInEpoch(data,EPOCH);    
+    task_info(lines(ii)).time_sig_outcome = tbl{2,end}<0.05; %time
 
     
     if mod(ii,50)==0
@@ -50,27 +50,7 @@ for i = 1:length(req_params.cell_type)
     disp ([req_params.cell_type{i} ': ' num2str(mean(time_significance(indType)))...
         ', n = ' num2str(sum(time_significance(indType)))])
 end
-    axes(ax1)
-    plotHistForFC(omegaD(indType),bins); hold on
-    xlabel('Effect size')
     
-    axes(ax2)
-    plotHistForFC(omegaT(indType),bins); hold on
-    xlabel('Effect size')
-    
-    axes(ax3)
-    plotHistForFC(omegaR(indType),bins); hold on
-    xlabel('Effect size')
-    
-    axes(ax4)
-    plotHistForFC(omegaO(indType),bins); hold on
-    xlabel('Effect size')
-    
-   axes(ax5)
-    plotHistForFC(omegaSup(indType),bins); hold on
-    xlabel('Effect size')
-    
-end
 
 title(ax1,'Direction')
 title(ax2,'Time')
@@ -84,30 +64,38 @@ figure
 
 x = [effects.outcome];
 
-inputOutputFig(x,cellType)
+p = bootstraspWelchANOVA(x', cellType')
 
-x = [effects.direction];
-% ranksum for SNpr
-p = ranksum(x(find(strcmp('SNR', cellType))),...
-    x(find(~strcmp('SNR', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('PC ss', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('CRB', cellType))))
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('BG msn', cellType))))
 
 
-x = [effects.prediction];
+
+x = [effects.outcome];
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    p = signrank(x(indType));
+    p = bootstrapTTest(x(indType));
     disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
-    
-    
+        
 end
 
 x = [effects.outcome];
-% ranksum for SNpr
-p = ranksum(x(find(strcmp('SNR', cellType)|strcmp('BG msn', cellType))),...
-    x(find(strcmp('PC ss', cellType)|strcmp('CRB', cellType))))
 
+p = bootstraspWelchANOVA(x', cellType')
 
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('PC ss', cellType) | strcmp('CRB', cellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('BG msn', cellType))),...
+    x(find(strcmp('PC ss', cellType) | strcmp('CRB', cellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('CRB', cellType))),...
+    x(find(strcmp('PC ss', cellType))))
 
 %%
 N = length(req_params.cell_type);
@@ -119,11 +107,9 @@ for i = 1:length(req_params.cell_type)
     
     subplot(2,ceil(N/2),i)
     scatter([effects(indType).outcome],[effects(indType).prediction],'filled','k'); hold on
-    p = permutationTestPaired ([effects(indType).outcome],...
-        [effects(indType).prediction],...
-        10000,@nanmean);
-    p = signrank ([effects(indType).outcome],...
+    p = bootstrapTTest ([effects(indType).outcome],...
         [effects(indType).prediction]);
+
     xlabel('outcome+time*outcome')
     ylabel('prediction')
     equalAxis()

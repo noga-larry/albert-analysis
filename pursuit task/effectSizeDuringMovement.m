@@ -3,9 +3,9 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-%req_params.cell_type = {'PC cs'};
+req_params.cell_type = {'PC cs'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-%req_params.task = 'pursuit_8_dir_75and25';
+req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -134,7 +134,7 @@ p = ranksum(x(find(strcmp('SNR', cellType))),...
     x(find(~strcmp('SNR', cellType))))
 
 
-x = [effects.interactions];
+x = [effects.direction];
 
 for i = 1:length(req_params.cell_type)
     

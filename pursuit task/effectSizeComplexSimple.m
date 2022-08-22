@@ -1,15 +1,15 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset'; 
+EPOCH = 'cue'; 
 
 req_params.grade = 7;
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.task = 'pursuit_8_dir_75and25';
+%req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.grade = 7;
-req_params.ID = 4000:6000;
+%req_params.ID = 4000:6000;
 
 lines = findCspkSspkPairs(task_info,req_params);
 
@@ -55,7 +55,7 @@ for j = 1:length(flds)
     xlabel('Complex')
     axis equal
     refline(1,0)
-    p = signrank([effects(2,:).(flds{j})], [effects(1,:).(flds{j})])
+    p = bootstrapTTest([effects(2,:).(flds{j})], [effects(1,:).(flds{j})])
     title([flds{j} ': p = ' num2str(p) ', n = ' num2str(length(lines))])
     
 end

@@ -2,6 +2,7 @@ function p = bootstrapTTest(x,y)
 
 % https://www.youtube.com/watch?v=N4ZQQqyIf6k&ab_channel=StatQuestwithJoshStarmer
 
+
 REPEATS = 10000;
 t_stat = @(x) mean(x)/(std(x)/sqrt((length(x))));
 
@@ -10,6 +11,13 @@ if nargin==1
 else
     scores = x-y;
 end
+
+inx_nan = find(isnan(scores));
+
+if ~isempty(inx_nan)
+    disp(['Remove ' num2str(length(inx_nan)) ' nans'])
+end
+scores(inx_nan)=[];
 
 t_true = t_stat(scores);
 
