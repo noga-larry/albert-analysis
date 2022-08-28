@@ -75,7 +75,7 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 
 
 
-x = [effects.outcome];
+x = [effects.prediction];
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));

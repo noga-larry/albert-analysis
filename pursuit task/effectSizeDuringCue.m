@@ -7,6 +7,7 @@ EPOCH = 'cue';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+req_params.ID = 4000:6000;
 
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 %req_params.task = 'saccade_8_dir_75and25';

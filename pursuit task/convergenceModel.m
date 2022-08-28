@@ -6,8 +6,7 @@ N1 = 4000:1:5000;
 N2 = N-N1;
 
 K = 1:1:1000;
-ALPHA = 0.0001;
-ALPHA = 0.00609322;%caudate
+
 snr_ratio = nan(length(N1),length(K));
 
 for i = 1:length(N1)
@@ -15,13 +14,13 @@ for i = 1:length(N1)
     for j = 1:length(K)
 %         s = ALPHA*((N1(i)-N2(i))/(N1(i)+N2(i)))^2;
 %         n = (1-ALPHA)*(1/K(j));
-        snr_ratio(i,j) = K(j)*((N1(i)-N2(i))/(N1(i)+N2(i)))^2; 
+        snr_ratio(i,j) = K(j)*((N1(i)-N2(i))^2/(N1(i)+N2(i))^2); 
     end
 end
 
 y = K/N;
 
-%%
+%
 figure; hold on
 imagesc(x,y,snr_ratio'); colorbar; hold on
 xlabel('N1/N')
