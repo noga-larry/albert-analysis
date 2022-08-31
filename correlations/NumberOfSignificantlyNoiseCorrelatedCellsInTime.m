@@ -22,7 +22,6 @@ req_params.cell_type = 'BG|SNR';
 lines1 = findLinesInDB (task_info, req_params);
 req_params.cell_type = 'PC ss|CRB';
 lines2 = findLinesInDB (task_info, req_params);
-req_params.remove_question_marks = 1;
 
 pairs = findPairs(task_info,lines1,lines2,...
     req_params.num_trials);
