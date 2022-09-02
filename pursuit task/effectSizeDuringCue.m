@@ -26,7 +26,7 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;    
     
-    [effects(ii), tbl] = effectSizeInEpoch(data,EPOCH); 
+    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
     time_significance(ii) = tbl{2,end}<0.05; %time
     task_info(lines(ii)).time_sig_cue = time_significance(ii);
     
@@ -136,3 +136,25 @@ end
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
+%% correlation with rate
+
+figure;
+flds = fields(effects);
+N = length(req_params.cell_type);
+
+for j =1:length(flds)
+    for i = 1:N
+
+        subplot(length(flds),N,(j-1)*N+i)
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+        scatter([effects(indType).(flds{j})],rate(indType),'filled','k'); hold on
+        [r,p] = corr([effects(indType).(flds{j})]',rate(indType)','type','Spearman');
+        xlabel(flds{j})
+        ylabel('rate')
+        title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)])
+    end
+end
+
+
+inputOutputFig(rate,cellType)

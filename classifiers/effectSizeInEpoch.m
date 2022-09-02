@@ -1,4 +1,4 @@
-function [effectSizes, tbl] = effectSizeInEpoch(data,epoch,varargin)
+function [effectSizes, tbl, rate] = effectSizeInEpoch(data,epoch,varargin)
 
 
 p = inputParser;
@@ -33,6 +33,7 @@ ind = find(~boolFail);
 group_names = {'time', group_names{:}};
 
 raster = getRaster(data,find(~boolFail),raster_params);
+rate = mean(raster,"all")*1000;
 
 % p = randperm(size(raster,2));
 % raster = raster(:,p);
