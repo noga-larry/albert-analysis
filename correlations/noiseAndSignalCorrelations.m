@@ -6,17 +6,21 @@ POPULATIONS = {'BG|SNR','BG|SNR';...
     'PC ss|CRB','PC ss|CRB'};
 
 PROBABILITIES = [25,75];
+DIRECTIONS = 0:45:315;
+EPOCH = 'targetMovementOnset';
+
 
 raster_params.time_before = 200;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 200;
-raster_params.align_to = 'cue';
 raster_params.SD=15;
+raster_params.align_to = EPOCH;
+
 
 req_params.grade = 7;
 req_params.ID = 4000:6000;
 req_params.remove_question_marks = false;
-req_params.num_trials = 50;
+req_params.num_trials = 120;
 req_params.remove_repeats = false;
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 
@@ -41,13 +45,34 @@ for ii=1:length(pairs)
         [data1,data2] = reduceToSharedTrials(data1,data2);
 
         [~,match_p] = getProbabilities (data1);
+        [~,match_d] = getDirections (data1);
+
         boolFail = [data1.trials.fail] | ~[data1.trials.previous_completed];
 
-        for j=1:length(PROBABILITIES)
+
+        switch EPOCH
+            case 'cue'
+                inx_cell = cell(1,length(PROBABILITIES));
+                for j=1:length(PROBABILITIES)
+                    inx_cell{j} = find (match_p == PROBABILITIES(j) & (~boolFail));
+                end
+            case 'targetMovementOnset'
+                inx_cell = cell(1,length(PROBABILITIES)*length(DIRECTIONS));
+                c_inx = 0;
+                for j=1:length(PROBABILITIES)
+                    for k=1:length(DIRECTIONS)
+                        c_inx = c_inx+1;
+                        inx_cell{c_inx} = find (match_d == DIRECTIONS(k) & ...
+                            match_p == PROBABILITIES(j) & (~boolFail));
+                    end
+                end
+        end
+
+        for j=1:length(inx_cell)
             
             c=c+1;
 
-            ind = find (match_p == PROBABILITIES(j) & (~boolFail));
+            ind = inx_cell{j};
 
             psths1 = getSTpsth(data1,ind,raster_params);
             psths2 = getSTpsth(data2,ind,raster_params);
@@ -117,5 +142,37 @@ corr_rtest(r(1),r(2),n(1),n(2))
 corr_rtest(r(3),r(2),n(2),n(3))
 
 
-%% 
+%% matching
 
+inx_between = find(pop_inx==2);
+inx_within = find(pop_inx==1);
+between_signal_corr = gil_corr(inx_between);
+within_signal_corr = gil_corr(inx_within);
+between_noise_corr = noise_corr(inx_between);
+within_noise_corr = noise_corr(inx_within);
+
+signal_match = nan(1,length(inx_between));
+noise_match = nan(1,length(inx_between));
+
+
+for ii = 1:length(inx_between)
+    dists = abs(between_signal_corr(ii)-within_signal_corr);
+    [~,ind_match] = min(dists);
+    signal_match(ii) = within_signal_corr(ind_match);
+    noise_match(ii) = within_noise_corr(ind_match);
+end
+
+figure;
+subplot(2,1,1);
+scatter(between_signal_corr,signal_match);
+axis equal; refline(1,0);
+r = corr(between_signal_corr',signal_match',"rows",'pairwise');
+xlabel('between'); ylabel('match within')
+title(['signal corr, r = ' num2str(r)])
+
+subplot(2,1,2);
+scatter(between_noise_corr,noise_match);
+axis equal; refline(1,0);
+p = signrank(between_noise_corr,noise_match);
+xlabel('between'); ylabel('match within')
+title(['noise corr, signrank p = ' num2str(p)])
