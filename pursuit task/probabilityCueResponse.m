@@ -51,9 +51,8 @@ save (task_DB_path,'task_info')
 clear 
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-
 req_params.grade = 7;
-req_params.ID = 5000:6000;
+req_params.ID = 4000:6000;
 req_params.cell_type = 'SNR';
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 % req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
@@ -108,7 +107,7 @@ for ii = 1:length(cells)
 end
 
 
-f = figure; f.Position = [10 80 700 500];
+f = figure; 
 subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
@@ -153,6 +152,21 @@ refline (1,0)
 title(['p = ' num2str(p) ', n = ' num2str(length(cells))])
 
 
+%%
+
+late_mod_inx = (raster_params.time_before + 300):length(ts)
+late_mod_direction = mean(psthHigh(:,late_mod_inx)-psthLow(:,late_mod_inx),2)>0;
+
+figure;
+subplot(2,1,1); hold on
+errorbar(ts,mean(psthLow(late_mod_direction,:)),nanSEM(psthLow(late_mod_direction,:)),'r')
+errorbar(ts,mean(psthHigh(late_mod_direction,:)),nanSEM(psthHigh(late_mod_direction,:)),'b')
+xlabel('time for cue'); ylabel('rate (Hz)')
+
+subplot(2,1,2); hold on
+errorbar(ts,mean(psthLow(~late_mod_direction,:)),nanSEM(psthLow(~late_mod_direction,:)),'r')
+errorbar(ts,mean(psthHigh(~late_mod_direction,:)),nanSEM(psthHigh(~late_mod_direction,:)),'b')
+xlabel('time for cue'); ylabel('rate (Hz)')
 
 %% seperation to tails
 

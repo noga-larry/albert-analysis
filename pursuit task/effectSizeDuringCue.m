@@ -8,11 +8,9 @@ EPOCH = 'cue';
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.ID = 4000:6000;
-
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 %req_params.task = 'saccade_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
-
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 
@@ -148,8 +146,8 @@ for j =1:length(flds)
         subplot(length(flds),N,(j-1)*N+i)
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-        scatter([effects(indType).(flds{j})],rate(indType),'filled','k'); hold on
-        [r,p] = corr([effects(indType).(flds{j})]',rate(indType)','type','Spearman');
+        scatter(rate(indType),[effects(indType).(flds{j})],'filled','k'); hold on
+        [r,p] = corr([effects(indType).(flds{j})]',rate(indType)','type','Spearman','rows','pairwise');
         xlabel(flds{j})
         ylabel('rate')
         title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)])

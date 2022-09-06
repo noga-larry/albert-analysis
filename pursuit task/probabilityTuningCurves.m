@@ -3,7 +3,7 @@ clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params.grade = 7;
-req_params.cell_type = 'PC cs';
+req_params.cell_type = 'BG msn';
 req_params.task = 'saccade_8_dir_75and25';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -67,8 +67,7 @@ for ii = 1:length(cells)
         
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
         raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-        
-        
+                
         psth_High(ii,d,:) = raster2psth(raster_High,raster_params) - baseline;
         psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)- baseline;
         
@@ -101,7 +100,7 @@ glm_tbl = table(cell_ID_for_GLM',reward_for_GLM',angle_for_GLM',...
 glme = fitglme(glm_tbl,...
 'response ~ 1 + angle_from_PD + reward  +  angle_from_PD *reward + (1|ID)')
 
-
+%%
 
 directions = [-180:45:180];
 f = figure; f.Position = [10 80 700 500];
@@ -152,7 +151,7 @@ for d = 1:length(angles)
     subplot(3,5,d)
     ave_Low = nanmean(squeeze(psth_Low(ind,d,:)));
     sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
-    ave_High = mean(squeeze(psth_High(ind,d,:)));
+    ave_High = nanmean(squeeze(psth_High(ind,d,:)));
     sem_High = nanSEM(squeeze(psth_High(ind,d,:)));
     errorbar(ts,ave_Low,sem_Low,'r'); hold on
     errorbar(ts,ave_High,sem_High,'b'); hold on
@@ -170,9 +169,9 @@ ind = find(h);
 for d = 1:length(angles)
     subplot(3,5,5+d)
     ave_Low = mean(squeeze(psth_Low(ind,d,:)));
-    sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
-    ave_High = mean(squeeze(psth_High(ind,d,:)));
-    sem_High = std(squeeze(psth_High(ind,d,:)))/sqrt(length(ind));
+    sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
+    ave_High = nanmean(squeeze(psth_High(ind,d,:)));
+    sem_High = nanSEM(squeeze(psth_High(ind,d,:)));
     errorbar(ts,ave_Low,sem_Low,'r'); hold on
     errorbar(ts,ave_High,sem_High,'b'); hold on
     if d==1
@@ -189,10 +188,10 @@ legend( '25','75')
 ind = 1:length(h);
 for d = 1:length(angles)
     subplot(3,5,10+d)
-    ave_Low = mean(squeeze(psth_Low(ind,d,:)));
-    sem_Low = std(squeeze(psth_Low(ind,d,:)))/sqrt(length(ind));
-    ave_High = mean(squeeze(psth_High(ind,d,:)));
-    sem_High = std(squeeze(psth_High(ind,d,:)))/sqrt(length(ind));
+    ave_Low = mean(squeeze(psth_Low(ind,d,:)),'omitnan');
+    sem_Low = nanSEM(squeeze(psth_Low(ind,d,:)));
+    ave_High = mean(squeeze(psth_High(ind,d,:)),'omitnan');
+    sem_High = nanSEM(squeeze(psth_High(ind,d,:)));
     errorbar(ts,ave_Low,sem_Low,'r'); hold on
     errorbar(ts,ave_High,sem_High,'b'); hold on
     if d==1
@@ -321,6 +320,9 @@ refline(1,0)
 p = signrank(rateHigh,rateLow);
 title(['p = ' num2str(p)])
 xlabel('P=75'); ylabel('P=25')
+
+
+
 %% reward significanse in different angles around the PD
 
 

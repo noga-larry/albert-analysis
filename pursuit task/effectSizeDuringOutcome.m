@@ -20,7 +20,7 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     
-    [effects(ii), tbl] = effectSizeInEpoch(data,EPOCH);    
+    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
     task_info(lines(ii)).time_sig_outcome = tbl{2,end}<0.05; %time
 
     

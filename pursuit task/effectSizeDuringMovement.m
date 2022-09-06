@@ -8,7 +8,7 @@ req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.cell_type = {'PC cs'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.task = 'pursuit_8_dir_75and25';
+%req_params.task = 'pursuit_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';
 req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
@@ -37,7 +37,7 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effects(ii), tbl] = effectSizeInEpoch(data,EPOCH); 
+    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
     time_significance(ii) = tbl{2,end}<0.05; %time
     
     task_info(lines(ii)).time_sig_motion = time_significance(ii);

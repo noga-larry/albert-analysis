@@ -45,6 +45,8 @@ for i = 1:length(req_params.cell_type)
 end
 
 %%
+
+figure
 N = length(req_params.cell_type);
 
 
@@ -53,34 +55,15 @@ for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
     subplot(3,N,i)
-    scatter(omegaT(1,indType),omegaT(2,indType),'filled');
-    p = signrank(omegaT(1,indType),omegaT(2,indType));
+    scatter([effects1(indType).reward],[effects2(indType).direction],'filled');
+    p = signrank([effects1(indType).reward],[effects2(indType).direction]);
     title(['time, p = ' num2str(p)])
     subtitle(req_params.cell_type{i})
     xlabel('movement')
     ylabel('outcome')    
     equalAxis()
     refline(1,0)
-    
-    subplot(3,N,N+i)
-    scatter(omegaR(1,indType),omegaR(2,indType),'filled');
-    p = signrank(omegaR(1,indType),omegaR(2,indType));
-    title(['reward, p = ' num2str(p)])
-    subtitle(req_params.cell_type{i})
-    xlabel('movement')
-    ylabel('outcome')
-    equalAxis()
-    refline(1,0)
-    
-    subplot(3,N,2*N+i)
-    scatter(omegaD(1,indType),omegaD(2,indType),'filled');
-    p = signrank(omegaD(1,indType),omegaD(2,indType));
-    title(['direction ,p = ' num2str(p)])
-    subtitle(req_params.cell_type{i})
-    xlabel('movement')
-    ylabel('outcome')
-    equalAxis()
-    refline(1,0)
+
 
 end
 

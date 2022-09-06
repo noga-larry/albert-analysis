@@ -2,7 +2,7 @@
 clear
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
-load('sessionMap.mat')
+%load('sessionMap.mat')
 
 K_FOLD = 10;
 EPOCH = 'cue';
@@ -12,7 +12,7 @@ req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
 
 req_params.ID = 4000:6000;
-req_params.num_trials = 70;
+req_params.num_trials = 100;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = 0;
 
@@ -36,13 +36,13 @@ for ii = 1:length(cells)
     cellType{ii} = data.info.cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    if ismember(cellType{ii},{'PC ss','PC cs','CRB'})
-        session_list = sessionMap('Vermis');
-    else
-        session_list = sessionMap('BG');
-    end
+%     if ismember(cellType{ii},{'PC ss','PC cs','CRB'})
+%         session_list = sessionMap('Vermis');
+%     else
+%         session_list = sessionMap('BG');
+%     end
     
-    bool_sig_session(ii) = ismember(data.info.session,session_list);
+%    bool_sig_session(ii) = ismember(data.info.session,session_list);
     
     boolFail = [data.trials.fail];% | ~[data.trials.previous_completed];
     %boolFail(1)=1;
@@ -102,6 +102,7 @@ for i = 1:length(req_params.cell_type)
     
 end
 
+inputOutputFig(accuracy,cellType)
 
 
 %% Seperated by direction
