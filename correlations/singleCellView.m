@@ -1,7 +1,7 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-SD =15;
+SD = 15;
 
 raster_params.time_before = 350;
 raster_params.time_after = 800;
@@ -22,7 +22,7 @@ req_params.cell_type = 'PC ss|CRB'
 lines2 = findLinesInDB (task_info, req_params);
 req_params.remove_question_marks = 1;
 
-pairs = findPairs(task_info,lines1,lines2,req_params.num_trials)
+pairs = findPairs(task_info,lines1,lines2,req_params.num_trials);
 
 ts = (-raster_params.time_before):(raster_params.time_after);
 %%
@@ -39,41 +39,40 @@ for ii = 1:length(pairs)
     
     % cue
     raster_params.align_to = 'cue';
-    
-    raster1 = getRaster(data1,ind,raster_params);
-    raster2 = getRaster(data2,ind,raster_params);
-    
-    psth1 =  raster2STpsth(raster1,raster_params);
-    psth2 =  raster2STpsth(raster2,raster_params);
+      
+    psth1 =  getSTpsth(data1,ind,raster_params);
+    psth2 =  getSTpsth(data2,ind,raster_params);
     
     subplot(3,1,1)
     imagesc(ts,ts,corr(psth1,psth2)); colorbar
-    
+    title ('Cue')
+    xlabel('Time from cue onet')
+    ylabel('Time from cue onet')
+
     % motion
     raster_params.align_to = 'targetMovementOnset';
-    
-    raster1 = getRaster(data1,ind,raster_params);
-    raster2 = getRaster(data2,ind,raster_params);
-    
-    psth1 =  raster2STpsth(raster1,raster_params);
-    psth2 =  raster2STpsth(raster2,raster_params);
+      
+    psth1 =  getSTpsth(data1,ind,raster_params);
+    psth2 =  getSTpsth(data2,ind,raster_params);
     
     subplot(3,1,2)
     imagesc(ts,ts,corr(psth1,psth2)); colorbar
-    
+    title ('Motion')
+    xlabel('Time from motion onet')
+    ylabel('Time from motion onet')
+
     % reward
-    
+
     raster_params.align_to = 'reward';
-    
-    raster1 = getRaster(data1,ind,raster_params);
-    raster2 = getRaster(data2,ind,raster_params);
-    
-    psth1 =  raster2STpsth(raster1,raster_params);
-    psth2 =  raster2STpsth(raster2,raster_params);
-    
+
+    psth1 =  getSTpsth(data1,ind,raster_params);
+    psth2 =  getSTpsth(data2,ind,raster_params);
+
     subplot(3,1,3)
     imagesc(ts,ts,corr(psth1,psth2)); colorbar
-    
+    title ('Reward')
+    xlabel('Time from reward onet')
+    ylabel('Time from reward onet')
     
     sgtitle([ data1.info.cell_type ' ' num2str(data1.info.cell_ID) ...
         ' & ' data2.info.cell_type ' ' num2str(data2.info.cell_ID)])

@@ -2,7 +2,6 @@ function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
 
 MINIMAL_RATE_IN_BIN =0.001;
 BIN_SIZE = 50;
-PROBABILITIES = 0:25:100;
 
 low=0;
 p = inputParser;
