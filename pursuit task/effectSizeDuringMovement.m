@@ -42,7 +42,7 @@ for ii = 1:length(cells)
     
     task_info(lines(ii)).time_sig_motion = time_significance(ii);
 end
-save ([task_DB_path '.mat'],'task_info')
+save ([task_DB_path],'task_info')
 
 
 %%

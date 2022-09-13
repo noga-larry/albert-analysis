@@ -3,7 +3,7 @@ clear; clc
 
 DIRECTIONS = 0:45:315;
 PROBABILIES = [25,75];
-BIN_SIZE = 10;
+BIN_SIZE = 100;
 
 raster_params.time_before = 199;
 raster_params.time_after = 800;
@@ -19,9 +19,7 @@ req_params.remove_repeats = false;
 req_params.task = 'saccade_8_dir_75and25';
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 
-
 ts = (-raster_params.time_before):BIN_SIZE:(raster_params.time_after-1);
-
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -36,35 +34,15 @@ for ii=1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
 
-    [~,match_p] = getProbabilities (data);
-    [~,match_d] = getDirections (data);
+    [r,p_val] =  LatencyNBCorr(data, PROBABILIES, DIRECTIONS, raster_params,...
+        BIN_SIZE);
 
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-
-    for p=1:length(PROBABILIES)
-
-        latencys = [];
-        psths = [];
-
-        for d = 1:length(DIRECTIONS)
-            inx = find(match_p==PROBABILIES(p) & ~ boolFail & match_d==DIRECTIONS(d));
-            latencies_per_dir = saccadeRTs(data,inx);
-            latencies_per_dir = latencies_per_dir - mean(latencies_per_dir,"omitnan");
-            latencys = [latencys,latencies_per_dir];
-
-            psths_per_dir = getSTpsth(data,inx,raster_params);
-            psths_per_dir = downSampleToBins(psths_per_dir,BIN_SIZE);
-            psths = [psths;psths_per_dir];
-            
-        end
-
-         [r,p_val] = corr(psths,latencys',rows="pairwise");
-         nb_corr(ii,p,:) = r;
-         nb_significance(ii,p,:) = p_val;
-
-    end
+    nb_corr(ii,:,:) = r;
+    nb_significance(ii,:,:) = p_val;
 
 end
+
+
 
 %%
 
@@ -82,6 +60,8 @@ for p=1:length(PROBABILIES)
     xlabel('Time from cue'); ylabel('ave corr')
     title(['P = ' num2str(PROBABILIES(p))])
     legend(req_params.cell_type)
+    yline(0)
+
 end
 
 for p=1:length(PROBABILIES)
