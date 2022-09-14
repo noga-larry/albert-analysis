@@ -7,9 +7,7 @@ POPULATIONS = {'BG|SNR','BG|SNR';...
 
 BIN_SIZE_FOR_NOISE = 100;
 
-
 EPOCH = 'cue';
-
 
 raster_params.time_before = 199;
 raster_params.time_after = 800;
@@ -30,9 +28,9 @@ for ii=1:size(POPULATIONS,1)
     req_params.cell_type = POPULATIONS{ii,2};
     lines2 = findLinesInDB (task_info, req_params);
     pairs{ii} = findPairs(task_info,lines1,lines2,...
-        req_params.num_trials);
+        req_params.num_trials)
 end
-
+%%
 c=0;
 for ii=1:length(pairs)
 
@@ -65,6 +63,15 @@ for ii=1:length(pairs)
             psth2_bins = downSampleToBins(psths2,BIN_SIZE_FOR_NOISE);
             tmp = corr(psth1_bins,psth2_bins);
             noise_corr_per_cond(c,j) = mean(diag(tmp),"omitnan");
+
+            [~,score,~,~] = pca(psths1);
+            neuron1 = score(:,1);
+
+            [~,score,~,~] = pca(psths2);
+            neuron2 = score(:,1);
+
+            score_corr(c,j) = corr(neuron1,neuron2);
+
 
             pop_inx(c)=ii;
         end
@@ -201,3 +208,25 @@ for j=1:length(correlations_cell)
     title(correlation_names{j})
     legend(leg)
 end
+
+%%
+
+
+correlation_names = {'PSTH corr', 'Noise corr', 'Gil corr'};
+leg_names = {'BG-BG','BG-Ver','Ver-Ver'};
+
+figure;
+
+for ii=1:size(POPULATIONS,1)
+
+    subplot(size(POPULATIONS,1),1,ii); hold on
+    inx = find(pop_inx==ii);
+    x = ave_psth_corr_per_cond(inx,:);
+    y = score_corr(inx,:);
+    scatter(x,y)
+    [r,p] = corr(x(:),y(:));
+    title([leg_names{ii} ': r = ' num2str(r) ' p = ' num2str(p)])
+    xlabel('PSTH corr'); ylabel('score corr')
+end
+
+
