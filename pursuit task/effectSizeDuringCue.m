@@ -21,10 +21,13 @@ list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
+    
+    assert(length(data.trials)>req_params.num_trials)
+
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;    
     
-    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
+    [effects(ii), tbl, rate(ii), num_trials(ii)] = effectSizeInEpoch(data,EPOCH); 
     time_significance(ii) = tbl{2,end}<0.05; %time
     task_info(lines(ii)).time_sig_cue = time_significance(ii);
     
@@ -39,7 +42,7 @@ for ii = 1:length(cells)
     end
 end
 
-save ([task_DB_path '.mat'],'task_info')
+save ([task_DB_path],'task_info')
 
 
 %%

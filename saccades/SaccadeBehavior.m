@@ -177,7 +177,7 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome(data);
     [~,match_d] = getDirections (data);
-    boolFail = [data.trials.fail]; % | ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
     boolFail(1) = 1; % Do not use first trial
     
     previous_trial = nan(1,length(data.trials));
@@ -217,7 +217,7 @@ end
 
 %%
 figure
-ind = find(cellID<5000);
+ind = find(cellID>5000);
 
 subplot(2,1,1); hold on
 for t = 1:4

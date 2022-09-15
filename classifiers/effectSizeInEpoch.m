@@ -1,4 +1,4 @@
-function [effectSizes, tbl, rate] = effectSizeInEpoch(data,epoch,varargin)
+function [effectSizes, tbl, rate, numTrials] = effectSizeInEpoch(data,epoch,varargin)
 
 
 p = inputParser;
@@ -19,7 +19,6 @@ raster_params.smoothing_margins = 0;
 
 raster_params.align_to = epoch;
 
-
 boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
 
 if strcmp(data.info.task,'choice')
@@ -28,6 +27,8 @@ if strcmp(data.info.task,'choice')
 end
 
 ind = find(~boolFail);
+numTrials = length(ind);
+
 
 [groups, group_names]= createGroups(data,epoch,ind,prev_out);
 group_names = {'time', group_names{:}};
