@@ -1,4 +1,11 @@
-function [nb_corr,nb_significance] = LatencyNBCorr(data, probabilities, directions,raster_params, bin_sz)
+function [nb_corr,nb_significance] = LatencyNBCorr(data, probabilities,...
+    directions,raster_params, bin_sz, varargin)
+
+p = inputParser;
+defaultShiftControl = false;
+addOptional(p,'shiftControl',defaultShiftControl,@islogical);
+parse(p,varargin{:})
+shiftControl = p.Results.shiftControl;
 
 [~,match_p] = getProbabilities (data);
 boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
@@ -36,10 +43,11 @@ for p=1:length(probabilities)
         latencies(inx) = latencies(inx) - mean(latencies(inx),"omitnan");
     end
     
-    % shuffle
-%     latencies = latencies(1:end-1);
-%     psths = psths(2:end,:);
-
+    if shiftControl
+        latencies = latencies(1:end-1);
+        psths = psths(2:end,:);
+    end
+    
     [r,p_val] = corr(psths,latencies',rows="pairwise");
     nb_corr(p,:) = r;
     nb_significance(p,:) = p_val;
