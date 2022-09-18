@@ -22,13 +22,6 @@ req_params.num_trials = 120;
 req_params.remove_repeats = false;
 req_params.task = "pursuit_8_dir_75and25";
 
-if req_params.task == "pursuit_8_dir_75and25"
-    NB_func = @ PursuitNBCorr;
-elseif req_params.task == "saccade_8_dir_75and25"
-    NB_func = @ LatencyNBCorr;
-end
-
-
 for ii=1:size(POPULATIONS,1)
     req_params.cell_type = POPULATIONS{ii,1};
     lines1 = findLinesInDB (task_info, req_params);
@@ -55,18 +48,19 @@ for ii=1:length(pairs)
         data2 = getBehavior(data2,supPath);
 
 
-        nb_corr1(c,:,:) = NB_func(data1, PROBABILIES, DIRECTIONS, raster_params,...
-            BIN_SIZE);
+        nb_corr1(c,:,:) = NBCorrFunction(data1, PROBABILIES, DIRECTIONS, raster_params,...
+        BIN_SIZE,req_params.task,'plotZScore',false);
 
-        nb_corr2(c,:,:) = NB_func(data2, PROBABILIES, DIRECTIONS, raster_params,...
-            BIN_SIZE);
+        nb_corr2(c,:,:) = NBCorrFunction(data2, PROBABILIES, DIRECTIONS, raster_params,...
+        BIN_SIZE,req_params.task,'plotZScore',false);
 
         if SHIFT_CONTROL
-            nb_corr1_shift(c,:,:) = NB_func(data1, PROBABILIES, DIRECTIONS, raster_params,...
-                BIN_SIZE,'shiftControl', true);
+            nb_corr1_shift(c,:,:) = NBCorrFunction(data1, PROBABILIES, DIRECTIONS, raster_params,...
+                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
 
-            nb_corr2_shift(c,:,:) = NB_func(data2, PROBABILIES, DIRECTIONS, raster_params,...
-                BIN_SIZE, 'shiftControl', true);
+
+            nb_corr2_shift(c,:,:) = NBCorrFunction(data2, PROBABILIES, DIRECTIONS, raster_params,...
+                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
         end
 
         [data1,data2] = reduceToSharedTrials(data1,data2);
