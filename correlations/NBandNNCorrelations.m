@@ -5,9 +5,8 @@ POPULATIONS = {'BG msn|SNR','BG msn|SNR';...
     'BG msn|SNR','PC ss|CRB';...
     'PC ss|CRB','PC ss|CRB'};
 BIN_SIZE = 100;
-DIRECTIONS = 0:45:315;
-PROBABILIES = [25,75];
 SHIFT_CONTROL = 1;
+INCLUDE_PREV_OUTCOME = true;
 
 raster_params.time_before = 199;
 raster_params.time_after = 800;
@@ -48,55 +47,35 @@ for ii=1:length(pairs)
         data2 = getBehavior(data2,supPath);
 
 
-        nb_corr1(c,:,:) = NBCorrFunction(data1, PROBABILIES, DIRECTIONS, raster_params,...
-        BIN_SIZE,req_params.task,'plotZScore',false);
+        nb_corr1(c,:,:) = NBCorrFunction(data1, raster_params,...
+            BIN_SIZE,req_params.task,'plotZScore',false,...
+            'seperateByPrev', INCLUDE_PREV_OUTCOME);
 
-        nb_corr2(c,:,:) = NBCorrFunction(data2, PROBABILIES, DIRECTIONS, raster_params,...
-        BIN_SIZE,req_params.task,'plotZScore',false);
+        nb_corr2(c,:,:) = NBCorrFunction(data2, raster_params,...
+            BIN_SIZE,req_params.task,'plotZScore',false, ...
+            'seperateByPrev', INCLUDE_PREV_OUTCOME);
 
         if SHIFT_CONTROL
-            nb_corr1_shift(c,:,:) = NBCorrFunction(data1, PROBABILIES, DIRECTIONS, raster_params,...
+            nb_corr1_shift(c,:,:) = NBCorrFunction(data1, raster_params,...
                 BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
 
 
-            nb_corr2_shift(c,:,:) = NBCorrFunction(data2, PROBABILIES, DIRECTIONS, raster_params,...
+            nb_corr2_shift(c,:,:) = NBCorrFunction(data2, raster_params,...
                 BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
         end
-
-        [data1,data2] = reduceToSharedTrials(data1,data2);
 
         h(1,c) = task_info(cur_pairs(j).cell1).time_sig_motion;
         h(2,c) = task_info(cur_pairs(j).cell2).time_sig_motion;
 
-        boolFail = [data1.trials.fail] | ~[data1.trials.previous_completed];
+        [nn_corr(c,:,:),nn_sig(c,:,:)] = NNCorrFunction(data1, data2,...
+            raster_params, BIN_SIZE);
 
-        [~,match_p] = getProbabilities(data1);
-        for p = 1:length(PROBABILIES)
-            inx = find(match_p==PROBABILIES(p) & ~ boolFail);
-            psth1 = getSTpsth(data1,inx,raster_params);
-            psth2 = getSTpsth(data2,inx,raster_params);
-
-            psth1 = downSampleToBins(psth1, BIN_SIZE);
-            psth2 = downSampleToBins(psth2, BIN_SIZE);
-
-            [corr_mat,p_val] = corr(psth1,psth2);
-
-            nn_corr(c,p,:) = diag(corr_mat);
-            nn_sig(c,p,:) = diag(p_val)<0.05;
-
-            if SHIFT_CONTROL
-                psth1 = psth1(1:end-1,:); psth2 = psth2(2:end,:);
-                [corr_mat,p_val] = corr(psth1,psth2);
-
-                nn_corr_shift(c,p,:) = diag(corr_mat);
-                nn_sig_shift(c,p,:) = diag(p_val)<0.05;
-
-            end
-
-
-
-
+        if SHIFT_CONTROL
+            [nn_corr_shift(c,:,:),nn_sig_shift(c,:,:)] = NNCorrFunction(data1, data2,...
+                raster_params, BIN_SIZE, 'shiftControl', true);
         end
+
+
         pop_inx(c)=ii;
 
     end
@@ -230,7 +209,7 @@ for ii=1:size(POPULATIONS,1)
     ave = mean(r_nb_nn,2,"omitnan");
     sem = nanSEM(r_nb_nn,2);
     errorbar(ts,ave,sem,'k--')
-   
+
     xlabel(['Time from ' raster_params.align_to]);
     ylabel('Corrlation of nb*nb with nn')
     title([POPULATIONS(ii,1) ' and ' POPULATIONS(ii,2)])
