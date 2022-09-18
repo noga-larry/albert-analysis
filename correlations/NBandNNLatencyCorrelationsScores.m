@@ -96,7 +96,7 @@ for ii=1:size(POPULATIONS,1)
     subplot(size(POPULATIONS,1),1,c); hold on
     inx = find(pop_inx==ii);
     scatter(ave_nb_corr_mult(inx,:),nn_corr(inx,:))
-    p_val = signrank(ave_nb_corr_mult(inx),ave_nn_corr(inx));
+    p_val = signrank(ave_nb_corr_mult(inx),nn_corr(inx));
     axis square
     axis([-0.8 0.8 -0.8 0.8])
     refline(1,0)

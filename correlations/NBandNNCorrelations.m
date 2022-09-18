@@ -20,7 +20,14 @@ req_params.ID = 4000:6000;
 req_params.remove_question_marks = false;
 req_params.num_trials = 120;
 req_params.remove_repeats = false;
-req_params.task = 'pursuit_8_dir_75and25';
+req_params.task = "pursuit_8_dir_75and25";
+
+if req_params.task == "pursuit_8_dir_75and25"
+    NB_func = @ PursuitNBCorr;
+elseif req_params.task == "saccade_8_dir_75and25"
+    NB_func = @ LatencyNBCorr;
+end
+
 
 for ii=1:size(POPULATIONS,1)
     req_params.cell_type = POPULATIONS{ii,1};
@@ -48,17 +55,17 @@ for ii=1:length(pairs)
         data2 = getBehavior(data2,supPath);
 
 
-        nb_corr1(c,:,:) = LatencyNBCorr(data1, PROBABILIES, DIRECTIONS, raster_params,...
+        nb_corr1(c,:,:) = NB_func(data1, PROBABILIES, DIRECTIONS, raster_params,...
             BIN_SIZE);
 
-        nb_corr2(c,:,:) = LatencyNBCorr(data2, PROBABILIES, DIRECTIONS, raster_params,...
+        nb_corr2(c,:,:) = NB_func(data2, PROBABILIES, DIRECTIONS, raster_params,...
             BIN_SIZE);
 
         if SHIFT_CONTROL
-            nb_corr1_shift(c,:,:) = LatencyNBCorr(data1, PROBABILIES, DIRECTIONS, raster_params,...
+            nb_corr1_shift(c,:,:) = NB_func(data1, PROBABILIES, DIRECTIONS, raster_params,...
                 BIN_SIZE,'shiftControl', true);
 
-            nb_corr2_shift(c,:,:) = LatencyNBCorr(data2, PROBABILIES, DIRECTIONS, raster_params,...
+            nb_corr2_shift(c,:,:) = NB_func(data2, PROBABILIES, DIRECTIONS, raster_params,...
                 BIN_SIZE, 'shiftControl', true);
         end
 
@@ -123,7 +130,8 @@ for ii=1:size(POPULATIONS,1)
     sem = squeeze(nanSEM(ave_nn_corr(inx,:)));
     errorbar(ts,ave,sem)
     xlabel(['Time from ' raster_params.align_to]); ylabel('ave corr')
-    title([POPULATIONS(ii,1) ' and ' POPULATIONS(ii,2)])
+    title([POPULATIONS{ii,1} ' and ' POPULATIONS{ii,2} ', n = '...
+        num2str(length(inx))])
     yline(0)
 
     legend('nb*nb','nn','0')

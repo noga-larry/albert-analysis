@@ -12,11 +12,11 @@ raster_params.SD=15;
 raster_params.align_to = 'cue';
 
 req_params.grade = 7;
-req_params.ID = 4000:6000;
+req_params.ID = 4300:6000;
 req_params.remove_question_marks = false;
 req_params.num_trials = 120;
 req_params.remove_repeats = false;
-req_params.task = 'saccade_8_dir_75and25';
+req_params.task = "saccade_8_dir_75and25";
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
 
 ts = (-raster_params.time_before):BIN_SIZE:(raster_params.time_after-1);
@@ -34,8 +34,8 @@ for ii=1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
 
-    [r,p_val] =  LatencyNBCorr(data, PROBABILIES, DIRECTIONS, raster_params,...
-        BIN_SIZE);
+    [r,p_val] =  NBCorrFunction(data, PROBABILIES, DIRECTIONS, raster_params,...
+        BIN_SIZE,req_params.task,'plotZScore',true);
 
     nb_corr(ii,:,:) = r;
     nb_significance(ii,:,:) = p_val;
