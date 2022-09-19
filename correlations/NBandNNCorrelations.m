@@ -19,7 +19,7 @@ req_params.ID = 4000:6000;
 req_params.remove_question_marks = false;
 req_params.num_trials = 120;
 req_params.remove_repeats = false;
-req_params.task = "pursuit_8_dir_75and25";
+req_params.task = "saccade_8_dir_75and25";
 
 for ii=1:size(POPULATIONS,1)
     req_params.cell_type = POPULATIONS{ii,1};
@@ -57,22 +57,24 @@ for ii=1:length(pairs)
 
         if SHIFT_CONTROL
             nb_corr1_shift(c,:,:) = NBCorrFunction(data1, raster_params,...
-                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
+                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true,...
+                'seperateByPrev', INCLUDE_PREV_OUTCOME);
 
 
             nb_corr2_shift(c,:,:) = NBCorrFunction(data2, raster_params,...
-                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true);
+                BIN_SIZE,req_params.task,'plotZScore',false,'shiftControl', true,...
+                'seperateByPrev', INCLUDE_PREV_OUTCOME);
         end
 
         h(1,c) = task_info(cur_pairs(j).cell1).time_sig_motion;
         h(2,c) = task_info(cur_pairs(j).cell2).time_sig_motion;
 
         [nn_corr(c,:,:),nn_sig(c,:,:)] = NNCorrFunction(data1, data2,...
-            raster_params, BIN_SIZE);
+            raster_params, BIN_SIZE, 'seperateByPrev', INCLUDE_PREV_OUTCOME);
 
         if SHIFT_CONTROL
             [nn_corr_shift(c,:,:),nn_sig_shift(c,:,:)] = NNCorrFunction(data1, data2,...
-                raster_params, BIN_SIZE, 'shiftControl', true);
+                raster_params, BIN_SIZE, 'shiftControl', true, 'seperateByPrev', INCLUDE_PREV_OUTCOME);
         end
 
 

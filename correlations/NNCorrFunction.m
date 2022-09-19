@@ -13,15 +13,36 @@ addOptional(p,'seperateByPrev',defaultSeperateByPrev,@islogical);
 parse(p,varargin{:})
 shiftControl = p.Results.shiftControl;
 seperateByPrev = p.Results.seperateByPrev;
+
 [data1,data2] = reduceToSharedTrials(data1,data2);
 
+[~,match_p] = getProbabilities (data1);
+[match_o] = getPreviousOutcomes (data1);
 boolFail = [data1.trials.fail] | ~[data1.trials.previous_completed];
 
-[~,match_p] = getProbabilities(data1);
-for p = 1:length(PROBABILIES)
-    inx = find(match_p==PROBABILIES(p) & ~ boolFail);
-    psth1 = getSTpsth(data1,inx,raster_params);
-    psth2 = getSTpsth(data2,inx,raster_params);
+if seperateByPrev
+    inx_cond = cell(length(PROBABILIES)*length(OUTCOMES),1);
+    c = 0;
+    for p = 1:length(PROBABILIES)
+        for ii=1:length(OUTCOMES)
+            c = c+1;
+            inx_cond{c} = find(match_p==PROBABILIES(p) & ...
+                match_o==OUTCOMES(ii) & ~ boolFail);
+        end
+    end
+else
+    c = 0;
+    inx_cond = cell(length(PROBABILIES),1);
+    for p = 1:length(PROBABILIES)
+        c = c+1;
+        inx_cond{c} = find(match_p==PROBABILIES(p) & ~ boolFail);
+    end
+end
+
+for ii=1:length(inx_cond)
+
+    psth1 = getSTpsth(data1,inx_cond{ii},raster_params);
+    psth2 = getSTpsth(data2,inx_cond{ii},raster_params);
 
     psth1 = downSampleToBins(psth1, bin_sz);
     psth2 = downSampleToBins(psth2, bin_sz);
@@ -32,8 +53,8 @@ for p = 1:length(PROBABILIES)
 
     [corr_mat,p_val] = corr(psth1,psth2);
 
-    nn_corr(p,:) = diag(corr_mat);
-    nn_sig(p,:) = diag(p_val)<0.05;
+    nn_corr(ii,:) = diag(corr_mat);
+    nn_sig(ii,:) = diag(p_val)<0.05;
 
-    end
+end
 end
