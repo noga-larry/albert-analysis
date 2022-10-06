@@ -3,13 +3,14 @@ clear
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+req_params.cell_type = {'SNR'};
 req_params.task = 'choice';
 req_params.num_trials = 120;
 req_params.remove_question_marks = 1;
 req_params.remove_repeats = false;
 
 
-EPOCH = 'reward';
+EPOCH = 'cue';
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

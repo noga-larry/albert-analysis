@@ -6,7 +6,7 @@ EPOCH =  'targetMovementOnset';
 
 req_params.grade = 7;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.cell_type = {'PC cs'};
+req_params.cell_type = {'SNR'};
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 %req_params.task = 'pursuit_8_dir_75and25';
 %req_params.task = 'rwd_direction_tuning';

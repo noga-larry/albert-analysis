@@ -114,8 +114,9 @@ for ii=1:size(POPULATIONS,1)
     c = c+1;
 
     subplot(size(POPULATIONS,1),2,c); hold on
-
-    r_nb_nn = corr(ave_nb_corr_mult(inx,:),nn_corr(inx,:),rows="pairwise");
+    
+    corr_mat = corr(ave_nb_corr_mult(inx,:),ave_nn_corr(inx,:),rows="pairwise");
+    r_nb_nn = diag(corr_mat);
     ave = mean(r_nb_nn,2,"omitnan");
     sem = nanSEM(r_nb_nn,2);
     errorbar(ts,ave,sem)
@@ -145,7 +146,6 @@ for ii=1:size(POPULATIONS,1)
 
 end
 
-%%
 
 figure
 inx = find(pop_inx==3);
@@ -219,3 +219,15 @@ for ii=1:size(POPULATIONS,1)
     legend('real','shift')
     ylim ([-1 1])
 end
+
+%% significance of nn-nb*nb correlations in time
+figure; hold on
+cols = {'r','k','b'};
+for ii=1:size(POPULATIONS,1)
+    inx = find(pop_inx==ii);
+    plot(ts,ave_nn_corr(inx,:),[cols{ii} '*'])
+
+end
+
+legend({"bg-bg",'bg-ver','ver-ver'})
+xlabel(['time from ' raster_params.align_to])
