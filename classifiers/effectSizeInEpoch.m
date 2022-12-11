@@ -43,7 +43,7 @@ rate = mean(raster,"all")*1000;
 %     binornd(1,0.15,100, size(raster,2)); binornd(1,0.2, 100, size(raster,2));...
 %     binornd(1,0.23,100, size(raster,2)); binornd(1,0.3, 101, size(raster,2))];
 
-response = downSampleToBins(raster',bin_sz)'*(1000/bin_sz);
+response = downSampleToBins(raster',bin_sz)'*(bin_sz);
 
 
 switch epoch
