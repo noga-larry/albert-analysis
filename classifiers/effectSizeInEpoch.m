@@ -33,7 +33,7 @@ numTrials = length(ind);
 [groups, group_names]= createGroups(data,epoch,ind,prev_out);
 group_names = {'time', group_names{:}};
 
-raster = getRaster(data,find(~boolFail),raster_params);
+raster = getRaster(data,ind,raster_params);
 rate = mean(raster,"all")*1000;
 
 % p = randperm(size(raster,2));
