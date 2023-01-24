@@ -1,7 +1,6 @@
 function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
 
 MINIMAL_RATE_IN_BIN =0.001;
-BIN_SIZE = 50;
 
 low=0;
 p = inputParser;
@@ -12,31 +11,11 @@ addOptional(p,'prevOut',defaultPrevOut,@islogical);
 parse(p,varargin{:})
 prev_out = p.Results.prevOut;
 
-raster_params.time_before = 399;
-raster_params.time_after = 1200;
-raster_params.smoothing_margins = 0;
-
-
-
-raster_params.align_to = epoch;
-
-boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-
-if strcmp(data.info.task,'choice')
-    boolFail = [data.trials.fail] | ~[data.trials.choice] |...
-        ~[data.trials.previous_completed];
-end
-
-ind = find(~boolFail);
+[response,ind,ts] = data2response(data,epoch);
 
 [groups, group_names] = createGroups(data,epoch,ind,prev_out);
 
 
-raster = getRaster(data,find(~boolFail),raster_params);
-response = downSampleToBins(raster',BIN_SIZE)'*(1000/BIN_SIZE);
-
-
-ts = -raster_params.time_before:BIN_SIZE:raster_params.time_after;
 
 for t=1:length(ts)
     
