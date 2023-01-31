@@ -214,7 +214,7 @@ for ii = 1:length(cells )
         rate(p) = mean(psths{p},1);
     end
 
-
+    
     if rate(1)>rate(2)
         psthHigh(ii,:) = psths{1};
         psthLow(ii,:) = psths{2};
@@ -225,9 +225,7 @@ for ii = 1:length(cells )
 
 end
 
-
 %%
-
 figure;
 
 
@@ -245,12 +243,14 @@ for i = 1:length(req_params.cell_type)
     sem = nanSEM(psthHigh(indType,:));
     errorbar(ts,ave,sem,'b');
 
+    xlabel('Time from cue (ms)')
+    ylabel('\Delta Rate')
+    title(req_params.cell_type{i})
+    legend('Low','High')
+
 end
 
-xlabel('Time from cue (ms)')
-ylabel('Rate')
-title('Low')
-legend(req_params.cell_type)
+
 
 
 
