@@ -7,14 +7,7 @@ clear
 K_FOLD = 10;
 EPOCH = 'cue';
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-
-req_params.ID = 4000:6000;
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both");
 
 raster_params.align_to = EPOCH;
 raster_params.time_before = 0;
@@ -33,7 +26,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
     
-    cellType{ii} = data.info.cell_type;
+    cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
 %     if ismember(cellType{ii},{'PC ss','PC cs','CRB'})

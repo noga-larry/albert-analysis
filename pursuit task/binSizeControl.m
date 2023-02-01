@@ -4,14 +4,7 @@ clear
 PLOT_CELL = false;
 EPOCH = 'cue'; 
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-
-req_params.ID = 4000:6000;
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both");
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

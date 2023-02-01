@@ -175,14 +175,10 @@ PROBABILITIES = [25,75];
 
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
+req_params = reqParamsEffectSize("both");
 
 raster_params.time_before = 399;
-raster_params.time_after = 1200;
+raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.align_to = 'cue';
 raster_params.SD = 20;
@@ -225,12 +221,11 @@ for ii = 1:length(cells )
 
 end
 
-%%
 figure;
 
 
 for i = 1:length(req_params.cell_type)
-
+        
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
     subplot(length(req_params.cell_type),1,i); hold on
@@ -245,7 +240,7 @@ for i = 1:length(req_params.cell_type)
 
     xlabel('Time from cue (ms)')
     ylabel('\Delta Rate')
-    title(req_params.cell_type{i})
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))])
     legend('Low','High')
 
 end
