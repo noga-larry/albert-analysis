@@ -27,17 +27,17 @@ for ii = 1:length(cells )
     [~,match_p] = getProbabilities (data);
     match_o = getOutcome (data);
     boolFail = [data.trials.fail];
-    
-    group = match_p*10+match_o; 
+
+    group = match_p*10+match_o;
     group = group(~boolFail);
-    
+
     raster = getRaster(data,find(~boolFail),raster_params);
     spikes = sum(raster,1);
-    
+
     p = kruskalwallis(spikes,group,'off');
-    
+
     task_info(lines(ii)).outcome_differentiating = p<0.05;
-    
+
 end
 
 save (task_DB_path,'task_info')
@@ -46,19 +46,13 @@ save (task_DB_path,'task_info')
 clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.remove_question_marks = 1;
-req_params.grade = 7;
-req_params.cell_type = 'BG msn';
-req_params.num_trials = 50;
-req_params.remove_repeats = 0;
-req_params.ID = 5000:6000;
+req_params = reqParamsEffectSize("both");
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
 compsrison_window = raster_params.time_before + (100:500);
 
@@ -81,104 +75,115 @@ psthHighR = nan(length(cells),length(ts));
 psthHighNR = nan(length(cells),length(ts));
 
 for ii = 1:length(cells)
-    
+
     data = importdata(cells{ii});
-    
+
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
+
+
     % h(ii) = task_info(lines(ii)).cue_differentiating;
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
-    
+
     indLowR = find (match_p == 25 & match_o & (~boolFail));
     indLowNR = find (match_p == 25 & (~match_o) & (~boolFail));
     indHighR = find (match_p == 75 & match_o & (~boolFail));
     indHighNR = find (match_p == 75 & (~match_o) & (~boolFail));
-    
+
     rasterLowR = getRaster(data,indLowR,raster_params);
     rasterLowNR = getRaster(data,indLowNR,raster_params);
     rasterHighR = getRaster(data,indHighR,raster_params);
     rasterHighNR = getRaster(data,indHighNR,raster_params);
-    
+
     baseline = mean(getPSTH(data,find(~boolFail),raster_params));
-    
+
     if strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
-    
-   
+
+
     psthLowR(ii,:) = raster2psth(rasterLowR,raster_params) - baseline;
     psthLowNR(ii,:) = raster2psth(rasterLowNR,raster_params) - baseline;
     psthHighR(ii,:) = raster2psth(rasterHighR,raster_params) - baseline;
     psthHighNR(ii,:) = raster2psth(rasterHighNR,raster_params) - baseline;
-    
+
 end
 
-aveLowR = nanmean(psthLowR);
-semLowR =  nanSEM(psthLowR);
-aveHighR = nanmean(psthHighR);
-semHighR = nanSEM(psthHighR);
+%%
 
-aveLowNR = nanmean(psthLowNR);
-semLowNR = nanSEM(psthLowNR);
-aveHighNR = nanmean(psthHighNR);
-semHighNR = nanSEM(psthHighNR);
+for i = 1:length(req_params.cell_type)
 
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-f = figure; f.Position = [10 80 700 500];
-subplot(2,1,1);
-errorbar(ts,aveLowR,semLowR,'r'); hold on
-errorbar(ts,aveHighR,semHighR,'b'); hold on
-xlabel('Time for reward')
-ylabel('rate (spk/s)')
-legend('25','75')
-title('Reward')
+    aveLowR = nanmean(psthLowR(indType,:));
+    semLowR =  nanSEM(psthLowR(indType,:));
+    aveHighR = nanmean(psthHighR(indType,:));
+    semHighR = nanSEM(psthHighR(indType,:));
 
-subplot(2,1,2);
-errorbar(ts,aveLowNR,semLowNR,'r'); hold on
-errorbar(ts,aveHighNR,semHighNR,'b'); hold on
-xlabel('Time for reward')
-ylabel('rate (spk/s)')
-legend('25','75')
-title('No Reward')
-
-f = figure; f.Position = [10 80 700 500];
-subplot(2,1,1);
-scatter(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
-%scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));
-refline(1,0)
-xlabel('75');ylabel('25')
-title('Reward')
-p = signrank(mean(psthHighR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2))
-title(['Reward: p=' num2str(p) ', n=' num2str(length(cells))])
-
-subplot(2,1,2);
-scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2)); hold on
-%scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
-refline(1,0)
-xlabel('75');ylabel('25')
-p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowNR(:,compsrison_window),2))
-title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
+    aveLowNR = nanmean(psthLowNR(indType,:));
+    semLowNR = nanSEM(psthLowNR(indType,:));
+    aveHighNR = nanmean(psthHighNR(indType,:));
+    semHighNR = nanSEM(psthHighNR(indType,:));
 
 
-figure;
-scatter(mean(psthHighNR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
-refline(1,0)
-xlabel('75 - NR');ylabel('25 - R')
-[r,p] = corr(mean(psthHighNR(:,compsrison_window),2),...
-    mean(psthLowR(:,compsrison_window),2),'type','Spearman');
-title([req_params.cell_type ' correlation: r =  ' num2str(r) ...
-    ', p=' num2str(p) ', n=' num2str(length(cells))])
-p = signrank(mean(psthHighNR(:,compsrison_window),2),mean(psthLowR(:,compsrison_window),2)); hold on
+    figure;
+    subplot(2,2,1);
+    errorbar(ts,aveLowR,semLowR,'r'); hold on
+    errorbar(ts,aveHighR,semHighR,'b'); hold on
+    xlabel('Time for reward')
+    ylabel('rate (spk/s)')
+    legend('25','75')
+    title('Reward')
 
-subtitle(['Signrank:' num2str(p)])
+    subplot(2,2,3);
+    errorbar(ts,aveLowNR,semLowNR,'r'); hold on
+    errorbar(ts,aveHighNR,semHighNR,'b'); hold on
+    xlabel('Time for reward')
+    ylabel('rate (spk/s)')
+    legend('25','75')
+    title('No Reward')
+
+    subplot(3,2,2);
+    scatter(mean(psthHighR(indType,compsrison_window),2),mean(psthLowR(indType,compsrison_window),2)); hold on
+    %scatter(mean(psthHighR(find(h),compsrison_window),2),mean(psthLowR(find(h),compsrison_window),2));
+    refline(1,0)
+    xlabel('75');ylabel('25')
+    title('Reward')
+    p = signrank(mean(psthHighR(indType,compsrison_window),2),mean(psthLowR(indType,compsrison_window),2))
+    title(['Reward: p=' num2str(p) ', n=' num2str(length(cells))])
+
+    subplot(3,2,4);
+    scatter(mean(psthHighNR(indType,compsrison_window),2),mean(psthLowNR(indType,compsrison_window),2)); hold on
+    %scatter(mean(psthHighNR(find(h),compsrison_window),2),mean(psthLowNR(find(h),compsrison_window),2))
+    refline(1,0)
+    xlabel('75');ylabel('25')
+    p = signrank(mean(psthHighNR(indType,compsrison_window),2),mean(psthLowNR(indType,compsrison_window),2))
+    title(['No Reward: p=' num2str(p) ', n=' num2str(length(cells))])
+
+    subplot(3,2,6);
+    scatter(mean(psthHighNR(indType,compsrison_window),2),mean(psthLowR(indType,compsrison_window),2)); hold on
+    refline(1,0)
+    xlabel('75 - NR');ylabel('25 - R')
+    [r,p] = corr(mean(psthHighNR(indType,compsrison_window),2),...
+        mean(psthLowR(indType,compsrison_window),2),'type','Spearman');
+    title([' correlation: r =  ' num2str(r) ...
+        ', p=' num2str(p) ', n=' num2str(length(indType))])
+    p = signrank(mean(psthHighNR(indType,compsrison_window),2),mean(psthLowR(indType,compsrison_window),2)); hold on
+
+    subtitle(['Signrank:' num2str(p)])
+
+    sgtitle([req_params.cell_type{i} 'n = ' num2str(length(indType))])
 
 
+end
 %% Significance in time
-clear 
+clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
 
 WINDOW_SIZE = 50;
-NUM_COMPARISONS = 7; 
+NUM_COMPARISONS = 7;
 PLOT_INDIVIDUAL = false;
 
 req_params.grade = 7;
@@ -203,56 +208,56 @@ ts = -(raster_params.time_before - ceil(WINDOW_SIZE/2)): ...
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
-    
+
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
-    
+
     ind = find(~boolFail);
-    
+
     raster = getRaster(data,ind,raster_params);
-    
+
     func = @(raster) sigFunc(raster,match_p(ind),match_o(ind));
     returnTrace(ii,:,:) = ...
         runningWindowFunction(raster,func,WINDOW_SIZE,NUM_COMPARISONS);
 
     if PLOT_INDIVIDUAL
-       ax1 = subplot(2,1,1); hold on
-        
-       ind = find (match_p==75 & match_o);
-       psth = getSTpsth(data,ind,raster_params);
-       ave = nanmean(psth); sem = nanSEM(psth);
-       errorbar(-raster_params.time_before:...
-           raster_params.time_after,ave,sem,'b')
-       
-       ind = find (match_p==75 & ~match_o);
-       psth = getSTpsth(data,ind,raster_params);
-       ave = nanmean(psth); sem = nanSEM(psth);
-       errorbar(-raster_params.time_before:...
-           raster_params.time_after,ave,sem,'--b')
-       marks = ts(find(returnTrace(ii,:,5)));
-       plot(marks,ones(length(marks),1),'k*')
-       title('75')       
-       
-       ax2 = subplot(2,1,2); hold on
-        
-       ind = find (match_p==25 & match_o);
-       psth = getSTpsth(data,ind,raster_params);
-       ave = nanmean(psth); sem = nanSEM(psth);
-       errorbar(-raster_params.time_before:...
-           raster_params.time_after,ave,sem,'r')
-       
-       ind = find (match_p==25 & ~match_o);
-       psth = getSTpsth(data,ind,raster_params);
-       ave = nanmean(psth); sem = nanSEM(psth);
-       errorbar(-raster_params.time_before:...
-           raster_params.time_after,ave,sem,'--r')
-       title('25')
-       marks = ts(find(returnTrace(ii,:,4)));
-       plot(marks,ones(length(marks),1),'k*')
-       
-       pause
-       cla(ax1); cla(ax2)
+        ax1 = subplot(2,1,1); hold on
+
+        ind = find (match_p==75 & match_o);
+        psth = getSTpsth(data,ind,raster_params);
+        ave = nanmean(psth); sem = nanSEM(psth);
+        errorbar(-raster_params.time_before:...
+            raster_params.time_after,ave,sem,'b')
+
+        ind = find (match_p==75 & ~match_o);
+        psth = getSTpsth(data,ind,raster_params);
+        ave = nanmean(psth); sem = nanSEM(psth);
+        errorbar(-raster_params.time_before:...
+            raster_params.time_after,ave,sem,'--b')
+        marks = ts(find(returnTrace(ii,:,5)));
+        plot(marks,ones(length(marks),1),'k*')
+        title('75')
+
+        ax2 = subplot(2,1,2); hold on
+
+        ind = find (match_p==25 & match_o);
+        psth = getSTpsth(data,ind,raster_params);
+        ave = nanmean(psth); sem = nanSEM(psth);
+        errorbar(-raster_params.time_before:...
+            raster_params.time_after,ave,sem,'r')
+
+        ind = find (match_p==25 & ~match_o);
+        psth = getSTpsth(data,ind,raster_params);
+        ave = nanmean(psth); sem = nanSEM(psth);
+        errorbar(-raster_params.time_before:...
+            raster_params.time_after,ave,sem,'--r')
+        title('25')
+        marks = ts(find(returnTrace(ii,:,4)));
+        plot(marks,ones(length(marks),1),'k*')
+
+        pause
+        cla(ax1); cla(ax2)
     end
 end
 
@@ -292,14 +297,14 @@ spk1 = sum(raster(:,match_p==25));
 spk2 = sum(raster(:,match_p==75));
 p(2) = ranksum(spk1,spk2);
 
-% comparison suprise 
+% comparison suprise
 spk1 = sum(raster(:,(match_p==25 & match_o) | ...
     match_p==75 & ~match_o));
 spk2 = sum(raster(:,(match_p==25 & ~match_o) | ...
     match_p==75 & match_o));
 p(3) = ranksum(spk1,spk2);
 
-% within 25 
+% within 25
 spk1 = sum(raster(:,match_p==25 & match_o));
 spk2 = sum(raster(:,match_p==25 & ~match_o));
 p(4) = ranksum(spk1,spk2);

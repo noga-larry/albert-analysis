@@ -2,21 +2,15 @@
 clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'BG msn';
-req_params.task = 'saccade_8_dir_75and25';
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
-req_params.ID = 4000:6000;
-
+req_params = reqParamsEffectSize("pursuit");
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
-comparison_window = 100:300; % for TC
+comparison_window = 0:800; % for TC
 
 ts = -raster_params.time_before:raster_params.time_after;
 directions = 0:45:315;
@@ -26,10 +20,13 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 
 
-cell_ID = [];
 for ii = 1:length(cells)
+
     data = importdata(cells{ii});
-    cell_ID  = [cell_ID,data.info.cell_ID];
+
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
+
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
     
@@ -79,7 +76,7 @@ end
 
 save (task_DB_path,'task_info')
 
-
+%%
 angle_for_glm = -180:45:0;
 
 k = length(angle_for_glm);
@@ -103,7 +100,7 @@ glme = fitglme(glm_tbl,...
 %%
 
 directions = [-180:45:180];
-f = figure; f.Position = [10 80 700 500];
+f = figure; 
 
 ind = find(h);
 subplot(3,1,2)
@@ -205,6 +202,61 @@ title([' All, n = ' num2str(length(ind))]);
 xlabel('Time from movement')
 legend( '25','75')
 
+%% By type
+
+figure
+
+directions = [-180:45:180];
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    subplot(length(req_params.cell_type),1,i); hold on
+
+    aveHigh = [nanmean(TC_High(indType,:)),nanmean(TC_High(indType,1))];
+    semHigh = [nanSEM(TC_High(indType,:)),nanSEM(TC_High(indType,1))];
+    aveLow = [nanmean(TC_Low(indType,:)),nanmean(TC_Low(indType,1))];
+    semLow = [nanSEM(TC_Low(indType,:)), nanSEM(TC_Low(indType,1))];
+    errorbar(directions,aveLow,semLow,'r'); hold on
+    errorbar(directions,aveHigh,semHigh,'b'); hold on
+    
+    
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))]);
+    xlabel('direction')
+    legend( '25','75')
+
+end
+
+figure
+c=0;
+for i = 1:length(req_params.cell_type)
+
+
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    for d = 1:length(angles)
+
+        c=c+1;
+        subplot(length(req_params.cell_type),length(angles),c); hold on
+
+        ave_Low = mean(squeeze(psth_Low(indType,d,:)),'omitnan');
+        sem_Low = nanSEM(squeeze(psth_Low(indType,d,:)));
+        ave_High = mean(squeeze(psth_High(indType,d,:)),'omitnan');
+        sem_High = nanSEM(squeeze(psth_High(indType,d,:)));
+        errorbar(ts,ave_Low,sem_Low,'r'); hold on
+        errorbar(ts,ave_High,sem_High,'b'); hold on
+        if d==1
+            ylimits = get(gca,'YLim')
+        end
+        ylim([ylimits])
+        legend( '25','75')
+    title([req_params.cell_type{i} ','   num2str(angles(d)) ', n = ' num2str(length(indType))]);
+        xlabel('Time from movement')
+        legend( '25','75')
+    end
+
+end
 %%
 
 aveHigh = nanmean(TC_High);
@@ -257,367 +309,6 @@ end
 
 1-invprctile( meanSquares,trueMeanSquares)/100
 
-
-%% reward significanse around PD
-
-
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-
-req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = -100;
-raster_params.time_after = 300;
-raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
-req_params.remove_question_marks = 1;
-
-angles = [-45,0,45];
-lines = findLinesInDB (task_info, req_params);
-%ind  = find([task_info(lines).directionally_tuned]);
-%lines = lines(ind);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    
-    inxLow = find (match_p == 25 & (~boolFail));
-    inxHigh = find (match_p == 75 & (~boolFail));
-    
-    [~,match_d] = getDirections(data);
-    
-    PD = data.info.PD;
-    
-    boolDir = (match_d == mod(PD+angles(1),360)) |...
-        (match_d == mod(PD+angles(2),360)) |...
-        (match_d == mod(PD+angles(3),360));
-    
-    inx = find (boolDir & (~boolFail));
-    
-    raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
-    raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-    
-    rateHigh(ii) = mean(mean(raster_High));
-    rateLow(ii) = mean(mean(raster_Low));
-    
- 
-end
-
-figure; 
-scatter(rateHigh,rateLow);
-refline(1,0)
-p = signrank(rateHigh,rateLow);
-title(['p = ' num2str(p)])
-xlabel('P=75'); ylabel('P=25')
-
-
-
-%% reward significanse in different angles around the PD
-
-
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-
-req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = -100;
-raster_params.time_after = 300;
-raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
-req_params.remove_question_marks = 1;
-
-angles = [0:45:180];
-lines = findLinesInDB (task_info, req_params);
-%ind  = find([task_info(lines).directionally_tuned]);
-%lines = lines(ind);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    
-    inxLow = find (match_p == 25 & (~boolFail));
-    inxHigh = find (match_p == 75 & (~boolFail));
-    
-    [~,match_d] = getDirections(data);
-    
-    PD = data.info.PD;
-    
-    for j=1:length(angles)
-        boolDir = (match_d == mod(PD+angles(j),360)) |...
-            (match_d == mod(PD-angles(j),360));
-        
-        inx = find (boolDir & (~boolFail));
-        
-        raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
-        raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-        
-        rateHigh(ii,j) = mean(mean(raster_High));
-        rateLow(ii,j) = mean(mean(raster_Low));
-    end
- 
-end
-
-figure; 
-for j=1:length(angles)
-    subplot(2,ceil(length(angles)/2),j)
-    scatter(rateHigh(:,j),rateLow(:,j));
-    refline(1,0)
-    p = signrank(rateHigh(:,j),rateLow(:,j));
-    title(['PD +-' num2str(angles(j)) 'p = ' num2str(p)])
-    xlabel('P=75'); ylabel('P=25')
-end
-
-%% reward significanse in directions in the world
-
-clear all
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
-
-req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = -100;
-raster_params.time_after = 300;
-raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
-req_params.remove_question_marks = 1;
-
-angles = [0:45:315];
-lines = findLinesInDB (task_info, req_params);
-%ind  = find([task_info(lines).directionally_tuned]);
-%lines = lines(ind);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    
-    inxLow = find (match_p == 25 & (~boolFail));
-    inxHigh = find (match_p == 75 & (~boolFail));
-    
-    [~,match_d] = getDirections(data);
-    
-  
-    for j=1:length(angles)
-        boolDir = (match_d == angles(j));
-        
-        inx = find (boolDir & (~boolFail));
-        
-        raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
-        raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-        
-        rateHigh(ii,j) = mean(mean(raster_High));
-        rateLow(ii,j) = mean(mean(raster_Low));
-    end
- 
-end
-
-figure; 
-for j=1:length(angles)
-    subplot(2,ceil(length(angles)/2),j)
-    scatter(rateHigh(:,j),rateLow(:,j));
-    refline(1,0)
-    p = signrank(rateHigh(:,j),rateLow(:,j));
-    title(['PD +-' num2str(angles(j)) 'p = ' num2str(p)])
-    xlabel('P=75'); ylabel('P=25')
-end
-
-
-%% Checking the contribution of the eye velocity to the reward difference
-
-clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-
-
-req_params.grade = 7;
-req_params.cell_type = 'PC ss';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
-raster_params.time_before = 399;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-raster_params.SD = 10;
-
-comparison_window = raster_params.time_before + (100:300); % for TC
-
-behavior_params.time_after = 250;
-behavior_params.time_before = -200;
-behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
-
-
-ts = -raster_params.time_before:raster_params.time_after;
-directions = 0:45:315;
-angles = [-45,0,45];
-lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
-
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    
-    inxLow = find (match_p == 25 & (~boolFail));
-    inxHigh = find (match_p == 75 & (~boolFail));
-    
-    [~,match_d] = getDirections(data);
-    
-    PD = data.info.PD;
-    
-    boolDir = (match_d == mod(PD+angles(1),360)) |...
-        (match_d == mod(PD+angles(2),360)) |...
-        (match_d == mod(PD+angles(3),360));
-    
-    inx = find (boolDir & (~boolFail));
-    
-    raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
-    raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-    
-    rateHigh(ii) = mean(mean(raster_High(comparison_window,:)))*1000;
-    rateLow(ii) = mean(mean(raster_Low(comparison_window,:)))*1000;
-    
-    velHigh(ii) = mean(meanVelocitiesRotated(data,behavior_params,intersect(inx,inxHigh)));
-    velLow(ii) = mean(meanVelocitiesRotated(data,behavior_params,intersect(inx,inxLow)));
-    
-    
-end
-
-figure;scatter(rateHigh,rateLow); refline(1,0)
-
-
-
-
-%%
-clear all
-supPath = 'C:\noga\TD complex spike analysis\Data\albert\pursuit_8_dir_75and25';
-load ('C:\noga\TD complex spike analysis\task_info');
-MaestroPath = 'C:\Users\Owner\Desktop\DATA\albert\';
-
-
-req_params.grade = 7;
-req_params.cell_type = 'CRB';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-
-
-raster_params.allign_to = 'targetMovementOnset';
-raster_params.cue_time = 500;
-raster_params.time_before = 399;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 0;
-raster_params.SD = 10;
-
-comparison_window = raster_params.time_before + (100:300); % for TC
-
-behavior_params.time_after = 250;
-behavior_params.time_before = -200;
-behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
-
-
-ts = -raster_params.time_before:raster_params.time_after;
-directions = 0:45:315;
-angles = [-45,0,45];
-lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells)
-    data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
-    
-    
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail];
-    
-    inxLow = find (match_p == 25 & (~boolFail));
-    inxHigh = find (match_p == 75 & (~boolFail));
-    
-    [~,match_d] = getDirections(data);
-    
-    PD = data.info.PD;
-    h(ii)= data.info.directionally_tuned;
-    
-    boolDir = (match_d == mod(PD+angles(1),360)) |...
-        (match_d == mod(PD+angles(2),360)) |...
-        (match_d == mod(PD+angles(3),360));
-    
-    inx = find (boolDir & (~boolFail));
-    
-    raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
-    raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
-    
-    rateHigh(ii) = mean(mean(raster_High(comparison_window,:)))*1000;
-    rateLow(ii) = mean(mean(raster_Low(comparison_window,:)))*1000;
-    
-    velHigh(ii) = mean(meanVelocitiesRotated(data,behavior_params,intersect(inx,inxHigh)));
-    velLow(ii) = mean(meanVelocitiesRotated(data,behavior_params,intersect(inx,inxLow)));
-    
-    
-end
-
-correctedLow = rateLow.*(velHigh./velLow);
-
-figure;
-subplot(1,2,1)
-scatter(rateHigh,rateLow,'b'); 
-hold on
-refline(1,0)
-title('All cells')
-signrank(rateHigh,rateLow) 
-scatter(rateHigh,correctedLow,'k'); refline(1,0)
-signrank(rateHigh,correctedLow) 
-
-subplot(1,2,2)
-ind = find(h);
-scatter(rateHigh(ind),rateLow(ind),'b'); 
-hold on
-refline(1,0)
-title('All cells')
-signrank(rateHigh(ind),rateLow(ind)) 
-scatter(rateHigh(ind),correctedLow(ind),'k'); refline(1,0)
-signrank(rateHigh(ind),correctedLow(ind)) 
 
 
 %% Significance in time
