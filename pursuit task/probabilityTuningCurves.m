@@ -2,7 +2,7 @@
 clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("saccade");
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
@@ -13,8 +13,8 @@ raster_params.SD = 20;
 comparison_window = 0:800; % for TC
 
 ts = -raster_params.time_before:raster_params.time_after;
-directions = 0:45:315;
-angles = [0:45:180];
+DIRECTIONS = 0:45:315;
+ANGLES = [0:45:180];
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -37,8 +37,8 @@ for ii = 1:length(cells)
     
     % match_d = permVec(match_d);
     
-    [TC,~,h(ii)] = getTC(data, directions,1:length(data.trials), comparison_window);
-    [PD,indPD] = centerOfMass (TC, directions);
+    [TC,~,h(ii)] = getTC(data, DIRECTIONS,1:length(data.trials), comparison_window);
+    [PD,indPD] = centerOfMass (TC, DIRECTIONS);
     TCpop(ii,:) = circshift(TC,5-indPD);
     
     task_info(lines(ii)).directionally_tuned = h(ii);
@@ -47,26 +47,29 @@ for ii = 1:length(cells)
     data.info.directionally_tuned = h(ii);
     save (cells{ii},'data');
     
-    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
+    psth_baseline = mean(getPSTH(data,find(~boolFail),raster_params));
     
     if strcmp(req_params.cell_type,'PC cs')
-        baseline = 0;
+        psth_baseline = 0;
     end
     
     % rotate tuning curves
-    TC_High(ii,:) =  circshift(getTC(data, directions,inxHigh, comparison_window),5-indPD)-baseline;
-    TC_Low(ii,:)= circshift(getTC(data, directions, inxLow, comparison_window),5-indPD)-baseline;
+
+    baseline_TC = mean(getTC(data, DIRECTIONS,1:length(data.trials), comparison_window));
+
+    TC_High(ii,:) =  circshift(getTC(data, DIRECTIONS,inxHigh, comparison_window),5-indPD)-baseline_TC;
+    TC_Low(ii,:)= circshift(getTC(data, DIRECTIONS, inxLow, comparison_window),5-indPD)-baseline_TC;
    
    
-    for d = 1:length(angles)
+    for d = 1:length(ANGLES)
         
-        inx = find ((match_d == mod(PD+angles(d),360) | match_d == mod(PD-angles(d),360)) & (~boolFail));
+        inx = find ((match_d == mod(PD+ANGLES(d),360) | match_d == mod(PD-ANGLES(d),360)) & (~boolFail));
         
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
         raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
                 
-        psth_High(ii,d,:) = raster2psth(raster_High,raster_params) - baseline;
-        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)- baseline;
+        psth_High(ii,d,:) = raster2psth(raster_High,raster_params) - psth_baseline;
+        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)- psth_baseline;
         
     end
     
@@ -99,7 +102,7 @@ glme = fitglme(glm_tbl,...
 
 %%
 
-directions = [-180:45:180];
+DIRECTIONS = [-180:45:180];
 f = figure; 
 
 ind = find(h);
@@ -108,8 +111,8 @@ aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
 semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
 semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
-errorbar(directions,aveLow,semLow,'r'); hold on
-errorbar(directions,aveHigh,semHigh,'b'); hold on
+errorbar(DIRECTIONS,aveLow,semLow,'r'); hold on
+errorbar(DIRECTIONS,aveHigh,semHigh,'b'); hold on
 title(['Significantly tuned, n = ' num2str(sum(h))]);
 xlabel('direction')
 legend( '25','75')
@@ -121,8 +124,8 @@ aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
 semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
 semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
-errorbar(directions,aveLow,semLow,'r'); hold on
-errorbar(directions,aveHigh,semHigh,'b'); hold on
+errorbar(DIRECTIONS,aveLow,semLow,'r'); hold on
+errorbar(DIRECTIONS,aveHigh,semHigh,'b'); hold on
 title(['Untuned, n = ' num2str(length(ind))]);
 ylim([ylimits])
 
@@ -133,15 +136,15 @@ aveHigh = [nanmean(TC_High(ind,:)),nanmean(TC_High(ind,1))];
 semHigh = [nanSEM(TC_High(ind,:)),nanSEM(TC_High(ind,1))];
 aveLow = [nanmean(TC_Low(ind,:)),nanmean(TC_Low(ind,1))];
 semLow = [nanSEM(TC_Low(ind,:)), nanSEM(TC_Low(ind,1))];
-errorbar(directions,aveLow,semLow,'r'); hold on
-errorbar(directions,aveHigh,semHigh,'b'); hold on
+errorbar(DIRECTIONS,aveLow,semLow,'r'); hold on
+errorbar(DIRECTIONS,aveHigh,semHigh,'b'); hold on
 title(['All, n = ' num2str(length(cells))]);
 xlabel('direction')
 legend( '25','75')
 ylim([ylimits])
 
 
-f = figure; f.Position = [10 80 700 500];
+f = figure; 
 
 ind = find(~h);
 for d = 1:length(angles)
@@ -206,7 +209,7 @@ legend( '25','75')
 
 figure
 
-directions = [-180:45:180];
+DIRECTIONS = [-180:45:180];
 
 for i = 1:length(req_params.cell_type)
     
@@ -218,8 +221,8 @@ for i = 1:length(req_params.cell_type)
     semHigh = [nanSEM(TC_High(indType,:)),nanSEM(TC_High(indType,1))];
     aveLow = [nanmean(TC_Low(indType,:)),nanmean(TC_Low(indType,1))];
     semLow = [nanSEM(TC_Low(indType,:)), nanSEM(TC_Low(indType,1))];
-    errorbar(directions,aveLow,semLow,'r'); hold on
-    errorbar(directions,aveHigh,semHigh,'b'); hold on
+    errorbar(DIRECTIONS,aveLow,semLow,'r'); hold on
+    errorbar(DIRECTIONS,aveHigh,semHigh,'b'); hold on
     
     
     title([req_params.cell_type{i} ', n = ' num2str(length(indType))]);
@@ -235,10 +238,10 @@ for i = 1:length(req_params.cell_type)
 
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
-    for d = 1:length(angles)
+    for d = 1:length(ANGLES)
 
         c=c+1;
-        subplot(length(req_params.cell_type),length(angles),c); hold on
+        subplot(length(req_params.cell_type),length(ANGLES),c); hold on
 
         ave_Low = mean(squeeze(psth_Low(indType,d,:)),'omitnan');
         sem_Low = nanSEM(squeeze(psth_Low(indType,d,:)));
@@ -251,7 +254,7 @@ for i = 1:length(req_params.cell_type)
         end
         ylim([ylimits])
         legend( '25','75')
-    title([req_params.cell_type{i} ','   num2str(angles(d)) ', n = ' num2str(length(indType))]);
+        title([req_params.cell_type{i} ','   num2str(ANGLES(d)) ', n = ' num2str(length(indType))]);
         xlabel('Time from movement')
         legend( '25','75')
     end
@@ -262,14 +265,14 @@ end
 aveHigh = nanmean(TC_High);
 aveLow = nanmean(TC_Low);
 
-directions = 0:45:315;
+DIRECTIONS = 0:45:315;
 
 repeats = 1000;
 meanSquares = nan(1,repeats);
 
 trueMeanSquares = mean((aveHigh-aveLow).^2);
 for ii=1:repeats
-    switch_ind = find(randi([0, 1], [1, length(cells)*length(directions)]));
+    switch_ind = find(randi([0, 1], [1, length(cells)*length(DIRECTIONS)]));
     
     BS_High = TC_High;
     BS_High (switch_ind) = TC_Low(switch_ind);
@@ -292,7 +295,7 @@ TC_Low_sig = TC_Low(find(h),:);
 meanSquares = nan(1,repeats);
 trueMeanSquares = mean((nanmean(TC_High_sig)-nanmean(TC_Low_sig)).^2);
 for ii=1:repeats
-    switch_ind = find(randi([0, 1], [1, sum(h)*length(directions)]));
+    switch_ind = find(randi([0, 1], [1, sum(h)*length(DIRECTIONS)]));
     
     BS_High = TC_High_sig;
     BS_High (switch_ind) = TC_Low_sig(switch_ind);
