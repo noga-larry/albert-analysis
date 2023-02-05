@@ -4,8 +4,8 @@ clear
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-TASK = "pursuit"; 
-req_params = reqParamsEffectSize("pursuit");
+TASK = "both"; 
+req_params = reqParamsEffectSize(TASK);
 
 prob = [25, 75];
 
@@ -15,8 +15,12 @@ cells = findPathsToCells (supPath,task_info,lines);
 timeFailRelativeToMotion = cell(length(prob),1);
 
 for ii = 1:length(cells)
+
     data = importdata(cells{ii});
-        
+    cellID(ii) = data.info.cell_ID;
+
+    tasks{ii} = data.info.task;
+
     [~,match_p] = getProbabilities (data);
     
     for p = 1:length(prob)
@@ -60,8 +64,37 @@ title(['First try: p =' num2str(p) ', n =' num2str(length(cells))])
 
 
 subplot(2,1,2); hold on
-plotHistForFC(timeFailRelativeToMotion{1},20,'r')
-plotHistForFC(timeFailRelativeToMotion{2},20,'b')
-
+plotHistForFC(timeFailRelativeToMotion{1},0:50:1500,'r')
+plotHistForFC(timeFailRelativeToMotion{2},0:50:1500,'b')
+legend('25', '75')
 xlabel('Time from target motion')
 
+sgtitle(TASK)
+
+%%
+
+unique_tasks = uniqueRowsCA(tasks')
+
+c=1;
+for i = 1:length(unique_tasks)
+    ind = find(strcmp(tasks,unique_tasks{i}) & cellID<5000)
+
+    subplot(length(unique_tasks),2,c)
+    errorbar(prob, mean(fracCompletedOnFirstTry(ind,:)),nanSEM(fracCompletedOnFirstTry(ind,:))); hold on
+    title(['Albert, ' unique_tasks{i} ],Interpreter="none")
+    ylabel('Frac completed on first try trials')
+    xlabel('Probability'); xticks(prob)
+
+    c=c+1;
+
+    ind = find(strcmp(tasks,unique_tasks{i}) & cellID>5000)
+
+    subplot(length(unique_tasks),2,c)
+    errorbar(prob, mean(fracCompletedOnFirstTry(ind,:)),nanSEM(fracCompletedOnFirstTry(ind,:))); hold on
+    title(['Golda, ' unique_tasks{i} ],Interpreter="none")
+    ylabel('Frac completed on first try trials')
+    xlabel('Probability'); xticks(prob)
+
+    c=c+1;
+
+end

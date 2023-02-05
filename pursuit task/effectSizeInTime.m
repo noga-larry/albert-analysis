@@ -5,13 +5,8 @@ clear
 EPOCH = 'targetMovementOnset';
 PLOT_CELL = false;
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.task = 'saccade_8_dir_75and25';
-%req_params.task = 'rwd_direction_tuning';
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
+req_params = reqParamsEffectSize("both");
+
 
 %pursuit
 ID_cs_sig = [4322	4328	4455	4457	4582	4610	4810	4825	4851	4942	5156	5358	5381	5434	5458	5620	5696];

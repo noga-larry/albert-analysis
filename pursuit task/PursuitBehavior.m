@@ -6,13 +6,7 @@ clear
 
 SINGLE_SESSION = false;
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 70;
-req_params.remove_question_marks =0;
-req_params.remove_repeats = false;
+req_params = reqParamsEffectSize("pursuit");
 
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
@@ -32,10 +26,10 @@ for ii = 1:length(cells)
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     
-    velLow(ii,:) = meanPositionsRotated(data,behavior_params,...
-        indLow,'removeSaccades',false);
-    velHigh(ii,:) = meanPositionsRotated(data,behavior_params,...
-        indHigh,'removeSaccades',false);
+    velLow(ii,:) = meanVelocitiesRotated(data,behavior_params,...
+        indLow,'removeSaccades',true);
+    velHigh(ii,:) = meanVelocitiesRotated(data,behavior_params,...
+        indHigh,'removeSaccades',true);
     
     
     if SINGLE_SESSION
@@ -59,7 +53,7 @@ semHigh = nanSEM(velHigh,1);
 
 errorbar(aveLow,semLow,'r'); hold on
 errorbar(aveHigh,semHigh,'b')
-
+%%
 figure
 scatter(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
 p = signrank(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2));
@@ -70,52 +64,51 @@ refline(1,0)
 title(['p = ' num2str(p) 'n = ' num2str(length(cells))])
 %% Seperated by direction
 
-clear all
+clear 
 
-MaestroPath = 'C:\Users\Noga\Music\DATA\';
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+[task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.num_trials = 100;
-req_params.remove_question_marks =0;
+req_params = reqParamsEffectSize("pursuit");
 
 behavior_params.time_after = 300;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 15; % ms
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-directions = 0:45:315;
+DIRECTIONS = 0:45:315;
 
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getBehavior(data,MaestroPath);
+    data = getBehavior(data,supPath);
+
+    cellID(ii) = data.info.cell_ID;
+
+
     [~,match_p] = getProbabilities (data);
     [~,match_d] = getDirections (data);
     boolFail = [data.trials.fail];
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     
-    for d=1:length(directions)
-        indDir = find(match_d==directions(d));
+    for d=1:length(DIRECTIONS)
+        indDir = find(match_d==DIRECTIONS(d));
         velLow(ii,d,:) = meanVelocitiesRotated(data,behavior_params,intersect(indLow,indDir));
         velHigh(ii,d,:) = meanVelocitiesRotated(data,behavior_params,intersect(indHigh,indDir));
     end
     
 end
+%%
 
+ind = find(cellID < 5000);
 
 figure
-errorbar(directions,nanmean(mean(velHigh(:,:,200:250),3)),nanstd(mean(velHigh(:,:,200:250),3))/sqrt(length(cells)),'b');
+errorbar(DIRECTIONS,nanmean(mean(velHigh(ind,:,200:250),3)),nanSEM(mean(velHigh(ind,:,200:250),3)),'b');
 hold on
-errorbar(directions,nanmean(mean(velLow(:,:,200:250),3)),nanstd(mean(velLow(:,:,200:250),3))/sqrt(length(cells)),'r')
+errorbar(DIRECTIONS,nanmean(mean(velLow(ind,:,200:250),3)),nanSEM(mean(velLow(ind,:,200:250),3)),'r')
 xlabel('Vel');ylabel('Direction 200:25 ms')
 legend('P=25','P=75')
 
