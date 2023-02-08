@@ -190,7 +190,7 @@ for ii=1:length(lines)
     save(cells{1},'data');
 end
 
-%% Remove double detections
+%% Remove CS double detections
 
 clear
 
@@ -307,23 +307,47 @@ for c = 1:length(types)
     end
     
     
-    x = Xmin:0.5:Xmax
-    y = Ymin:0.5:Ymax
-    
-    
-    
+    x = Xmin:0.5:Xmax;
+    y = Ymin:0.5:Ymax;
     
     for i = 1:length(x)
         for j=1:length(y)
             cells = find(([Coordinates.x]==x(i)) & ([Coordinates.y]==y(j)))
-            if ~isempty(cells)
-                
+            if ~isempty(cells)                
                 plot(x(i),y(j),'o','MarkerSize',6*length(cells),'color',col(c)); hold on
-            end
-            
+            end            
         end
     end
 end
 
 legend(types)
 
+
+%% 
+
+clear
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+
+
+req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25|choice';
+req_params.grade = 7;
+req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
+req_params.num_trials = 50;
+req_params.remove_repeats = false;
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (supPath,task_info,lines);
+
+cellType = cell(length(cells),1);
+
+for ii = 1:length(cells)
+
+    data = importdata(cells{ii});
+    if task_info(lines(ii)).num_trials ~= length(data.trials)
+    task_info(lines(ii)).num_trials = length(data.trials);
+    disp('Wrong')
+    end
+           
+end
+
+save ([task_DB_path '.mat'],'task_info')
