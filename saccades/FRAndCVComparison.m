@@ -1,54 +1,51 @@
-% Probability Cue Response
-clear all;
-supPath = 'C:\Users\Noga\Documents\Vermis Data';
-load ('C:\Users\Noga\Documents\Vermis Data\task_info');
+clear
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-% Make list of significant cells
+EPOCH = 'cue';
+TIME_BEFORE = 0;
+TIME_AFTER = 800;
 
-req_params.task = 'saccade_8_dir_75and25';
-req_params.ID = 4000:5000;
-req_params.remove_question_marks = 1;
-req_params.grade = 10;
-req_params.cell_type = 'CRB|PC ss';
-
-raster_params.align_to = 'cue';
-raster_params.time_before = 200;
-raster_params.time_after = 600;
-raster_params.smoothing_margins = 0;
-req_params.num_trials = 50;
+req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC ss','CRB'};
+req_params.remove_question_marks = false;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
+
 for ii = 1:length(cells)
+    
     data = importdata(cells{ii});
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
     
-    cellType{ii} = data.info.cell_type;
     
-    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    boolFail = [data.trials.fail];
     
-    raster = getRaster(data,find(~boolFail),raster_params);
-    FR(ii) = mean(mean(raster)*1000);
-    CV2(ii) = nanmean(getCV2(data,find(~boolFail),raster_params));
-    CV(ii) = nanmean(getCV(data,find(~boolFail),raster_params));
+    CV2(ii) = getCV2(data,find(~boolFail),EPOCH,TIME_BEFORE,TIME_AFTER);
+    FR(ii) = getFR(data,find(~boolFail),EPOCH,TIME_BEFORE,TIME_AFTER);
+    CV(ii) = getCV(data,find(~boolFail),EPOCH,TIME_BEFORE,TIME_AFTER);
 end
 
+%%
 figure
-boolPC = strcmp('PC ss', cellType);
-scatter(FR(boolPC),CV2(boolPC),'k'); hold on
-scatter(FR(~boolPC),CV2(~boolPC),'m')
-legend('PC ss','CRB')
-xlabel('FR'); ylabel('CV2')
+subplot(2,1,1)
+gscatter(CV2,FR,cellType')
+ylabel('FR'); xlabel('CV2')
 
-figure
-boolPC = strcmp('PC ss', cellType);
-scatter(FR(boolPC),CV(boolPC),'k'); hold on
-scatter(FR(~boolPC),CV(~boolPC),'m')
-legend('PC ss','CRB')
-xlabel('FR'); ylabel('CV')
+subplot(2,1,2)
+gscatter(CV,FR,cellType')
+ylabel('FR'); xlabel('CV')
 
-figure
-plotHistForFC(CV(boolPC),20,'k'); hold on
-plotHistForFC(CV(~boolPC),20,'m'); hold on
-legend('PC ss','CRB')
-xlabel('FR')
+%% PCA for CRB
+
+inx = find(strcmp(cellType,'CRB'));
+X = [zscore(FR(inx)'),(CV(inx)'-mean(CV(inx)))/std(CV(inx),'omitnan')];
+[coeff,scores,latent,tsquared,explained,mu] = pca(X);
+
+for i = 1:length(inx)
+    task_info(lines(inx(i))).crb_pc_score = scores(i,1);
+    
+end
+save ([task_DB_path],'task_info')
+
