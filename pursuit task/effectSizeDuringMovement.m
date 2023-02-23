@@ -155,11 +155,5 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x_floc(find(strcmp('PC ss', floc_type))))
 
-%% 
-figure
-scatter(PC_score,[effects.direction])
-xlabel('PC score');  ylabel('Effect size')
-[r,p] = corr(PC_score',[effects.direction]',...
-    'type','spearman','rows','pairwise');
-title(['Spearman: r = ' num2str(r) ', p = ' num2str(p) ',n = ' num2str(length(PC_score))])
+
 
