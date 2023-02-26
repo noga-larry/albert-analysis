@@ -2,12 +2,8 @@ clear all
 
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'PC ss|BG|SNR';
-req_params.task = 'pursuit_8_dir_75and25';
-req_params.ID = 5000:6000;
-req_params.num_trials = 100;
-req_params.remove_question_marks = 0;
+req_params = reqParamsEffectSize("both");
+req_params.ID = 5000:6000
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
@@ -18,7 +14,7 @@ raster_params.align_to = 'reward';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
 compsrison_window = raster_params.time_before + (100:300);
 
@@ -34,7 +30,12 @@ cells = findPathsToCells (supPath,task_info,lines);
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getExtendedBehavior(data,MaestroPath);
+    data = getExtendedBehavior(data,supPath,MaestroPath);
+    if any(data.extended_caliberation.R_squared<0.99)
+        disp('Bad Cab')
+    end
+       
+    cellID(ii) = data.info.cell_ID;
     
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
@@ -56,26 +57,26 @@ for ii = 1:length(cells)
                 -data.trials(t).extended_trial_begin <2000)
             continue
         end
-       
-        saccadesAlignedToReward = data.trials(t).extended_saccade_begin...
-            -data.trials(t).rwd_time_in_extended ;
-        saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
-        if isempty(saccadesAfterReward)
-            FirstSaccadeLatency(t) = NaN;
-            disp('No saccade')
-            continue
-        end
-        FirstSaccadeLatency(t) = min(saccadesAfterReward);
-       
+%        
+%         saccadesAlignedToReward = data.trials(t).extended_saccade_begin...
+%             -data.trials(t).rwd_time_in_extended ;
+%         saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
+%         if isempty(saccadesAfterReward)
+%             FirstSaccadeLatency(t) = NaN;
+%             disp('No saccade')
+%             continue
+%         end
+%         FirstSaccadeLatency(t) = min(saccadesAfterReward);
+%        
     end
     
 
-    latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
-    latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
-    latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
-    latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
-    
-    
+%     latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
+%     latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
+%     latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
+%     latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
+%     
+%     
    
 end
 
