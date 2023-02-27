@@ -12,6 +12,7 @@ PLOT_CELL = false;
 
 req_params = reqParamsEffectSize("both");
 req_params.cell_type = {'PC ss','CRB'};
+req_params.remove_question_marks = false;
 
 lines = findLinesInDB (task_info, req_params);
 paths = findPathsToCells (supPath,task_info,lines);
