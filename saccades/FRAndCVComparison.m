@@ -1,10 +1,10 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'cue';
+EPOCH = 'targetMovementOnset';
 TIME_BEFORE = 0;
 TIME_AFTER = 800;
-FEILD = 'reward'
+FEILD = 'direction';
 
 req_params = reqParamsEffectSize("both");
 req_params.cell_type = {'CRB'};
@@ -50,17 +50,35 @@ ylabel('FR'); xlabel('CV')
 
 subplot(3,1,2)
 gscatter(WFW,FR,cellType')
-ylabel('FR'); xlabel('Waceform')
+ylabel('FR'); xlabel('Waveform')
 
 
+figure;
+
+plot3(FR,CV,WFW,'*')
+
+xlabel('FR')
+ylabel('CV')
+zlabel('WFW')
 
 %% PCA for CRB
 
-X = [(WFW'-mean(WFW,'omitnan'))/std(WFW,'omitnan')...
-    ,zscore(FR')];%,...
-%     (CV(inx)'-mean(CV(inx)))/std(CV(inx),'omitnan')];
+X = [WFW',FR',CV'];
+X = nanzscore(X);
 [coeff,scores,latent,tsquared,explained,mu] = pca(X);
 
+
+
+figure;
+
+
+plot3(X(1,:),X(1,:),X(1,:),'*')
+
+figure
+subplot(2,1,1)
+scatter(scores(:,1),scores(:,2))
+subplot(2,1,2)
+plot(explained)
 %% corr with score
 figure
 scatter(scores(:,1),[effectsEpoch.(FEILD)])
@@ -201,3 +219,34 @@ xticks([1 2]); xticklabels({'Below WFW median', 'Above WFW median'})
 
 title(['kruskalwallis p val = ' num2str(p) ])
 
+%%
+
+% Define bin edges based on x and y
+numBins = 3;
+xBinEdges = linspace(min(FR), max(FR), numBins+1);
+yBinEdges = linspace(min(WFW), max(WFW), numBins+1);
+
+% Preallocate matrix M
+M = zeros(numBins, numBins);
+
+% Iterate over each bin and calculate the mean of z values in that bin
+for i = 1:numBins
+    for j = 1:numBins
+        % Find indices of elements in bin i,j
+        binIndices = find(FR >= xBinEdges(i) & FR < xBinEdges(i+1) & ...
+                          WFW >= yBinEdges(j) & WFW < yBinEdges(j+1));
+        
+        % Calculate mean of z values in that bin
+        M(i,j) = mean([effectsEpoch(binIndices).(FEILD)],'omitnan');
+    end
+end
+
+% Display resulting matrix M
+figure; imagesc(M); colorbar
+
+
+figure
+scatter(log(FR), log(WFW), [],-[effectsEpoch.(FEILD)] , 'filled');
+xlabel('FR')
+ylabel('wavefrom')
+colormap bone; colorbar

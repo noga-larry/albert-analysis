@@ -7,7 +7,7 @@ WINDOW_SIZE_BEFORE_PEAK = 40;
 WINDOW_SIZE_AFTER_PEAK = 40;
 BASELINE = 10; % 10 sample from min point
 Fs = 40; % kHz
-PLOT_CELL = false;
+PLOT_CELL = 0;
 
 
 req_params = reqParamsEffectSize("both");
@@ -18,7 +18,7 @@ lines = findLinesInDB (task_info, req_params);
 paths = findPathsToCells (supPath,task_info,lines);
 
 c=0;
-for ii = 1:length(paths)
+for ii = 80:length(paths)
     
     file_name = [WAVEFORMS_PATH '\ID' ...
         num2str(task_info(lines(ii)).cell_ID) ...
@@ -29,8 +29,13 @@ for ii = 1:length(paths)
         continue
     end
     
-    c=c+1;
     waveforms = importdata(file_name);
+        
+    if size(waveforms.wave,1)<20
+        continue
+    end
+    
+    c=c+1;
     % align to peak
     [~,peaks] = min(waveforms.wave');
     
@@ -48,22 +53,29 @@ for ii = 1:length(paths)
     [~,t_trough] = min(ave);
     [~,t_peak] = findpeaks(ave(t_trough:end),'NPeaks',1,'SortStr','descend');
     t_peak = t_trough+t_peak-1;
+    
+    if ~isempty(t_peak)
+        continue
+    end
+    
     if isempty(t_peak)
         t_peak = length(ave);
     end
     
+
     if PLOT_CELL
         subplot(2,1,1)
-        plot(waveforms.wave')
+        plot(waveforms.wave(1:20,:)')
         subplot(2,1,2); hold on
-        plot(aligned_waveforms')
+        plot(aligned_waveforms(1:20,:)')
         sgtitle([num2str(task_info(lines(ii)).cell_ID) '    ' num2str(task_info(lines(ii)).grade)])
         xline(BASELINE)
         
-        plot(ave,'k','LineWidth',2);
+        plot(ave,'k','LineWidth',2); hold off
                 
         xline(t_trough);xline(t_peak)
         pause
+        cla
     end
     
     signal = peak2peak(ave);
@@ -74,6 +86,9 @@ for ii = 1:length(paths)
     task_info(lines(ii)).waveforms_snr = snrs(c);
     waveform_width(c) = 10^3*(t_peak-t_trough)/Fs; %micro sec
     task_info(lines(ii)).waveform_width = waveform_width(c);
+    
+    peaks(ii) = ave(t_peak);
+    trough(ii) = ave(t_trough);
 end
 
 save(task_DB_path,'task_info')

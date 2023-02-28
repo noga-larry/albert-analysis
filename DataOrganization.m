@@ -91,11 +91,11 @@ save ([task_DB_path '.mat'],'task_info')
 
 %% get Data
 clear
-DATASET = 'Golda behavior before recording';
+DATASET = 'Vermis';
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths(DATASET);
 
-%req_params.grade = 7;
+req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.remove_question_marks = 0;
