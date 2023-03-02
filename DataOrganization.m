@@ -99,7 +99,7 @@ req_params.grade = 7;
 %req_params.cell_type = 'SNR';
 req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
 req_params.remove_question_marks = 0;
-%req_params.ID = 4052;
+req_params.ID = 4454;
 req_params.num_trials = 20;
 req_params.remove_repeats = 0;
 lines = findLinesInDB (task_info, req_params);
@@ -139,6 +139,35 @@ for d=2:length(dfolders)
     
 end
 
+%% extended behavior calibaration
+
+clear
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
+d = dir(dataPath); d = d(3:end);
+dfolders = d([d(:).isdir]);
+
+for d=2:length(dfolders)
+       
+    files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
+    files = files(~[files(:).isdir]);
+    for i =1:length(files)
+        
+        data = importdata([dataPath '\' dfolders(d).name '\' files(i).name]);
+        
+        
+        data = caliberateExtendedBehavior ...
+            (data,dataPath,MaestroPath);
+
+
+        save([dataPath '\' dfolders(d).name '\' files(i).name],'data')
+        
+        if rem(i,50)==0
+            disp([num2str(i) '/' num2str(length(files)) ' - folder ' num2str(d-1)])
+        end
+    end
+    
+end
 
 %%
 clear
