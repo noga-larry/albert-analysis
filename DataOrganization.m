@@ -147,25 +147,44 @@ clear
 d = dir(dataPath); d = d(3:end);
 dfolders = d([d(:).isdir]);
 
-for d=2:length(dfolders)
-       
+c=1;
+
+for d=1:length(dfolders)-1
+    
     files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
     files = files(~[files(:).isdir]);
-    for i =1:length(files)
+    for i = 1:length(files)
         
-        data = importdata([dataPath '\' dfolders(d).name '\' files(i).name]);
+        files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
+        files = files(~[files(:).isdir]);
+        
+        if files(i).name(1:2)=='al' | files(i).name(1:2)=='go'
+            continue
+        end
+        paths{c} = [dataPath '\' dfolders(d).name '\' files(i).name];
+        
+        
+        c = c+1;
+    end
+end
+
+%%
+
+for i=1:length(paths)
+       
+        load(paths{i});      
+        %data = importdata(paths{i});        
         
         
         data = caliberateExtendedBehavior ...
             (data,dataPath,MaestroPath);
 
-
-        save([dataPath '\' dfolders(d).name '\' files(i).name],'data')
+        save(paths{i},'data')
         
         if rem(i,50)==0
-            disp([num2str(i) '/' num2str(length(files)) ' - folder ' num2str(d-1)])
+            disp([num2str(i) '/' num2str(length(paths))])
         end
-    end
+
     
 end
 
