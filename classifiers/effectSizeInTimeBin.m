@@ -1,6 +1,6 @@
 function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
 
-MINIMAL_RATE_IN_BIN =0.001;
+MINIMAL_RATE_IN_BIN = 0.001;
 
 low=0;
 p = inputParser;
@@ -39,7 +39,7 @@ for t=1:length(ts)
                 effectSizes(t).reward = omegas(1).value;
             end
             
-        case 'targetMovementOnset'
+        case {'targetMovementOnset','saccadeLatency','pursuitLatencyRMS'}
             omegas = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
                 'includeTime',false);
             effectSizes(t).direction = omegas(1).value;

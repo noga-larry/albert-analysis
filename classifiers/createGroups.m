@@ -29,7 +29,7 @@ switch epoch
             groups = {match_p};
             group_names = {'reward probability'};
         end
-    case 'targetMovementOnset'
+    case {'targetMovementOnset','saccadeLatency','pursuitLatencyRMS'}
         groups = {match_d,match_p};
         group_names = {'directions','reward probability'};
         

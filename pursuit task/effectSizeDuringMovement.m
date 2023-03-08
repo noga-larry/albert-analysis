@@ -4,9 +4,7 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
-req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'CRB'};
-
+req_params = reqParamsEffectSize("saccade");
 
 % 
 % %pursuit
@@ -27,7 +25,6 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
-    PC_score(ii) = task_info(lines(ii)).crb_pc_score;
     
     [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
     time_significance(ii) = tbl{2,end}<0.05; %time
@@ -35,7 +32,7 @@ for ii = 1:length(cells)
     task_info(lines(ii)).time_sig_motion = time_significance(ii);
     
 end
-save ([task_DB_path],'task_info')
+%save ([task_DB_path],'task_info')
 
 
 %%

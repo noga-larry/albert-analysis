@@ -60,7 +60,7 @@ switch epoch
             effectSizes.reward = omegas(2).value;
         end
 
-    case 'targetMovementOnset'
+    case {'targetMovementOnset','saccadeLatency','pursuitLatencyRMS'}
         [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
         effectSizes.time = omegas(1).value;
         effectSizes.direction = omegas(2).value;
