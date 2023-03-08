@@ -6,17 +6,19 @@ clear
 
 SINGLE_SESSION = false;
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("pursuit","golda");
 
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 15; % ms
 
+SCATTER_TIME = -behavior_params.time_before + 200:250;
+
+
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-h = figure;
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
@@ -51,12 +53,14 @@ semLow = nanSEM(velLow,1);
 aveHigh = mean(velHigh,1);
 semHigh = nanSEM(velHigh,1);
 
+figure;
+
 errorbar(aveLow,semLow,'r'); hold on
 errorbar(aveHigh,semHigh,'b')
 %%
 figure
-scatter(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2))
-p = signrank(mean(velHigh(:,200:250),2),mean(velLow(:,200:250),2));
+scatter(mean(velHigh(:,SCATTER_TIME),2),mean(velLow(:,SCATTER_TIME),2))
+p = signrank(mean(velHigh(:,SCATTER_TIME),2),mean(velLow(:,SCATTER_TIME),2));
 
 
 xlabel('High');ylabel('Low')
@@ -68,12 +72,14 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("pursuit","albert");
 
 behavior_params.time_after = 300;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 15; % ms
+
+SCATTER_TIME = -behavior_params.time_before + 200:250;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -103,12 +109,11 @@ for ii = 1:length(cells)
 end
 %%
 
-ind = find(cellID < 5000);
 
 figure
-errorbar(DIRECTIONS,nanmean(mean(velHigh(ind,:,200:250),3)),nanSEM(mean(velHigh(ind,:,200:250),3)),'b');
+errorbar(DIRECTIONS,nanmean(mean(velHigh(:,:,SCATTER_TIME),3)),nanSEM(mean(velHigh(:,:,SCATTER_TIME),3)),'b');
 hold on
-errorbar(DIRECTIONS,nanmean(mean(velLow(ind,:,200:250),3)),nanSEM(mean(velLow(ind,:,200:250),3)),'r')
+errorbar(DIRECTIONS,nanmean(mean(velLow(:,:,SCATTER_TIME),3)),nanSEM(mean(velLow(:,:,SCATTER_TIME),3)),'r')
 xlabel('Vel');ylabel('Direction 200:25 ms')
 legend('P=25','P=75')
 
