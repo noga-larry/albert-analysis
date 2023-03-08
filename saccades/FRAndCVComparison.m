@@ -69,23 +69,19 @@ X = nanzscore(X);
 
 
 
-figure;
-
-
-plot3(X(1,:),X(1,:),X(1,:),'*')
-
 figure
 subplot(2,1,1)
 scatter(scores(:,1),scores(:,2))
+xlabel('PC 1'); ylabel('PC 2')
 subplot(2,1,2)
-plot(explained)
+plot(cumsum(explained))
 %% corr with score
 figure
 scatter(scores(:,1),[effectsEpoch.(FEILD)])
 xlabel('PC score');  ylabel('Effect size')
-[r,p] = corr(scores(:,1),[effectsEpoch.FEILD]',...
+[r,p] = corr(scores(:,1),[effectsEpoch.(FEILD)]',...
     'type','spearman','rows','pairwise');
-title(['Spearman: r = ' num2str(r) ', p = ' num2str(p) ',n = ' num2str(length(scores(:,1)'))])
+title(['Spearman: r = ' num2str(r) ', p = ' num2str(p) ',n = ' num2str(sum(~isnan(scores(:,1))))])
 
 %% clustering
 
@@ -246,7 +242,7 @@ figure; imagesc(M); colorbar
 
 
 figure
-scatter(log(FR), log(WFW), [],-[effectsEpoch.(FEILD)] , 'filled');
+scatter(log(FR), log(WFW), [],[effectsEpoch.(FEILD)] , 'filled');
 xlabel('FR')
 ylabel('wavefrom')
-colormap bone; colorbar
+colormap parula; colorbar
