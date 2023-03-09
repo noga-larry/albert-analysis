@@ -1,5 +1,6 @@
 
-function [groups, group_names] = createGroups(data,epoch,ind,prev_out)
+function [groups, group_names] = createGroups(data,epoch,ind,...
+    prevOut,velocityInsteadReward)
 
 PROBABILITIES = 0:25:100;
 
@@ -15,6 +16,21 @@ else
     [~,match_d] = getDirections (data,ind,'omitNonIndexed',true);
     [~,match_p] = getProbabilities (data,ind,'omitNonIndexed',true);
 end
+
+
+if velocityInsteadReward
+    behavior_params.time_after = 250;
+    behavior_params.time_before = -200;
+    behavior_params.smoothing_margins = 100; % ms
+    behavior_params.SD = 15; % ms
+
+    [~,~,vel] = meanVelocitiesRotated(data,behavior_params,...
+        ind,'removeSaccades',true,'smoothIndividualTrials',true);
+
+    meanVels = mean(vel,2,'omitnan');
+    match_p = meanVels>median(meanVels,'omitnan');
+end
+
 
 match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
 [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
@@ -36,13 +52,23 @@ switch epoch
     case 'reward'
         groups = {match_p,match_d,match_o};
         group_names = {'directions','reward probability','reward outcome'};
+
+    case {'targetMovementOnsetWithVelocity'}
+
+        groups = {match_d,match_p};
+        
+
 end
 
-if prev_out
+if prevOut
     groups{end+1} =  match_po;
     groups{end+1} = 'previous outcome';
 
 end
+
+if velocityInsteadReward
+    i = find(strcmp('reward probability',group_names));
+    group_names{i} = 'velocity';
 
 
 end

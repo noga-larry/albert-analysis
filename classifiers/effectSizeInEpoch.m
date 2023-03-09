@@ -9,9 +9,13 @@ addOptional(p,'prevOut',defaultPrevOut,@islogical);
 defaultBinSize = 50;
 addOptional(p,'binSize',defaultBinSize,@isnumeric);
 
+defaultVelocity = false;
+addOptional(p,'velocityInsteadReward',defaultVelocity,@islogical);
+
 parse(p,varargin{:})
-prev_out = p.Results.prevOut;
-bin_sz = p.Results.binSize;
+prevOut = p.Results.prevOut;
+binSz = p.Results.binSize;
+velocityInsteadReward = p.Results.velocityInsteadReward;
 
 raster_params.time_before = 0;
 raster_params.time_after = 800;
@@ -30,7 +34,7 @@ ind = find(~boolFail);
 numTrials = length(ind);
 
 
-[groups, group_names]= createGroups(data,epoch,ind,prev_out);
+[groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward);
 group_names = {'time', group_names{:}};
 
 raster = getRaster(data,ind,raster_params);
@@ -43,7 +47,7 @@ rate = mean(raster,"all")*1000;
 %     binornd(1,0.15,100, size(raster,2)); binornd(1,0.2, 100, size(raster,2));...
 %     binornd(1,0.23,100, size(raster,2)); binornd(1,0.3, 101, size(raster,2))];
 
-response = downSampleToBins(raster',bin_sz)'*(bin_sz);
+response = downSampleToBins(raster',binSz)'*(binSz);
 
 
 switch epoch

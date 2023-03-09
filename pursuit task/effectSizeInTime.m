@@ -2,10 +2,11 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'pursuitLatencyRMS';
+EPOCH = 'targetMovementOnset';
 PLOT_CELL = false;
 
-req_params = reqParamsEffectSize("pursuit");
+
+req_params = reqParamsEffectSize("saccade");
 
 
 % req_params.grade = 7;
@@ -42,12 +43,14 @@ for ii = 1:length(cells)
         case 'targetMovementOnset'
             
             rel(ii) = task_info(lines(ii)).time_sig_motion;
-        case 'pursuitLatencyRMS'
+        case {'pursuitLatencyRMS'}
             data = getBehavior (data,supPath);
     end
     
+
     [effectSizes(ii,:),ts] = effectSizeInTimeBin...
-        (data,EPOCH,'prevOut',false);
+        (data,EPOCH,'prevOut',false,...
+        'velocityInsteadReward',false);
     
     if PLOT_CELL
         

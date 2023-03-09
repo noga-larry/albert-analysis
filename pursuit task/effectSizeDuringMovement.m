@@ -4,7 +4,7 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("pursuit");
 
 % 
 % %pursuit
@@ -23,10 +23,15 @@ list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
+
+   % data = getBehavior (data,supPath);
+
+
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
+    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH,...
+        'velocityInsteadReward',false);
     time_significance(ii) = tbl{2,end}<0.05; %time
     
     task_info(lines(ii)).time_sig_motion = time_significance(ii);

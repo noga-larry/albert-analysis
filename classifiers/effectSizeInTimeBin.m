@@ -7,19 +7,22 @@ p = inputParser;
 
 defaultPrevOut = false;
 addOptional(p,'prevOut',defaultPrevOut,@islogical);
+defaultVelocity = false;
+addOptional(p,'velocityInsteadReward',defaultVelocity,@islogical);
 
 parse(p,varargin{:})
-prev_out = p.Results.prevOut;
+prevOut = p.Results.prevOut;
+velocityInsteadReward = p.Results.velocityInsteadReward  ;
 
 [response,ind,ts] = data2response(data,epoch);
 
-[groups, group_names] = createGroups(data,epoch,ind,prev_out);
+[groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward);
 
 
 
 for t=1:length(ts)
     
-    if mean(response(t,:))<MINIMAL_RATE_IN_BIN;
+    if mean(response(t,:))<MINIMAL_RATE_IN_BIN
         low = 1;
     end
     
@@ -56,7 +59,7 @@ for t=1:length(ts)
             
     end   
     
-    if prev_out
+    if prevOut
         effectSizes(t).prev_out = omegas(end-1).value;
     end
     
