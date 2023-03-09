@@ -1,24 +1,14 @@
-clear all
+clear
 
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.ID = 5000:6000
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 15; % ms
 
-raster_params.align_to = 'reward';
-raster_params.time_before = 399;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 100;
-raster_params.SD = 20;
-
-compsrison_window = raster_params.time_before + (100:300);
-
-ts = -raster_params.time_before:raster_params.time_after;
 
 windowEvent = -behavior_params.time_before:behavior_params.time_after;
 directionBorders = 0:45:360;
@@ -57,26 +47,26 @@ for ii = 1:length(cells)
                 -data.trials(t).extended_trial_begin <2000)
             continue
         end
-%        
-%         saccadesAlignedToReward = data.trials(t).extended_saccade_begin...
-%             -data.trials(t).rwd_time_in_extended ;
-%         saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
-%         if isempty(saccadesAfterReward)
-%             FirstSaccadeLatency(t) = NaN;
-%             disp('No saccade')
-%             continue
-%         end
-%         FirstSaccadeLatency(t) = min(saccadesAfterReward);
-%        
+       
+        saccadesAlignedToReward = data.trials(t).extended_saccade_begin...
+            -data.trials(t).rwd_time_in_extended ;
+        saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
+        if isempty(saccadesAfterReward)
+            FirstSaccadeLatency(t) = NaN;
+            disp('No saccade')
+            continue
+        end
+        FirstSaccadeLatency(t) = min(saccadesAfterReward);
+       
     end
     
 
-%     latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
-%     latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
-%     latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
-%     latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
-%     
-%     
+    latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
+    latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
+    latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
+    latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
+    
+    
    
 end
 

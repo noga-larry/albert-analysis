@@ -168,8 +168,6 @@ for d=1:length(dfolders)-1
     end
 end
 
-%%
-
 for i=1:length(paths)
        
         load(paths{i});      
@@ -187,6 +185,12 @@ for i=1:length(paths)
 
     
 end
+
+%%
+[task_info,dataPath, MaestroPath,task_DB_path] =...
+    loadDBAndSpecifyDataPaths('Vermis');
+path = 'H:\Vermis Data\saccade_8_dir_75and25\4004 BG msn.mat';
+[extendedBehaviorData] = getExtendedBehaviorShadowFile(data,MaestroPath)
 
 %%
 clear
