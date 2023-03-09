@@ -71,15 +71,20 @@ if includeTime
         not_inter_inx = [not_inter_inx inx1 inx2];
     end
     
+    c=c+1;
     inx1 = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
     inx2 = find(strcmp(tbl(:,1),'time*reward probability*reward outcome'));
-
-    omega(c+1).variable = 'prediction error';
-    omega(c+1).value = omegafun(tbl,[inx1 inx2]);
+    
+     
+    if ~isempty(inx1)||~isempty(inx2)
+        omega(c).variable = 'prediction_error';
+        omega(c).value = omegafun(tbl,[inx1 inx2]);
+        c=c+1;
+    end
     
     inx = setdiff(3:(length(tbl)-2),not_inter_inx);
-    omega(c+2).variable = 'Interactions';
-    omega(c+2).value = omegafun(tbl,inx);
+    omega(c).variable = 'Interactions';
+    omega(c).value = omegafun(tbl,inx);
 else
     c=0;
     for i = 1:length(groups)
