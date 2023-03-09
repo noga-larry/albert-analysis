@@ -55,8 +55,8 @@ for i = 1:length(req_params.cell_type)
         ', n = ' num2str(sum(time_significance(indType)))]) 
     
     subplot(3,N,i)
-    scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
-    p = bootstrapTTest([effects(indType).time],[effects(indType).reward]);
+    scatter([effects(indType).time],[effects(indType).reward_probability],'filled','k'); hold on
+    p = bootstrapTTest([effects(indType).time],[effects(indType).reward_probability]);
     xlabel('time')
     ylabel('reward+time*reward')
     equalAxis()
@@ -65,8 +65,8 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p) ',n = ' num2str(length(indType))])
         
     subplot(3,N,i+N)
-    scatter([effects(indType).time],[effects(indType).direction],'filled','k'); hold on
-    p = bootstrapTTest([effects(indType).time],[effects(indType).direction]);
+    scatter([effects(indType).time],[effects(indType).directions],'filled','k'); hold on
+    p = bootstrapTTest([effects(indType).time],[effects(indType).directions]);
     xlabel('time')
     ylabel('direction+time*direcion')
     equalAxis()
@@ -75,8 +75,8 @@ for i = 1:length(req_params.cell_type)
     subtitle(['p = ' num2str(p) ',n = ' num2str(length(indType))])
     
     subplot(3,N,i+2*N)
-    scatter([effects(indType).reward],[effects(indType).direction],'filled','k'); hold on
-    p = bootstrapTTest([effects(indType).direction],[effects(indType).reward]);
+    scatter([effects(indType).reward_probability],[effects(indType).directions],'filled','k'); hold on
+    p = bootstrapTTest([effects(indType).directions],[effects(indType).reward_probability]);
     xlabel('reward+time*reward')
     ylabel('direction+time*direcion')
     equalAxis()
@@ -123,7 +123,7 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x(find(strcmp('BG msn', cellType))))
 
 
-x = [effects.direction];
+x = [effects.velocity];
 
 for i = 1:length(req_params.cell_type)
     

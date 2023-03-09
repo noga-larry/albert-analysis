@@ -40,18 +40,18 @@ switch epoch
     case 'cue'
         if strcmp(data.info.task,'choice')
             groups = {match_d,match_p};
-            group_names = {'directions','reward probability'};
+            group_names = {'directions','reward_probability'};
         else
             groups = {match_p};
-            group_names = {'reward probability'};
+            group_names = {'reward_probability'};
         end
     case {'targetMovementOnset','saccadeLatency','pursuitLatencyRMS'}
         groups = {match_d,match_p};
-        group_names = {'directions','reward probability'};
+        group_names = {'directions','reward_probability'};
         
     case 'reward'
         groups = {match_p,match_d,match_o};
-        group_names = {'directions','reward probability','reward outcome'};
+        group_names = {'directions','reward_probability','reward_outcome'};
 
     case {'targetMovementOnsetWithVelocity'}
 
@@ -62,12 +62,12 @@ end
 
 if prevOut
     groups{end+1} =  match_po;
-    groups{end+1} = 'previous outcome';
+    groups{end+1} = 'previous_outcome';
 
 end
 
 if velocityInsteadReward
-    i = find(strcmp('reward probability',group_names));
+    i = find(strcmp('reward_probability',group_names));
     group_names{i} = 'velocity';
 
 

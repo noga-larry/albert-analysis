@@ -2,21 +2,17 @@ clear
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.remove_question_marks = 1;
-req_params.remove_repeats = false;
-req_params.num_trials = 100;
+req_params = reqParamsEffectSize("both");
 
 req_params.task = 'saccade_8_dir_75and25';
-lines_choice = findLinesInDB (task_info, req_params);
+lines_sacc = findLinesInDB (task_info, req_params);
 
 req_params.task = 'pursuit_8_dir_75and25';
 lines_single = findLinesInDB (task_info, req_params);
 
 EPOCH = 'targetMovementOnset';
 
-lines = findSameNeuronInTwoLinesLists(task_info,lines_choice,lines_single);
+lines = findSameNeuronInTwoLinesLists(task_info,lines_sacc,lines_single);
 
 omegaR = nan(2,length(lines));
 omegaD = nan(2,length(lines));
@@ -41,7 +37,7 @@ end
 N = length(req_params.cell_type);
 figure;
 
-h = cellID>5000;
+h = cellID>-inf;
 
 flds = fields(effects);
 for j=1:length(flds)
@@ -58,7 +54,7 @@ for j=1:length(flds)
         ylabel('pursuit')
         equalAxis()
         refline(1,0)
-        title([flds{j} ' ' req_params.cell_type{i}])
+        title([flds{j} ' ' req_params.cell_type{i}],'Interpreter' ,'none')
         subtitle(['signkrank: p = ' num2str(p1) ' | corr: r = ' num2str(r) ...
             ', p = ' num2str(p2), ', n = ' num2str(length(indType))])
 

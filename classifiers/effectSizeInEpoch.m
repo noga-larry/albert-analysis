@@ -49,36 +49,8 @@ rate = mean(raster,"all")*1000;
 
 response = downSampleToBins(raster',binSz)'*(binSz);
 
+[omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
 
-switch epoch
-    case 'cue'
-        
-        if strcmp(data.info.task,'choice')
-            [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
-            effectSizes.time = omegas(1).value;
-            effectSizes.direction = omegas(2).value;
-            effectSizes.reward = omegas(3).value;
-        else
-            [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
-            effectSizes.time = omegas(1).value;
-            effectSizes.reward = omegas(2).value;
-        end
-
-    case {'targetMovementOnset','saccadeLatency','pursuitLatencyRMS'}
-        [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
-        effectSizes.time = omegas(1).value;
-        effectSizes.direction = omegas(2).value;
-        effectSizes.reward = omegas(3).value;
-        
-    case 'reward'
-        [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
-        effectSizes.time = omegas(1).value;
-        effectSizes.reward = omegas(2).value;
-        effectSizes.direction = omegas(3).value;
-        effectSizes.outcome = omegas(4).value;  
-        effectSizes.prediction = omegas(5).value;   
-end
-
-if length(groups)>1
-    effectSizes.interactions = omegas(end).value;
+for i=1:length(omegas)
+    effectSizes.(omegas(i).variable) = omegas(i).value;
 end
