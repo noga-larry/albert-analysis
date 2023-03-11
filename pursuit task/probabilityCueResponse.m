@@ -4,13 +4,9 @@ clear; clc
 
 % Make list of significant cells
 
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.remove_question_marks = 1;
-req_params.grade =7;
-req_params.ID = 4000:6000;
-req_params.cell_type = {'PC ss', 'PC cs', 'CRB','SNR','BG msn'};
-req_params.num_trials = 50;
-req_params.remove_repeats = 0;
+
+req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC cs'};
 
 
 raster_params.align_to = 'cue';
@@ -50,22 +46,15 @@ save (task_DB_path,'task_info')
 clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.ID = 4000:6000;
-req_params.cell_type = 'SNR';
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-% req_params.ID = setdiff(4000:5000,[4220,4273,4316,4331,4333,4348,4582,...
-%     4785,4802,4810,4841,4845,4862,4833,...
-%     4907]);
-req_params.num_trials = 50;
-req_params.remove_question_marks = 1;
-%req_params.ID = [4243,4269,4575,4692,4718,4722]
+req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC cs'};
+
 
 raster_params.align_to = 'cue';
 raster_params.time_before = 399;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
 comparisonWindow = raster_params.time_before + [100:400];
 
@@ -90,19 +79,16 @@ for ii = 1:length(cells)
     indHigh = find (match_p == 75 & (~boolFail));
     indBaseline = find(~boolFail);
 
-    rasterBaseline = getRaster(data,indBaseline,raster_params);
-    psthLow = getRaster(data,indLow,raster_params);
-    rasterHigh = getRaster(data,indHigh,raster_params);
 
     if ~strcmp(req_params.cell_type,'PC cs')
-        baseline = mean(raster2psth(rasterBaseline,raster_params));
+        baseline = mean(raster2psth(getRaster(data,indBaseline,raster_params),raster_params));
     else
         baseline = 0;
     end
-    psthLow(ii,:) = raster2psth(psthLow,raster_params)-baseline;
-    psthHigh(ii,:) = raster2psth(rasterHigh,raster_params)-baseline;
-    h(ii) = task_info(lines(ii)).cue_differentiating;
 
+    psthLow(ii,:) = getPSTH(data,indLow,raster_params)-baseline;
+    psthHigh(ii,:) = getPSTH(data,indHigh,raster_params)-baseline;
+    h(ii) = task_info(lines(ii)).cue_differentiating;
 end
 
 
@@ -176,6 +162,7 @@ PROBABILITIES = [25,75];
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC cs'};
 
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -203,6 +190,9 @@ for ii = 1:length(cells )
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
 
     baseline = mean(getPSTH(data,find(~boolFail),raster_params),1);
+    if  strcmp(req_params.cell_type,'PC cs')
+        baseline = 0;
+    end
 
     for p=1:length(PROBABILITIES)
         ind = find (match_p == PROBABILITIES(p) & (~boolFail));

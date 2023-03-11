@@ -1,67 +1,92 @@
 %% Behavior figure
 
-clear 
+clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 SINGLE_SESSION = false;
+PROBABITIES = [25,75];
+COL ={'r','b'}';
+SCATTER_TIME = 200:250;
+MONKEY = "golda";
 
-req_params = reqParamsEffectSize("pursuit","golda");
+req_params = reqParamsEffectSize("pursuit",MONKEY);
 
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
 behavior_params.SD = 15; % ms
 
-SCATTER_TIME = -behavior_params.time_before + 200:250;
+SCATTER_TIME = -behavior_params.time_before + SCATTER_TIME;
 
+ts = -behavior_params.time_before:behavior_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
+
+vel = nan(length(cells),length(PROBABITIES),length(ts));
+numCorrective = nan(length(cells),length(PROBABITIES));
+
+
 for ii = 1:length(cells)
-    
+
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
-    indLow = find (match_p == 25 & (~boolFail));
-    indHigh = find (match_p == 75 & (~boolFail));
-    
-    velLow(ii,:) = meanVelocitiesRotated(data,behavior_params,...
-        indLow,'removeSaccades',true);
-    velHigh(ii,:) = meanVelocitiesRotated(data,behavior_params,...
-        indHigh,'removeSaccades',true);
-    
-    
+
     if SINGLE_SESSION
         cla;hold on
-        [~,~,hVel,~] = ...
-            meanPositionsRotated(data,behavior_params,indLow(10:20),...
-            'smoothIndividualTrials',true,'removeSaccades',false);
-        plot(hVel','r')
-                [~,~,hVel,~] = ...
-            meanPositionsRotated(data,behavior_params,indHigh(10:20),...
-            'smoothIndividualTrials',true,'removeSaccades',false);
-        plot(hVel','b')
+    end
+    for p=1:length(PROBABITIES)
+        ind = find (match_p == PROBABITIES(p) & (~boolFail));
+
+        vel(ii,p,:) = meanVelocitiesRotated(data,behavior_params,...
+            ind,'removeSaccades',true);
+        
+        numCorrective(ii,p) = mean(numCorrectiveSaccades(data,ind));
+
+        if SINGLE_SESSION
+
+            [~,~,hVel,~] = ...
+                meanPositionsRotated(data,behavior_params,ind(10:20),...
+                'smoothIndividualTrials',true,'removeSaccades',false);
+            plot(hVel',COL{p})
+
+        end
+    end
+
+    if SINGLE_SESSION
         pause
     end
 end
 
-aveLow = mean(velLow,1);
-semLow = nanSEM(velLow,1);
-aveHigh = mean(velHigh,1);
-semHigh = nanSEM(velHigh,1);
+ave = squeeze(mean(vel,1));
+sem = squeeze(nanSEM(vel,1));
+
+%%
 
 figure;
+subplot(2,1,1); hold on
+for p=1:length(PROBABITIES)
+    errorbar(ts,ave(p,:),sem(p,:),COL{p}); hold on
+end
 
-errorbar(aveLow,semLow,'r'); hold on
-errorbar(aveHigh,semHigh,'b')
+subplot(2,1,2); hold on
+scatter(numCorrective(:,2),numCorrective(:,1))
+p = signrank(numCorrective(:,1),numCorrective(:,2));
+
+
+xlabel('High');ylabel('Low')
+refline(1,0)
+title(['number of corrective saccades, p = ' num2str(p) 'n = ' num2str(length(cells))])
+
+sgtitle(MONKEY)
 %%
 figure
-scatter(mean(velHigh(:,SCATTER_TIME),2),mean(velLow(:,SCATTER_TIME),2))
-p = signrank(mean(velHigh(:,SCATTER_TIME),2),mean(velLow(:,SCATTER_TIME),2));
-
+scatter(mean(vel(:,2,SCATTER_TIME),3),mean(vel(:,1,SCATTER_TIME),3))
+p = signrank(mean(vel(:,2,SCATTER_TIME),3),mean(vel(:,1,SCATTER_TIME),3));
 
 xlabel('High');ylabel('Low')
 refline(1,0)
@@ -241,3 +266,6 @@ p = signrank(mean(mean(velHigh(ind,3,200:250),3),2),mean(mean(velHigh(ind,4,200:
 refline(1,0)
 xlabel('Previous 75NR'); ylabel('Previous 75R')
 title(['75 in this trial, p =' num2str(p)])
+
+
+
