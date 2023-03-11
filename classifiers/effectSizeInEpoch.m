@@ -12,10 +12,14 @@ addOptional(p,'binSize',defaultBinSize,@isnumeric);
 defaultVelocity = false;
 addOptional(p,'velocityInsteadReward',defaultVelocity,@islogical);
 
+defaultNumCorrectiveSaccades = false;
+addOptional(p,'numCorrectiveSaccadesInsteadOfReward',defaultVelocity,@islogical);
+
 parse(p,varargin{:})
 prevOut = p.Results.prevOut;
 binSz = p.Results.binSize;
 velocityInsteadReward = p.Results.velocityInsteadReward;
+numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfReward;
 
 raster_params.time_before = 0;
 raster_params.time_after = 800;
@@ -34,7 +38,9 @@ ind = find(~boolFail);
 numTrials = length(ind);
 
 
-[groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward);
+[groups, group_names] = createGroups(data,epoch,ind,...
+    prevOut,velocityInsteadReward,numCorrectiveSaccadesInsteadOfReward);
+
 group_names = {'time', group_names{:}};
 
 raster = getRaster(data,ind,raster_params);

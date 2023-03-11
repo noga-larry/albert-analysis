@@ -1,6 +1,6 @@
 
 function [groups, group_names] = createGroups(data,epoch,ind,...
-    prevOut,velocityInsteadReward)
+    prevOut,velocityInsteadReward,numCorrectiveSaccadesInsteadOfReward)
 
 PROBABILITIES = 0:25:100;
 
@@ -31,6 +31,10 @@ if velocityInsteadReward
     match_p = meanVels>median(meanVels,'omitnan');
 end
 
+if numCorrectiveSaccadesInsteadOfReward
+    numCorrective = numCorrectiveSaccades(data,ind);
+    match_p = numCorrective>median(numCorrective);
+end
 
 match_po = getPreviousOutcomes(data,ind,'omitNonIndexed',true);
 [match_o] = getOutcome (data,ind,'omitNonIndexed',true);
@@ -69,7 +73,10 @@ end
 if velocityInsteadReward
     i = find(strcmp('reward_probability',group_names));
     group_names{i} = 'velocity';
+end
 
-
+if numCorrectiveSaccadesInsteadOfReward
+    i = find(strcmp('reward_probability',group_names));
+    group_names{i} = 'num_corrective_saccades';
 end
 

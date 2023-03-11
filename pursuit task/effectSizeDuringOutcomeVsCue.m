@@ -15,7 +15,8 @@ for ii = 1:length(cells)
 
     effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
     effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
-        'velocityInsteadReward',true);
+        'velocityInsteadReward',true,...
+        'numCorrectiveSaccadesInsteadOfReward',false);
 end
 
 %%
@@ -82,8 +83,8 @@ end
 %%
 figure;
 N = length(req_params.cell_type);
-f = fields(effects1);
-
+f1 = 'reward_probability';
+f2 = 'velocity';
 c=1;
 
 for i = 1:N
@@ -91,17 +92,19 @@ for i = 1:N
     subplot(2,ceil(N/2),c)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    scatter([effects1(indType).reward_probability],[effects2(indType).velocity],'filled','k'); hold on
-    p = signrank([effects1(indType).reward_probability],[effects2(indType).velocity]);
+    scatter([effects1(indType).(f1)],[effects2(indType).(f2)],'filled','k'); hold on
+    p = signrank([effects1(indType).(f1)],[effects2(indType).(f2)]);
 
     subtitle(['p = ' num2str(p)])
     equalAxis()
     refline(1,0)
 
-    xlabel('reward')
-    ylabel('velocity')
+    xlabel(f1,'Interpreter','none')
+    ylabel(f2,'Interpreter','none')
 
-    title(req_params.cell_type{i})
+    title([req_params.cell_type{i}])
 
     c=c+1;
+    disp([req_params.cell_type{i} ': ' num2str(signrank([effects1(indType).(f1)]))])
+    
 end
