@@ -1,12 +1,12 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("pursuit");
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','saccadeLatency'};
+EPOCHS = {'targetMovementOnset','targetMovementOnset'};
 
 for ii = 1:length(cells)
 
@@ -14,7 +14,8 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
 
     effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
-    effects2(ii) = effectSizeInEpoch(data,EPOCHS{2});
+    effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
+        'velocityInsteadReward',true);
 end
 
 %%
@@ -76,4 +77,31 @@ for j = 1:length(f)
 
         c=c+1;
     end
+end
+
+%%
+figure;
+N = length(req_params.cell_type);
+f = fields(effects1);
+
+c=1;
+
+for i = 1:N
+
+    subplot(2,ceil(N/2),c)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    scatter([effects1(indType).reward_probability],[effects2(indType).velocity],'filled','k'); hold on
+    p = signrank([effects1(indType).reward_probability],[effects2(indType).velocity]);
+
+    subtitle(['p = ' num2str(p)])
+    equalAxis()
+    refline(1,0)
+
+    xlabel('reward')
+    ylabel('velocity')
+
+    title(req_params.cell_type{i})
+
+    c=c+1;
 end

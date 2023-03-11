@@ -5,7 +5,7 @@ clear
 [task_info,supPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("saccade","golda");
+req_params = reqParamsEffectSize("saccade");
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (supPath,task_info,lines);

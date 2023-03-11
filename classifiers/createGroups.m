@@ -19,8 +19,8 @@ end
 
 
 if velocityInsteadReward
-    behavior_params.time_after = 250;
-    behavior_params.time_before = -200;
+    behavior_params.time_after = 800;
+    behavior_params.time_before = -400;
     behavior_params.smoothing_margins = 100; % ms
     behavior_params.SD = 15; % ms
 

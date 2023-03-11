@@ -47,6 +47,7 @@ clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
