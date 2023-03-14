@@ -10,7 +10,6 @@ else
     return
 end
 
-
 if task=="saccade"
     req_params.task = 'saccade_8_dir_75and25';
 elseif task=="pursuit"

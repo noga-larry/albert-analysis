@@ -95,51 +95,66 @@ DATASET = 'Vermis';
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths(DATASET);
 
-req_params.grade = 7;
-%req_params.cell_type = 'SNR';
-req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
+req_params = reqParamsEffectSize("both");
 req_params.remove_question_marks = 0;
-req_params.ID = 4013;
-req_params.num_trials = 20;
 req_params.remove_repeats = 0;
+req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
+req_params.ID = 4006;
+
 lines = findLinesInDB (task_info, req_params);
 
 task_info = getData(DATASET , lines,...
     'numElectrodes',10,'includeBehavior',false);
 
-save ([task_DB_path '.mat'],'task_info')
+save ([task_DB_path],'task_info')
 
 %% bahvior shadow files
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
-d = dir(dataPath); d = d(3:end);
-dfolders = d([d(:).isdir]);
 
-for d=2:length(dfolders)
+req_params = reqParamsEffectSize("both");
+req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
+req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
+%req_params.ID = 4006;
+
+
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (dataPath,task_info,lines);
+
+
+for i=1:length(lines)
     
-    mkdir([dataPath '\' dfolders(d).name '\behavior\'])
     
-    files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
-    files = files(~[files(:).isdir]);
-    for i =1:length(files)
-        data = importdata([dataPath '\' dfolders(d).name '\' files(i).name]);
-        
-        if isfield(data.trials,'hPos')
-            continue
-        end
-        behavior_data = getBehaviorShadowFile(data,MaestroPath);
-        behavior_name = [erase(files(i).name,'.mat')...
-            ' behavior.mat'];
-        path = [dataPath '\' dfolders(d).name '\behavior\' behavior_name];
-        save(path,'behavior_data')
-        data.info.behavior_shadow_name = behavior_name;
-        save([dataPath '\' dfolders(d).name '\' files(i).name],'data')
+    data = importdata(cells{i});
+    
+    if isfield(data.trials,'hPos')
+        continue
     end
     
+    behavior_data = getBehaviorShadowFile(data,MaestroPath);
+    
+    behavior_name = [erase(data.info.save_name,'.mat')...
+        ' behavior.mat'];
+    path = [dataPath '\' data.info.task '\behavior\' behavior_name];
+    
+    if ~isfolder([dataPath '\' data.info.task '\behavior\'])
+        mkdir([dataPath '\' data.info.task '\behavior\'])
+    end
+    save(path,'behavior_data')
+    
+    data.info.behavior_shadow_name = behavior_name;
+    
+    task_info(lines(i)).behavior_shadow_name = behavior_name;
+    
+    save(cells{i},'data')
+    
 end
+    
+save ([task_DB_path],'task_info')
 
-%% extended behavior calibaration
+% extended behavior calibaration
 
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
@@ -149,7 +164,7 @@ dfolders = d([d(:).isdir]);
 
 c=1;
 
-for d=1:length(dfolders)-1
+for d=1:length(dfolders)
     
     files = dir([dataPath '\' dfolders(d).name]); files = files(3:end);
     files = files(~[files(:).isdir]);
@@ -189,7 +204,10 @@ end
 %%
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
-path = 'H:\Vermis Data\saccade_8_dir_75and25\4004 BG msn.mat';
+path = 'H:\Vermis Data\saccade_8_dir_75and25\5129 PC ss.mat';
+data = importdata(path);
+data = getBehavior (data,dataPath)
+
 [extendedBehaviorData] = getExtendedBehaviorShadowFile(data,MaestroPath)
 
 %%
@@ -225,12 +243,10 @@ clear
 
 [task_info,dataPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-%req_params.task = 'choice';
+req_params = reqParamsEffectSize("both");
 req_params.remove_question_marks = 0;
-%req_params.ID = 5436;
-req_params.num_trials = 20;
 req_params.remove_repeats = 0;
+
 lines = findCspkSspkPairs(task_info,req_params);
 
 for ii=1:length(lines)
@@ -247,21 +263,20 @@ end
 clear
 
 [task_info,dataPath] = loadDBAndSpecifyDataPaths('Vermis');
-req_params.grade = 7;
-%req_params.task = 'choice';
-req_params.remove_question_marks = 0;
-%req_params.ID = 5436;
-req_params.num_trials = 20;
+req_params = reqParamsEffectSize("both");
 req_params.remove_repeats = 0;
 req_params.cell_type = 'PC cs';
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (dataPath,task_info,lines);
+NUM_REPEATS = 3 ;
 
 for ii=1:length(lines)
     data = importdata(cells{ii});
     
-    data = removeCspkDoubleDetections(data);
+    for j=1:NUM_REPEATS
+        data = removeCspkDoubleDetections(data);
+    end
     save(cells{ii},'data');
 end
 %% Histograms of numbers of trials
