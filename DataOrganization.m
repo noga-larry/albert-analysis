@@ -154,7 +154,7 @@ end
     
 save ([task_DB_path],'task_info')
 
-% extended behavior calibaration
+%% extended behavior calibaration
 
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
@@ -204,12 +204,28 @@ end
 %%
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
-path = 'H:\Vermis Data\saccade_8_dir_75and25\5129 PC ss.mat';
-data = importdata(path);
-data = getBehavior (data,dataPath)
 
-[extendedBehaviorData] = getExtendedBehaviorShadowFile(data,MaestroPath)
+lines = 1890;
+cells = findPathsToCells (supPath,task_info,lines);
 
+data = importdata(cells{1});
+
+[extended_behavior_data] = getExtendedBehaviorShadowFile(data,MaestroPath)
+
+behavior_name = [erase(data.info.save_name,'.mat')...
+    ' extended behavior.mat'];
+path = [dataPath '\' data.info.task '\behavior\' behavior_name];
+
+if ~isfolder([dataPath '\' data.info.task '\behavior\'])
+    mkdir([dataPath '\' data.info.task '\behavior\'])
+end
+save(path,'extended_behavior_data')
+
+data.info.extended_behavior_shadow_name = behavior_name;
+
+task_info(lines).extended_behavior_shadow_name = behavior_name;
+    
+data = getExtendedBehavior (data,dataPath)
 %%
 clear
 [~,dataPath, MaestroPath,task_DB_path] =...

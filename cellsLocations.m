@@ -13,3 +13,12 @@ median([task_info(lines).X])
 median([task_info(lines).Y])
 
 median([task_info(lines).depth_mm])
+GUIDE_FROM_CAHMBER_TOP = 23 *1000;
+
+%%
+
+imag = imread('C:\Users\noga.larry\Google Drive\PhD Projects\Vermis Reward and Movement Quantification\MRI figures\111026057.png');
+
+
+
+figure; imagesc(imag); axis square
