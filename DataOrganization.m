@@ -202,30 +202,53 @@ for i=1:length(paths)
 end
 
 %%
+clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
 
-lines = 1890;
-cells = findPathsToCells (supPath,task_info,lines);
+req_params = reqParamsEffectSize("both");
+req_params.remove_question_marks = 0;
+req_params.remove_repeats = 0;
+req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
+%req_params.ID = 4006;
 
-data = importdata(cells{1});
 
-[extended_behavior_data] = getExtendedBehaviorShadowFile(data,MaestroPath)
+lines = findLinesInDB (task_info, req_params);
+cells = findPathsToCells (dataPath,task_info,lines);
 
-behavior_name = [erase(data.info.save_name,'.mat')...
-    ' extended behavior.mat'];
-path = [dataPath '\' data.info.task '\behavior\' behavior_name];
-
-if ~isfolder([dataPath '\' data.info.task '\behavior\'])
-    mkdir([dataPath '\' data.info.task '\behavior\'])
-end
-save(path,'extended_behavior_data')
-
-data.info.extended_behavior_shadow_name = behavior_name;
-
-task_info(lines).extended_behavior_shadow_name = behavior_name;
+for i=1:length(lines)
     
-data = getExtendedBehavior (data,dataPath)
+    
+    data = importdata(cells{i});
+    
+    if isfield(data.trials,'hPos')
+        continue
+    end
+    
+    [extended_behavior_data] = getExtendedBehaviorShadowFile(data,MaestroPath);
+    
+    behavior_name = [erase(data.info.save_name,'.mat')...
+        ' extended behavior.mat'];
+    path = [dataPath '\' data.info.task '\extended behavior\' behavior_name];
+
+    if ~isfolder([dataPath '\' data.info.task '\extended behavior\'])
+        mkdir([dataPath '\' data.info.task '\extended behavior\'])
+    end
+
+    save(path,'extended_behavior_data')
+    
+    data.info.extended_behavior_shadow_name = behavior_name;
+    
+    task_info(lines(i)).extended_behavior_shadow_name = behavior_name;
+    
+    save(cells{i},'data')
+    
+end
+    
+save ([task_DB_path],'task_info')
+
+
+
 %%
 clear
 [~,dataPath, MaestroPath,task_DB_path] =...

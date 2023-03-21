@@ -12,62 +12,77 @@ behavior_params.SD = 15; % ms
 
 windowEvent = -behavior_params.time_before:behavior_params.time_after;
 directionBorders = 0:45:360;
-timeAfterRewardForDirectionHist = 500; 
+timeAfterRewardForDirectionHist = 500;
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
-    
+
     data = importdata(cells{ii});
     data = getExtendedBehavior(data,supPath,MaestroPath);
     if any(data.extended_caliberation.R_squared<0.99)
         disp('Bad Cab')
     end
-       
+
+
     cellID(ii) = data.info.cell_ID;
-    
+
+    % latency of first saccade
+    % direction distribution of saccade
+    % amplitude
+    % number of blinks
+    % number of saccades
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
-    
+
     indLowR = find (match_p == 25 & match_o == 1 &(~boolFail));
     indHighR = find (match_p == 75 & match_o == 1 & (~boolFail));
     indLowNR = find (match_p == 25 & match_o == 0 &(~boolFail));
     indHighNR = find (match_p == 75 & match_o == 0 &(~boolFail));
-    
-    saccadeRate = nan(length(data.trials),length(windowEvent));
-    blinkRate = nan(length(data.trials),length(windowEvent));
 
-    FirstSaccadeLatency = nan(length(data.trials),1);
-    for t=find(~boolFail)
-        
-        if data.trials(t).extended_trial_begin<1000 |...
-                (length(data.trials(t).extended_vPos)-data.trials(t).trial_length...
-                -data.trials(t).extended_trial_begin <2000)
-            continue
+    inx = {indLowR,indHighR,indLowNR,indHighNR};
+
+    for j=1:length(inx)
+
+
+        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',inx{j},windowEvent); 
+        saccadeRate(ii,j,:) = eventRate(data,'extended_saccade_begin','reward',inx{j},windowEvent);
+
+        firstSaccadeAmplitude = nan(length(inx),1);
+        firstSaccadeEndPoint = nan(length(inx),1);
+
+        alignmentTimes = alignmentTimesFactory(data,inx{j},'reward');
+
+        for t=1:length(inx{j})
+
+            if data.trials(inx{j}(t)).extended_trial_begin<1000 |...
+                    (length(data.trials(inx{j}(t)).extended_vPos)-data.trials(inx{j}(t)).trial_length...
+                    -data.trials(inx{j}(t)).extended_trial_begin <2000)
+                continue
+            end
+
+            saccadesAlignedToReward = data.trials(inx{j}(t)).extended_saccade_begin...
+                -data.trials(inx{j}(t)).rwd_time_in_extended;
+            saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
+            if isempty(saccadesAfterReward)
+                firstSaccadeLatency(t) = NaN;
+                disp('No saccade')
+                continue
+            end
+            firstSaccadeLatency(t) = min(saccadesAfterReward);
+
         end
-       
-        saccadesAlignedToReward = data.trials(t).extended_saccade_begin...
-            -data.trials(t).rwd_time_in_extended ;
-        saccadesAfterReward = saccadesAlignedToReward(saccadesAlignedToReward>0);
-        if isempty(saccadesAfterReward)
-            FirstSaccadeLatency(t) = NaN;
-            disp('No saccade')
-            continue
-        end
-        FirstSaccadeLatency(t) = min(saccadesAfterReward);
-       
+
+
+        latency(1,ii) = nanmedian(firstSaccadeLatency(indLowR));
+        latency(2,ii) = nanmedian(firstSaccadeLatency(indHighR));
+        latency(3,ii) = nanmedian(firstSaccadeLatency(indLowNR));
+        latency(4,ii) = nanmedian(firstSaccadeLatency(indHighNR));
+
     end
-    
 
-    latency(1,ii) = nanmedian(FirstSaccadeLatency(indLowR));
-    latency(2,ii) = nanmedian(FirstSaccadeLatency(indHighR));
-    latency(3,ii) = nanmedian(FirstSaccadeLatency(indLowNR));
-    latency(4,ii) = nanmedian(FirstSaccadeLatency(indHighNR));
-    
-    
-   
 end
 
 %%
