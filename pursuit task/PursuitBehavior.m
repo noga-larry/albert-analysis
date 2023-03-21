@@ -32,7 +32,7 @@ numCorrective = nan(length(cells),length(PROBABITIES));
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
-    data = getBehavior(data,supPath);
+    data = getExtendedBehavior(data,supPath);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
 
@@ -43,7 +43,7 @@ for ii = 1:length(cells)
         ind = find (match_p == PROBABITIES(p) & (~boolFail));
 
         vel(ii,p,:) = meanVelocitiesRotated(data,behavior_params,...
-            ind,'removeSaccades',true);
+            ind,'removeSaccades',true,'takeFromExtended',true);
         
         numCorrective(ii,p) = mean(numCorrectiveSaccades(data,ind));
 

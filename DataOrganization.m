@@ -117,12 +117,10 @@ req_params = reqParamsEffectSize("both");
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
-%req_params.ID = 4006;
-
+req_params.ID = 5404;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (dataPath,task_info,lines);
-
 
 for i=1:length(lines)
     
@@ -205,13 +203,12 @@ end
 clear
 [task_info,dataPath, MaestroPath,task_DB_path] =...
     loadDBAndSpecifyDataPaths('Vermis');
-
+% 5434
 req_params = reqParamsEffectSize("both");
 req_params.remove_question_marks = 0;
 req_params.remove_repeats = 0;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
-%req_params.ID = 4006;
-
+req_params.ID = 5404:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (dataPath,task_info,lines);
@@ -225,6 +222,8 @@ for i=1:length(lines)
         continue
     end
     
+    data = getBehavior(data,dataPath);
+
     [extended_behavior_data] = getExtendedBehaviorShadowFile(data,MaestroPath);
     
     behavior_name = [erase(data.info.save_name,'.mat')...
