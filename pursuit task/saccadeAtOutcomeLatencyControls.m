@@ -119,7 +119,7 @@ for d=1:length(DIRECTIONS)
         endPointDir(t,:) = [hPos(te),vPos(te)];
     end
 amp(d) = mean(ampDir,'omitnan');
-endPoint(d,:) = mean(endPointDir,'omitnan');
+endPoint(d,:) = mean(endPointDir,1,'omitnan');
 end
 end
 
