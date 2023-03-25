@@ -9,14 +9,20 @@ defaultPrevOut = false;
 addOptional(p,'prevOut',defaultPrevOut,@islogical);
 defaultVelocity = false;
 addOptional(p,'velocityInsteadReward',defaultVelocity,@islogical);
+defaultNumCorrectiveSaccades = false;
+addOptional(p,'numCorrectiveSaccadesInsteadOfReward',defaultNumCorrectiveSaccades,@islogical);
+
 
 parse(p,varargin{:})
 prevOut = p.Results.prevOut;
 velocityInsteadReward = p.Results.velocityInsteadReward  ;
+numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfReward;
+
 
 [response,ind,ts] = data2response(data,epoch);
 
-[groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward);
+[groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward,...
+    numCorrectiveSaccadesInsteadOfReward);
 
 
 
