@@ -13,7 +13,7 @@ defaultVelocity = false;
 addOptional(p,'velocityInsteadReward',defaultVelocity,@islogical);
 
 defaultNumCorrectiveSaccades = false;
-addOptional(p,'numCorrectiveSaccadesInsteadOfReward',defaultVelocity,@islogical);
+addOptional(p,'numCorrectiveSaccadesInsteadOfReward',defaultNumCorrectiveSaccades,@islogical);
 
 parse(p,varargin{:})
 prevOut = p.Results.prevOut;
@@ -24,7 +24,6 @@ numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfR
 raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 0;
-
 raster_params.align_to = epoch;
 
 boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
