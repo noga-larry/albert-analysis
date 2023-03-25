@@ -30,6 +30,7 @@ lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
 cellType = cell(length(cells),1);
+cellID = nan(length(cells),1);
 
 list = [];
 for ii = 1:length(cells)
@@ -86,7 +87,7 @@ for f = 1:length(flds)
     
     for i = 1:length(req_params.cell_type)
         
-        indType = find(strcmp(req_params.cell_type{i}, cellType) & h');
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
         
         a = reshape([effectSizes(indType,:).(flds{f})],length(indType),length(ts));
         
