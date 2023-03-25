@@ -42,7 +42,6 @@ end
 %     ss_b(ii,1) = tbl{3,2};ss_b(ii,2) = ss.X2;
 %     ss_ab(ii,1) = tbl{4,2};ss_ab(ii,2) = ss.interaction;
 
-inx = find(strcmp(tbl(:,1),'time'));
 
 totVar = tbl{end,2};
 msw = tbl{end-1,5};

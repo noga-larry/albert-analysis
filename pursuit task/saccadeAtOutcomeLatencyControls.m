@@ -2,8 +2,8 @@ clear
 
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-TASK= "pursuit";
-MONKEY = "golda";
+TASK= "both";
+MONKEY = "albert";
 req_params = reqParamsEffectSize(TASK,MONKEY);
 
 behavior_params.time_after = 1500;
@@ -117,9 +117,14 @@ for d=1:length(DIRECTIONS)
         te = data.trials(indDir(t)).extended_saccade_end(saccInx);
         ampDir(t) = sqrt((hPos(te)-hPos(tb))^2+(vPos(te)-vPos(tb))^2);
         endPointDir(t,:) = [hPos(te),vPos(te)];
+        if ampDir(t)>100 || any(abs((endPointDir(t,:)))>100)
+            ampDir(t) = nan;
+            endPointDir(t,:) = [nan,nan];
+        end
     end
 amp(d) = mean(ampDir,'omitnan');
 endPoint(d,:) = mean(endPointDir,1,'omitnan');
+
 end
 end
 
