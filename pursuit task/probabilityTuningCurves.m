@@ -2,7 +2,7 @@
 clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("pursuit");
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;
@@ -17,7 +17,6 @@ DIRECTIONS = 0:45:315;
 ANGLES = [0:45:180];
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
-
 
 
 for ii = 1:length(cells)
@@ -208,12 +207,12 @@ legend( '25','75')
 %% By type
 
 figure
-
+inx = find(h)
 DIRECTIONS = [-180:45:180];
 
 for i = 1:length(req_params.cell_type)
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
 
     subplot(length(req_params.cell_type),1,i); hold on
 
@@ -224,19 +223,20 @@ for i = 1:length(req_params.cell_type)
     errorbar(DIRECTIONS,aveLow,semLow,'r'); hold on
     errorbar(DIRECTIONS,aveHigh,semHigh,'b'); hold on
     
-    
-    title([req_params.cell_type{i} ', n = ' num2str(length(indType))]);
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))...
+        '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))]);
     xlabel('direction')
     legend( '25','75')
 
 end
 
 figure
+
 c=0;
 for i = 1:length(req_params.cell_type)
 
 
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+   indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
     
     for d = 1:length(ANGLES)
 
@@ -250,11 +250,13 @@ for i = 1:length(req_params.cell_type)
         errorbar(ts,ave_Low,sem_Low,'r'); hold on
         errorbar(ts,ave_High,sem_High,'b'); hold on
         if d==1
-            ylimits = get(gca,'YLim')
+            ylimits = get(gca,'YLim');
         end
         ylim([ylimits])
         legend( '25','75')
-        title([req_params.cell_type{i} ','   num2str(ANGLES(d)) ', n = ' num2str(length(indType))]);
+        title([req_params.cell_type{i} ','   num2str(ANGLES(d)) ', n = ' ...
+            num2str(length(indType))...
+        '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))]);
         xlabel('Time from movement')
         legend( '25','75')
     end

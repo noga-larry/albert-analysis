@@ -4,7 +4,6 @@ clear
 
 DIRECTIONS = 0:45:315;
 
-
 req_params = reqParamsEffectSize("pursuit");
 lines_pursuit = findLinesInDB (task_info, req_params);
 
@@ -30,11 +29,11 @@ for ii = 1:length(lines)
     cellID(ii) = lines(ii).cell_ID;
 
 
-    TC_sacc = getTC(data_sacc, DIRECTIONS,1:length(data_sacc.trials), comparison_window);
+    [TC_sacc,~,h_sacc(ii)] = getTC(data_sacc, DIRECTIONS,1:length(data_sacc.trials), comparison_window);
     [PD,indPD] = centerOfMass (TC_sacc, DIRECTIONS);
     TC_pop_sacc(ii,:) = circshift(TC_sacc,5-indPD) - mean(TC_sacc);
 
-    TC_pur = getTC(data_pur, DIRECTIONS,1:length(data_pur.trials), comparison_window);
+    [TC_pur,~,h_pur(ii)] = getTC(data_pur, DIRECTIONS,1:length(data_pur.trials), comparison_window);
     TC_pop_pur(ii,:) = circshift(TC_pur,5-indPD) - mean(TC_pur);
 
 end
@@ -45,14 +44,13 @@ end
 N = length(req_params.cell_type);
 figure;
 DIRECTIONS = [-180:45:180];
-
+inx = find(h_sacc | h_pur); 
 
 for i = 1:N
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
 
     subplot(N,1,i)
-    
     
     ave_pur = [nanmean(TC_pop_pur(indType,:)),nanmean(TC_pop_pur(indType,1))];
     sem_pur = [nanSEM(TC_pop_pur(indType,:)),nanSEM(TC_pop_pur(indType,1))];
@@ -66,7 +64,8 @@ for i = 1:N
 
     xlabel('angle from saccade PD')
 
-    title([req_params.cell_type{i} ', n = ' num2str(length(indType))]);
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))...
+        '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))]);
 
 
 end

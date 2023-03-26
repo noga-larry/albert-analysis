@@ -4,13 +4,7 @@ clear; clc
 [task_info, supPath ,~,task_DB_path] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.remove_question_marks = 1;
-req_params.grade = 7;
-req_params.cell_type = 'BG masn';
-req_params.num_trials = 50;
-req_params.remove_repeats = 0;
-req_params.ID = 4000:6000;
+req_params = reqParamsEffectSize("both");
 
 raster_params.align_to = 'reward';
 raster_params.time_before = -100;
@@ -47,7 +41,7 @@ clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -179,158 +173,84 @@ for i = 1:length(req_params.cell_type)
 
 
 end
-%% Significance in time
-clear
-[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis')
+%% High rate vs low rate
+clear; clc
+[task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
+OUTCOMES = [0 1];
+req_params = reqParamsEffectSize("both");
+%req_params.cell_type = {'PC cs'};
 
-WINDOW_SIZE = 50;
-NUM_COMPARISONS = 7;
-PLOT_INDIVIDUAL = false;
+raster_params.align_to = 'reward';
+raster_params.time_before = 399;
+raster_params.time_after = 800;
+raster_params.smoothing_margins = 100;
+raster_params.SD = 20;
 
-req_params.grade = 7;
-req_params.cell_type = 'CRB|PC ss';
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 80;
-req_params.remove_question_marks = 1;
-
-raster_params.align_to = 'targetMovementOnset';
-raster_params.time_before = 300;
-raster_params.time_after = 500;
-raster_params.smoothing_margins = 0; % ms in each side
-raster_params.SD = 15;
+ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
+
+
 cells = findPathsToCells (supPath,task_info,lines);
 
-ts = -(raster_params.time_before - ceil(WINDOW_SIZE/2)): ...
-    (raster_params.time_after- ceil(WINDOW_SIZE/2));
-
+psthLow = nan(length(cells),length(ts));
+psthHigh = nan(length(cells),length(ts));
 
 for ii = 1:length(cells)
+
     data = importdata(cells{ii});
-
-    [~,match_p] = getProbabilities (data);
+    
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
+    
     [match_o] = getOutcome (data);
-    boolFail = [data.trials.fail];
+    boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    
+    baseline = mean(getPSTH(data,find(~boolFail),raster_params),1);
+    if  strcmp(req_params.cell_type,'PC cs')
+        baseline = 0;
+    end
 
-    ind = find(~boolFail);
+    for j=1:length(OUTCOMES)
+        ind = find (match_o == OUTCOMES(j) & (~boolFail));
+        psths{j} = getPSTH(data,ind,raster_params) - baseline;
+        rate(j) = mean(psths{j},1);
+    end
 
-    raster = getRaster(data,ind,raster_params);
-
-    func = @(raster) sigFunc(raster,match_p(ind),match_o(ind));
-    returnTrace(ii,:,:) = ...
-        runningWindowFunction(raster,func,WINDOW_SIZE,NUM_COMPARISONS);
-
-    if PLOT_INDIVIDUAL
-        ax1 = subplot(2,1,1); hold on
-
-        ind = find (match_p==75 & match_o);
-        psth = getSTpsth(data,ind,raster_params);
-        ave = nanmean(psth); sem = nanSEM(psth);
-        errorbar(-raster_params.time_before:...
-            raster_params.time_after,ave,sem,'b')
-
-        ind = find (match_p==75 & ~match_o);
-        psth = getSTpsth(data,ind,raster_params);
-        ave = nanmean(psth); sem = nanSEM(psth);
-        errorbar(-raster_params.time_before:...
-            raster_params.time_after,ave,sem,'--b')
-        marks = ts(find(returnTrace(ii,:,5)));
-        plot(marks,ones(length(marks),1),'k*')
-        title('75')
-
-        ax2 = subplot(2,1,2); hold on
-
-        ind = find (match_p==25 & match_o);
-        psth = getSTpsth(data,ind,raster_params);
-        ave = nanmean(psth); sem = nanSEM(psth);
-        errorbar(-raster_params.time_before:...
-            raster_params.time_after,ave,sem,'r')
-
-        ind = find (match_p==25 & ~match_o);
-        psth = getSTpsth(data,ind,raster_params);
-        ave = nanmean(psth); sem = nanSEM(psth);
-        errorbar(-raster_params.time_before:...
-            raster_params.time_after,ave,sem,'--r')
-        title('25')
-        marks = ts(find(returnTrace(ii,:,4)));
-        plot(marks,ones(length(marks),1),'k*')
-
-        pause
-        cla(ax1); cla(ax2)
+    
+    if rate(1)>rate(2)
+        psthHigh(ii,:) = psths{1};
+        psthLow(ii,:) = psths{2};
+    else
+        psthHigh(ii,:) = psths{2};
+        psthLow(ii,:) = psths{1};
     end
 end
 
 %%
 figure;
-subplot(3,1,1)
-plot(ts,squeeze(mean(returnTrace(:,:,1:3))))
-xlabel(['Time from ' raster_params.align_to])
-ylabel('Frac significiant')
-legend('R vs NR', '75 vs 25','Unlikely vs likely result')
-
-subplot(3,1,2); hold on
-plot(ts,squeeze(mean(returnTrace(:,:,5))),'b')
-plot(ts,squeeze(mean(returnTrace(:,:,4))),'r')
-xlabel(['Time from ' raster_params.align_to])
-ylabel('Frac significiant')
-legend('R vs NR in 25', 'R vs NR in 75')
-
-subplot(3,1,3); hold on
-plot(ts,squeeze(mean(returnTrace(:,:,6))),'b')
-plot(ts,squeeze(mean(returnTrace(:,:,7))),'r')
-xlabel(['Time from ' raster_params.align_to])
-ylabel('Frac significiant')
-legend('25 vs 75 in R', '25 vs 75 in NR')
 
 
-sgtitle(req_params.cell_type)
-%%
-function h = sigFunc(raster,match_p,match_o)
-% comparison R vs NR
-spk1 = sum(raster(:,match_o));
-spk2 = sum(raster(:,~match_o));
-p(1) = ranksum(spk1,spk2);
+for i = 1:length(req_params.cell_type)
+        
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-% comparison 25 vs 75
-spk1 = sum(raster(:,match_p==25));
-spk2 = sum(raster(:,match_p==75));
-p(2) = ranksum(spk1,spk2);
+    subplot(length(req_params.cell_type),1,i); hold on
 
-% comparison suprise
-spk1 = sum(raster(:,(match_p==25 & match_o) | ...
-    match_p==75 & ~match_o));
-spk2 = sum(raster(:,(match_p==25 & ~match_o) | ...
-    match_p==75 & match_o));
-p(3) = ranksum(spk1,spk2);
+    ave = mean(psthLow(indType,:));
+    sem = nanSEM(psthLow(indType,:));
+    errorbar(ts,ave,sem,'r');
 
-% within 25
-spk1 = sum(raster(:,match_p==25 & match_o));
-spk2 = sum(raster(:,match_p==25 & ~match_o));
-p(4) = ranksum(spk1,spk2);
+    ave = mean(psthHigh(indType,:));
+    sem = nanSEM(psthHigh(indType,:));
+    errorbar(ts,ave,sem,'b');
 
-% within 75
-
-spk1 = sum(raster(:,match_p==75 & match_o));
-spk2 = sum(raster(:,match_p==75 & ~match_o));
-p(5) = ranksum(spk1,spk2);
-
-% within R
-
-spk1 = sum(raster(:,match_p==75 & match_o));
-spk2 = sum(raster(:,match_p==25 & match_o));
-p(6) = ranksum(spk1,spk2);
-
-% within NR
-
-spk1 = sum(raster(:,match_p==75 & ~match_o));
-spk2 = sum(raster(:,match_p==25 & ~match_o));
-p(7) = ranksum(spk1,spk2);
-
-
-
-h = p'<0.05;
+    xlabel('Time from cue (ms)')
+    ylabel('\Delta Rate')
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))])
+    legend('Low','High')
 
 end
+
+
 

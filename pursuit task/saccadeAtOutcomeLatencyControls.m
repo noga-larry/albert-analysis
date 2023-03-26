@@ -97,7 +97,7 @@ sgtitle(TASK + " , " + MONKEY)
 
 function [amp,endPoint] = saccParams(data,ind)
 
-DIRECTIONS = [0:45:315];
+DIRECTIONS = 0:45:315;
 amp = nan(length(DIRECTIONS),1);
 endPoint = nan(length(DIRECTIONS),2);
 [~,match_d] = getDirections(data);
@@ -118,6 +118,7 @@ for d=1:length(DIRECTIONS)
         ampDir(t) = sqrt((hPos(te)-hPos(tb))^2+(vPos(te)-vPos(tb))^2);
         endPointDir(t,:) = [hPos(te),vPos(te)];
         if ampDir(t)>100 || any(abs((endPointDir(t,:)))>100)
+            disp('Weird saccade')
             ampDir(t) = nan;
             endPointDir(t,:) = [nan,nan];
         end
