@@ -6,51 +6,21 @@ req_params = reqParamsEffectSize("pursuit");
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','targetMovementOnset'};
+EPOCHS = {'targetMovementOnset','pursuitLatencyRMS'};
 
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
+    data = getBehavior(data,supPath);
     cellType{ii} = task_info(lines(ii)).cell_type;
 
     effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
     effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
-        'velocityInsteadReward',true,...
+        'velocityInsteadReward',false,...
         'numCorrectiveSaccadesInsteadOfReward',false);
 end
 
-%%
-figure;
-
-N = length(req_params.cell_type);
-figure;
-
-
-for i = 1:length(req_params.cell_type)
-
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
-
-    subplot(2,N,i)
-    scatter(omegaT(1,indType),omegaT(2,indType),'filled');
-    [r,p] = corr(omegaT(1,indType)',omegaT(2,indType)','type','Spearman','Rows','Pairwise');
-    title(['time , r = ' num2str(r) ', p = ' num2str(p)])
-    subtitle(req_params.cell_type{i})
-    xlabel('outcome')
-    ylabel('cue')
-    equalAxis()
-    refline(1,0)
-
-    subplot(2,N,N+i)
-    scatter(omegaO(1,indType),omegaO(2,indType),'filled');
-    [r,p] = corr(omegaO(1,indType)',omegaO(2,indType)','type','Spearman','Rows','Pairwise');
-    title(['reward , r = ' num2str(r) ', p = ' num2str(p)])
-    subtitle(req_params.cell_type{i})
-    xlabel('outcome')
-    ylabel('cue')
-    equalAxis()
-    refline(1,0)
-end
-
+%
 %% scatters
 
 figure;
@@ -65,16 +35,15 @@ for j = 1:length(f)
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
         scatter([effects1(indType).(f{j})],[effects2(indType).(f{j})],'filled','k'); hold on
-        p = signrank([effects1(indType).(f{j})],[effects2(indType).(f{j})]);
-  
-        subtitle(['p = ' num2str(p)])
+        p_sign = signrank([effects1(indType).(f{j})],[effects2(indType).(f{j})]);
+        [r,p] = corr([effects1(indType).(f{j})]',[effects2(indType).(f{j})]',type="Spearman");
+        title({[f{j} ': ' req_params.cell_type{i} '- signrank p = '], [num2str(p_sign,2)...
+        ' , Spearman: r = ' num2str(r,2) ', p =' num2str(p,2)]},'FontSize',8)
         equalAxis()
         refline(1,0)
 
         xlabel(EPOCHS{1})
         ylabel(EPOCHS{2})
-
-        title([f{j} ': ' req_params.cell_type{i}])
 
         c=c+1;
     end
