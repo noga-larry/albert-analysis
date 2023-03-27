@@ -44,9 +44,8 @@ for ii = 1:length(cells)
 
     for j=1:length(inx)
 
-
-        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',inx{j},windowEvent);
-        saccadeRate(ii,j,:) = eventRate(data,'extended_saccade_begin','reward',inx{j},windowEvent);
+        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',inx{j},windowEvent,behavior_params.SD);
+        saccadeRate(ii,j,:) = eventRate(data,'extended_saccade_begin','reward',inx{j},windowEvent,behavior_params.SD);
 
         [ampitudes(ii,j,:),endPoints(ii,j,:,:)] = saccParams(data,inx{j});
 
@@ -79,20 +78,35 @@ legend({'P=25 R','P=75 R','P=25 NR','P=75 NR'})
 xlabel('time from outcome'); ylabel('sacc rate')
 
 subplot(2,2,3); hold on
-for i=1:size(endPoints,2)
-    h = endPoints(:,i,:,1);
-    v = endPoints(:,i,:,2);
-    scatter(h(:),v(:),'filled')
-end
-legend({'P=25 R','P=75 R','P=25 NR','P=75 NR'})
-
-subplot(2,2,4); hold on
 for i=1:size(ampitudes,2)
     x = ampitudes(:,i,:);
     plotHistForFC(x,0:30)
 end
 legend({'P=25 R','P=75 R','P=25 NR','P=75 NR'})
 sgtitle(TASK + " , " + MONKEY)
+
+figure
+ttls = {'P=25 R','P=75 R','P=25 NR','P=75 NR'};
+for i=1:size(endPoints,2)
+
+    subplot(2,2,i);
+    x = squeeze(endPoints(:,i,:,1)); x=x(:);
+    y = squeeze(endPoints(:,i,:,2)); y=y(:);
+    numBinsX = -20:20;
+    numBinsY = -20:20;
+
+    % compute the 2D histogram
+    histogram2D = hist3([x, y], 'Ctrs',{numBinsX', numBinsY},'Normalization','probability');
+
+    % plot the 2D histogram
+
+    imagesc(numBinsX,numBinsY,histogram2D);
+    colorbar;
+    title(ttls{i});
+    xlabel('X values');
+    ylabel('Y values');
+end
+
 %%
 
 function [amp,endPoint] = saccParams(data,ind)
