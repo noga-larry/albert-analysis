@@ -2,11 +2,11 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'pursuitLatencyRMS';
+EPOCH = 'reward';
 PLOT_CELL = false;
 
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("both");
 
 
 % req_params.grade = 7;

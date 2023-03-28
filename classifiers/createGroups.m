@@ -54,7 +54,7 @@ switch epoch
         group_names = {'directions','reward_probability'};
         
     case 'reward'
-        groups = {match_p,match_d,match_o};
+        groups = {match_d,match_p,match_o};
         group_names = {'directions','reward_probability','reward_outcome'};
 
     case {'targetMovementOnsetWithVelocity'}

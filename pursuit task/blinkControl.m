@@ -7,11 +7,8 @@ MONKEY = "both";
 EPOCH = 'reward';
 req_params = reqParamsEffectSize(TASK,MONKEY);
 
-behavior_params.time_after = 500;
-behavior_params.time_before = 0;
-behavior_params.smoothing_margins = 0; % ms
 
-windowEvent = -behavior_params.time_before:behavior_params.time_after;
+windowEvent = 0:500;
 
 
 lines = findLinesInDB(task_info,req_params);
