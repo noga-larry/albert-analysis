@@ -54,7 +54,15 @@ rate = mean(raster,"all")*1000;
 
 response = downSampleToBins(raster',binSz)'*(binSz);
 
-[omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true);
+if strcmp(epoch,'reward')
+    model = 'interaction';
+else
+    model = 'full';
+end
+
+
+[omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true...
+    ,'model',model);
 
 for i=1:length(omegas)
     effectSizes.(omegas(i).variable) = omegas(i).value;

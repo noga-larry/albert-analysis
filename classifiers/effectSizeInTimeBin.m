@@ -18,7 +18,6 @@ prevOut = p.Results.prevOut;
 velocityInsteadReward = p.Results.velocityInsteadReward  ;
 numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfReward;
 
-
 [response,ind,ts] = data2response(data,epoch);
 
 [groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward,...
@@ -31,9 +30,14 @@ for t=1:length(ts)
     if mean(response(t,:))<MINIMAL_RATE_IN_BIN
         low = 1;
     end
-
+    
+    if strcmp(epoch,'reward')
+        model = 'interaction';
+    else
+        model = 'full';
+    end
     omegas = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
-        'includeTime',false);
+        'includeTime',false,'model',model);
     for i=1:length(omegas)
         effectSizes(t).(omegas(i).variable) = omegas(i).value;
     end

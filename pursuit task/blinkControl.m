@@ -44,7 +44,8 @@ for ii = 1:length(cells)
 
     assert(~any(isnan(boolBlink)))
     assert(length(boolBlink)==length(data.trials))
-
+    
+    disp(mean(boolBlink==1))
     dataNoBlink.trials = data.trials(find(boolBlink==1));
     dataBlink.trials = data.trials(find(boolBlink==2));
 
