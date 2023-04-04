@@ -49,13 +49,13 @@ for ii = 1:length(lines)
     dataNoSac.info = data.info;
     dataSac.info = data.info;
 
-    [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
-        (dataSac,EPOCH);
+%     [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
+%         (dataSac,EPOCH);
 
     [effects(ii)] = effectSizeInEpoch(dataNoSac,EPOCH);
 
-    [effectSizesNoSac(ii,:),ts] = effectSizeInTimeBin...
-        (dataNoSac,EPOCH);
+%     [effectSizesNoSac(ii,:),ts] = effectSizeInTimeBin...
+%         (dataNoSac,EPOCH);
 
 end
 

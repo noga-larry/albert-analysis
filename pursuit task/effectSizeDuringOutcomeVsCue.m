@@ -2,11 +2,12 @@ clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("pursuit");
+req_params.cell_type = {'SNR'};
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','pursuitLatencyRMS'};
+EPOCHS = {'targetMovementOnset','targetMovementOnset'};
 
 for ii = 1:length(cells)
 
@@ -17,7 +18,7 @@ for ii = 1:length(cells)
     effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
     effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
         'velocityInsteadReward',false,...
-        'numCorrectiveSaccadesInsteadOfReward',false);
+        'numCorrectiveSaccadesInsteadOfReward',true);
 end
 
 %
@@ -35,7 +36,7 @@ for j = 1:length(f)
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
         scatter([effects1(indType).(f{j})],[effects2(indType).(f{j})],'filled','k'); hold on
-        p_sign = signrank([effects1(indType).(f{j})],[effects2(indType).(f{j})]);
+        p_sign = bootstraspWelchTTest([effects1(indType).(f{j})],[effects2(indType).(f{j})]);
         [r,p] = corr([effects1(indType).(f{j})]',[effects2(indType).(f{j})]',type="Spearman");
         title({[f{j} ': ' req_params.cell_type{i} '- signrank p = '], [num2str(p_sign,2)...
         ' , Spearman: r = ' num2str(r,2) ', p =' num2str(p,2)]},'FontSize',8)
@@ -53,7 +54,7 @@ end
 figure;
 N = length(req_params.cell_type);
 f1 = 'reward_probability';
-f2 = 'velocity';
+f2 = 'num_corrective_saccades';
 c=1;
 
 for i = 1:N
@@ -62,7 +63,7 @@ for i = 1:N
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
     scatter([effects1(indType).(f1)],[effects2(indType).(f2)],'filled','k'); hold on
-    p = signrank([effects1(indType).(f1)],[effects2(indType).(f2)]);
+    p = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
 
     subtitle(['p = ' num2str(p)])
     equalAxis()

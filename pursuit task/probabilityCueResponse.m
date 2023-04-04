@@ -6,8 +6,7 @@ clear; clc
 
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
-
+%req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'cue';
 raster_params.time_before = -100;
@@ -47,8 +46,7 @@ clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
-
+%req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'cue';
 raster_params.time_before = 399;
@@ -65,20 +63,22 @@ cells = findPathsToCells (supPath,task_info,lines);
 psthLow = nan(length(cells),length(ts));
 psthHigh = nan(length(cells),length(ts));
 h = nan(length(cells),1);
+cellType = cell(length(cells),1);
+cellID = nan(length(cells),1);
 
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
 
     [~,match_p] = getProbabilities (data);
-    boolSaccades = isTrailWIthSaccade(data,'cue',-200,500);
 
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
 
     indLow = find (match_p == 25 & (~boolFail));
     indHigh = find (match_p == 75 & (~boolFail));
     indBaseline = find(~boolFail);
-
 
     if ~strcmp(req_params.cell_type,'PC cs')
         baseline = mean(raster2psth(getRaster(data,indBaseline,raster_params),raster_params));
@@ -91,14 +91,32 @@ for ii = 1:length(cells)
     h(ii) = task_info(lines(ii)).cue_differentiating;
 end
 
+%%
 
-f = figure;
+figure;
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+subplot(length(req_params.cell_type),1,i)
+    aveLow = mean(psthLow(indType,:));
+    semLow = nanSEM(psthLow(indType,:));
+    aveHigh = mean(psthHigh(indType,:));
+    semHigh = nanSEM(psthHigh(indType,:));
+    errorbar(ts,aveLow,semLow,'r'); hold on
+    errorbar(ts,aveHigh,semHigh,'b'); hold on
+    xlabel('Time from cue (ms)')
+    title ([req_params.cell_type{i} ', n = ' num2str(length(indType))])
+legend({'25','75'})
+end
+
+%%
+
 subplot(3,1,1)
 ind = find(h);
 aveLow = mean(psthLow(ind,:));
-semLow = std(psthLow(ind,:))/sqrt(length(ind));
+semLow = nanSEM(psthLow(ind,:));
 aveHigh = mean(psthHigh(ind,:));
-semHigh = std(psthHigh(ind,:))/sqrt(length(ind));
+semHigh = nanSEM(psthHigh(ind,:));
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
@@ -107,9 +125,9 @@ title (['Significant, n = ' num2str(length(ind))])
 subplot(3,1,2)
 ind = find(~h);
 aveLow = mean(psthLow(ind,:));
-semLow = std(psthLow(ind,:))/sqrt(length(ind));
+semLow = nanSEM(psthLow(ind,:));
 aveHigh = mean(psthHigh(ind,:));
-semHigh = std(psthHigh(ind,:))/sqrt(length(ind));
+semHigh = nanSEM(psthHigh(ind,:));
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')
@@ -118,9 +136,9 @@ title (['Not Significant, n = ' num2str(length(ind))])
 
 subplot(3,1,3)
 aveLow = mean(psthLow);
-semLow = std(psthLow)/sqrt(length(cells));
+semLow = nanSEM(psthLow);
 aveHigh = mean(psthHigh);
-semHigh = std(psthHigh)/sqrt(length(cells));
+semHigh = nanSEM(psthHigh);
 errorbar(ts,aveLow,semLow,'r'); hold on
 errorbar(ts,aveHigh,semHigh,'b'); hold on
 xlabel('Time from cue (ms)')

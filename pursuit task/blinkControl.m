@@ -49,6 +49,8 @@ for ii = 1:length(cells)
     dataNoBlink.info = data.info;
     dataBlink.info = data.info;
 
+    [effects(ii)] = effectSizeInEpoch(dataNoBlink,EPOCH);
+
     [effectSizesBlink(ii,:),ts] = effectSizeInTimeBin...
         (dataBlink,EPOCH);
 
@@ -97,3 +99,14 @@ for f = 1:length(flds)
     legend(req_params.cell_type)
     c=c+1;
 end
+
+%%
+f = 'reward_outcome';
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    x = [effects(indType).(f)];
+    p = bootstrapTTest(x);
+    disp([req_params.cell_type{i} ': ' num2str(p)])
+end
+
