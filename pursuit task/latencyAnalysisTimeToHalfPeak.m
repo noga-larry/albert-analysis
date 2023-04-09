@@ -2,10 +2,11 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset';
-DIRECIONS = [0:45:315];
+EPOCH = 'cue';
+DIRECIONS = 0:45:315;
+PROBABILITIES = [25,75];
 PLOT_CELL = false;
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("both");
 
 
 raster_params.time_before = 399;
@@ -20,7 +21,13 @@ cells = findPathsToCells (supPath,task_info,lines);
 cellType = cell(length(cells),1);
 cellID = nan(length(cells),1);
 
-latency = nan(length(cells),length(DIRECIONS));
+switch EPOCH
+    case 'targetMovementOnset'
+        latency = nan(length(cells),length(DIRECIONS));
+    case 'cue'
+        latency = nan(length(cells),length(PROBABILITIES));
+end
+
 
 for ii = 1:length(cells)
 
@@ -30,40 +37,22 @@ for ii = 1:length(cells)
 
     boolFail = [data.trials.fail];
     [~,match_d] = getDirections(data);
+    [~,match_p] = getProbabilities(data);
 
-    for d=1:length(DIRECIONS)
-        inx = find(match_d==DIRECIONS(d) & ~boolFail);
+    switch EPOCH
+        case 'targetMovementOnset'
+            for d=1:length(DIRECIONS)
+                inx{d} = find(match_d==DIRECIONS(d) & ~boolFail);
+            end
+        case 'cue'
+            for p=1:length(PROBABILITIES)
+                inx{p} = find(match_p==PROBABILITIES(p) & ~boolFail);
+            end
+    end
 
-        psth = getPSTH(data,inx,raster_params);
-        baselineRate = mean(psth(1:(raster_params.time_before)));
-        response = psth((raster_params.time_before):end);
-        if mean(response)>baselineRate
-            [peakRate,inxPeak] = max(psth((raster_params.time_before):end));
-            inxPeak = raster_params.time_before + inxPeak-1;
-            halfPeakThreshold = baselineRate + (peakRate - baselineRate)/2;
-            lat = find(response>halfPeakThreshold,1)-1;
-        else
-            [peakRate,inxPeak] = min(psth((raster_params.time_before):end));
-            inxPeak = raster_params.time_before + inxPeak -1;
-            halfPeakThreshold = baselineRate+(peakRate - baselineRate)/2;
-            lat = find(response<halfPeakThreshold,1)-1;
-        end
-        
-        if isempty(lat)
-            disp('Latency not found')
-           continue
-        end
-        latency(ii,d) = lat;
 
-        if PLOT_CELL
-            plot(psth); hold on
-            plot(inxPeak,psth(inxPeak),'*')
-            xline(raster_params.time_before)
-            xline(raster_params.time_before+lat)
-            yline(halfPeakThreshold)
-            pause
-            cla
-        end
+    for j=1:length(inx)
+       latency(ii,j) = rateChange(data,inx{j},raster_params,PLOT_CELL);
     end
 
 end
@@ -76,8 +65,86 @@ for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
     plotHistForFC([latency(indType,:)],0:10:800)
+
+    leg{i} = [req_params.cell_type{i} ' - ' num2str(mean(~isnan([latency(indType,:)]),"all"))];
 end
 
-legend(req_params.cell_type)
+legend(leg)
 xlabel('Latency')
 ylabel('Frac cells')
+
+%%
+
+function lat = halfPeak(data,inx,raster_params,plot_option)
+
+psth = getPSTH(data,inx,raster_params);
+baselineRate = mean(psth(1:(raster_params.time_before)));
+response = psth((raster_params.time_before):end);
+if mean(response)>baselineRate
+    [peakRate,inxPeak] = max(psth((raster_params.time_before):end));
+    inxPeak = raster_params.time_before + inxPeak-1;
+    halfPeakThreshold = baselineRate + (peakRate - baselineRate)/2;
+    lat = find(response>halfPeakThreshold,1)-1;
+else
+    [peakRate,inxPeak] = min(psth((raster_params.time_before):end));
+    inxPeak = raster_params.time_before + inxPeak -1;
+    halfPeakThreshold = baselineRate+(peakRate - baselineRate)/2;
+    lat = find(response<halfPeakThreshold,1)-1;
+end
+
+if isempty(lat)
+    disp('Latency not found')
+    lat = nan;
+    return
+end
+
+if plot_option
+    plot(psth); hold on
+    plot(inxPeak,psth(inxPeak),'*')
+    xline(raster_params.time_before)
+    xline(raster_params.time_before+lat)
+    yline(halfPeakThreshold)
+    pause
+    cla
+end
+
+end
+
+%%
+
+function lat = rateChange(data,inx,raster_params,plot_option)
+
+SDThresh = 1;
+TIME_BEFORE = 100;
+
+psth = getSTpsth(data,inx,raster_params);
+baselinePsth = psth(:,1:(raster_params.time_before-TIME_BEFORE));
+baselineSD = mean(std(baselinePsth),'omitnan');
+baselineAve = mean(baselinePsth,'all');
+
+bottomThresh = baselineAve - SDThresh*baselineSD;
+upperThresh = baselineAve + SDThresh*baselineSD;
+
+response = mean(psth(:,(raster_params.time_before):end));
+
+lat = find(response>upperThresh | response<bottomThresh,1);
+
+if isempty(lat)
+    disp('Latency not found')
+    lat = nan;
+    return
+end
+
+
+if plot_option
+    ave_PSTH = mean(psth);
+    plot(ave_PSTH); hold on
+    plot(raster_params.time_before + lat,ave_PSTH(raster_params.time_before + lat),'*')
+    yline(bottomThresh)
+    yline(upperThresh)
+    pause
+    cla
+end
+
+
+end
