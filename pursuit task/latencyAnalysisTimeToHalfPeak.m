@@ -2,12 +2,11 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'cue';
+EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-req_params = reqParamsEffectSize("both");
-
+req_params = reqParamsEffectSize("pursuit");
 
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -50,9 +49,13 @@ for ii = 1:length(cells)
             end
     end
 
+    effects(ii) = effectSizeInEpoch(data,EPOCH);
+  
 
     for j=1:length(inx)
        latency(ii,j) = rateChange(data,inx{j},raster_params,PLOT_CELL);
+
+
     end
 
 end
@@ -72,7 +75,36 @@ end
 legend(leg)
 xlabel('Latency')
 ylabel('Frac cells')
+%%
 
+figure; hold on
+
+[~,edges] = discretize([effects.directions],5);
+
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    for j=1:length(edges)-1
+        inx = intersect(indType,  find([effects.directions]>=edges(j) &...
+            [effects.directions]<edges(j+1)));
+
+        ave_effect(j) = mean([effects(inx).directions]);
+        x=latency(inx,:);
+        ave_latency(j) = median(x(:),'all','omitnan');
+        if ~isnan(ave_latency(j))
+            ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
+        else
+            ci = [nan nan];
+        end
+        pos(j) = ci(1); neg(j) = ci(2);
+    end
+errorbar(ave_effect,ave_latency,neg,pos)
+
+xlabel('mean effect size')
+ylabel('median latency')
+end
+
+legend(req_params.cell_type)
 %%
 
 function lat = halfPeak(data,inx,raster_params,plot_option)
@@ -132,18 +164,26 @@ lat = find(response>upperThresh | response<bottomThresh,1);
 if isempty(lat)
     disp('Latency not found')
     lat = nan;
-    return
+    
 end
 
 
 if plot_option
+
+    ax1= subplot(2,1,1);
     ave_PSTH = mean(psth);
     plot(ave_PSTH); hold on
-    plot(raster_params.time_before + lat,ave_PSTH(raster_params.time_before + lat),'*')
+    %plot(raster_params.time_before + lat,ave_PSTH(raster_params.time_before + lat),'*')
     yline(bottomThresh)
     yline(upperThresh)
+ 
+
+    ax2 = subplot(2,1,2);
+    raster = getRaster(data,inx,raster_params);
+    plotRaster(raster,raster_params,'k')
+
     pause
-    cla
+    cla(ax1,ax2)
 end
 
 
