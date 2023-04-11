@@ -4,10 +4,10 @@ clear
 EPOCH = 'targetMovementOnset';
 TIME_BEFORE = 0;
 TIME_AFTER = 800;
-FEILD = 'direction';
+FEILD = 'directions';
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'CRB'};
+req_params.cell_type = {'PC ss'};
 req_params.remove_question_marks = true;
 
 lines = findLinesInDB (task_info, req_params);

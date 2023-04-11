@@ -5,13 +5,7 @@ clear
 [task_info,supPath, MaestroPath,task_DB_path] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'PC ss|BG|SNR';
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 0;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both");
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -19,13 +13,13 @@ cells = findPathsToCells (supPath,task_info,lines);
 behavior_params.time_after = 1500;
 behavior_params.time_before = 2000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 15; % ms
 behavior_params.align_to = 'reward';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
 
 cellID = [];
-for ii = 390:length(cells)
+for ii = 1:length(cells)
 
     data = importdata(cells{ii});
     [data,flagCross] = getLicking(data,MaestroPath);
@@ -56,18 +50,12 @@ PROBABILITIES = [25,75];
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 4000:6000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 0;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 15; % ms
 behavior_params.align_to = 'cue';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
@@ -136,7 +124,7 @@ xlabel(['Time from  ' behavior_params.align_to])
 ylabel('Fraction of trials with lick')
 
 
-%% 
+%% reward epoch
 clear
 PROBABILITIES = [25,75];
 OUTCOMES = [0 1];
@@ -144,19 +132,13 @@ PLOT_CELLS = false;
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
-req_params.task = 'pursuit_8_dir_75and25|saccade_8_dir_75and25';
-req_params.ID = 5000:6000;
-req_params.num_trials = 50;
-req_params.remove_question_marks = 0;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both","golda");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
-behavior_params.align_to = 'targetMovementOnset';
+behavior_params.SD = 15; % ms
+behavior_params.align_to = 'reward';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
 
@@ -236,13 +218,7 @@ clear
 PROBABILITIES = [25,75];
 DIRECTIONS = 0:45:315;
 
-req_params.grade = 7;
-req_params.cell_type = 'CRB|PC';
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.ID = 5000:6000;
-req_params.num_trials = 120;
-req_params.remove_question_marks = 0;
-req_params.remove_repeats = 0;
+req_params = reqParamsEffectSize("both");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
