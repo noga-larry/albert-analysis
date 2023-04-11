@@ -7,6 +7,9 @@ DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
 req_params = reqParamsEffectSize("pursuit");
+%req_params.cell_type = {'BG msn'};
+
+
 
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -90,16 +93,19 @@ for i = 1:length(req_params.cell_type)
 
         ave_effect(j) = mean([effects(inx).directions]);
         x=latency(inx,:);
-        ave_latency(j) = median(x(:),'all','omitnan');
-        if ~isnan(ave_latency(j))
-            ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
-        else
-            ci = [nan nan];
-        end
-        pos(j) = ci(1); neg(j) = ci(2);
-    end
-errorbar(ave_effect,ave_latency,neg,pos)
 
+        ave_latency(j) = mean(x(:),'all','omitnan');
+        sem_latency(j) = nanSEM(x(:));
+%         ave_latency(j) = median(x(:),'all','omitnan');
+%         if ~isnan(ave_latency(j))
+%             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
+%         else
+%             ci = [nan nan];
+%         end
+%         pos(j) = ci(1); neg(j) = ci(2);
+    end
+%errorbar(ave_effect,ave_latency,neg,pos)
+errorbar(ave_effect,ave_latency,sem_latency)
 xlabel('mean effect size')
 ylabel('median latency')
 end
@@ -149,15 +155,32 @@ function lat = rateChange(data,inx,raster_params,plot_option)
 SDThresh = 1;
 TIME_BEFORE = 100;
 
-psth = getSTpsth(data,inx,raster_params);
-baselinePsth = psth(:,1:(raster_params.time_before-TIME_BEFORE));
+% get baseline 
+
+baseline_params.SD = raster_params.SD;
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = -TIME_BEFORE;
+baseline_params.smoothing_margins = raster_params.smoothing_margins;
+
+baselineInx = find(~[data.trials.fail]);
+
+baselinePsth = getSTpsth(data,baselineInx,baseline_params);
 baselineSD = mean(std(baselinePsth),'omitnan');
 baselineAve = mean(baselinePsth,'all');
 
 bottomThresh = baselineAve - SDThresh*baselineSD;
 upperThresh = baselineAve + SDThresh*baselineSD;
 
-response = mean(psth(:,(raster_params.time_before):end));
+% get response
+
+response_params.SD = raster_params.SD;
+response_params.align_to = raster_params.align_to;
+response_params.time_before = 0;
+response_params.time_after =  raster_params.time_after;
+response_params.smoothing_margins = raster_params.smoothing_margins;
+
+response = getPSTH(data,inx,response_params);
 
 lat = find(response>upperThresh | response<bottomThresh,1);
 
@@ -169,11 +192,13 @@ end
 
 
 if plot_option
-
+    
+    ts = -response_params.time_before:response_params.time_after;
     ax1= subplot(2,1,1);
-    ave_PSTH = mean(psth);
-    plot(ave_PSTH); hold on
-    %plot(raster_params.time_before + lat,ave_PSTH(raster_params.time_before + lat),'*')
+    plot(ts,response); hold on
+    if ~isnan(lat)
+        plot(ts(lat),response( lat),'*')
+    end
     yline(bottomThresh)
     yline(upperThresh)
  
@@ -183,7 +208,7 @@ if plot_option
     plotRaster(raster,raster_params,'k')
 
     pause
-    cla(ax1,ax2)
+    cla(ax1); cla(ax2);
 end
 
 
