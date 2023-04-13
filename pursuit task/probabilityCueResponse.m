@@ -96,8 +96,8 @@ end
 figure;
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-
-subplot(length(req_params.cell_type),1,i)
+    
+    subplot(length(req_params.cell_type),1,i)
     aveLow = mean(psthLow(indType,:));
     semLow = nanSEM(psthLow(indType,:));
     aveHigh = mean(psthHigh(indType,:));
@@ -180,7 +180,7 @@ PROBABILITIES = [25,75];
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -196,8 +196,9 @@ cells = findPathsToCells (supPath,task_info,lines);
 psthLow = nan(length(cells),length(ts));
 psthHigh = nan(length(cells),length(ts));
 
+comp_window = raster_params.smoothing_margins+raster_params.time_before
 
-for ii = 1:length(cells )
+for ii = 1:length(cells)
 
     data = importdata(cells{ii});
 
@@ -215,7 +216,13 @@ for ii = 1:length(cells )
     for p=1:length(PROBABILITIES)
         ind = find (match_p == PROBABILITIES(p) & (~boolFail));
         psths{p} = getPSTH(data,ind,raster_params) - baseline;
-        rate(p) = mean(psths{p},1);
+        raster = getRaster(data,ind,raster_params);
+        raster = raster((raster_params.smoothing_margins+raster_params.time_before):...
+            (end-raster_params.smoothing_margins),:);
+        spks{p} = sum(raster);
+        rate(p) = mean(raster,'all')*1000;
+        
+         
     end
 
     
@@ -226,15 +233,17 @@ for ii = 1:length(cells )
         psthHigh(ii,:) = psths{2};
         psthLow(ii,:) = psths{1};
     end
-
+    
+    h(ii) = ranksum(spks{1},spks{2});
 end
+%%
 
 figure;
-
+inx = find(h<0.05);
 
 for i = 1:length(req_params.cell_type)
         
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
 
     subplot(length(req_params.cell_type),1,i); hold on
 
@@ -248,13 +257,9 @@ for i = 1:length(req_params.cell_type)
 
     xlabel('Time from cue (ms)')
     ylabel('\Delta Rate')
-    title([req_params.cell_type{i} ', n = ' num2str(length(indType))])
+    title([req_params.cell_type{i} ', n = ' num2str(length(indType))...
+        '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))])
     legend('Low','High')
 
 end
-
-
-
-
-
 
