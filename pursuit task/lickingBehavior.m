@@ -194,16 +194,18 @@ semLicks = squeeze(nanSEM(licks));
 
 figure
 subplot(2,1,1); hold on
-errorbar(ts,squeeze(aveLicks(1,1,:)),squeeze(semLicks(1,1,:)),'r')
-errorbar(ts,squeeze(aveLicks(2,1,:)),squeeze(semLicks(1,1,:)),'b') 
+
+errorbar(ts,squeeze(aveLicks(2,1,:)),squeeze(semLicks(2,1,:)),'b') 
+errorbar(ts,squeeze(aveLicks(2,2,:)),squeeze(semLicks(2,2,:)),'b') 
 xlabel('Time from outcome')
 ylabel('Fraction of trials with lick')
 ylim([0 1])
 title('NR')  
 
 subplot(2,1,2); hold on
+errorbar(ts,squeeze(aveLicks(1,1,:)),squeeze(semLicks(1,1,:)),'r')
 errorbar(ts,squeeze(aveLicks(1,2,:)),squeeze(semLicks(1,2,:)),'r')
-errorbar(ts,squeeze(aveLicks(2,2,:)),squeeze(semLicks(2,2,:)),'b')  
+ 
 xlabel('Time from outcome')
 ylabel('Fraction of trials with lick')
 ylim([0 1])

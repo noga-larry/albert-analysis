@@ -7,7 +7,7 @@ TIME_AFTER = 800;
 FEILD = 'directions';
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC ss'};
+req_params.cell_type = {'CRB'};
 req_params.remove_question_marks = true;
 
 lines = findLinesInDB (task_info, req_params);
@@ -242,7 +242,7 @@ figure; imagesc(M); colorbar
 
 
 figure
-scatter(log(FR), log(WFW), [],[effectsEpoch.(FEILD)] , 'filled');
+scatter(FR, WFW/1000, [],[effectsEpoch.(FEILD)] , 'filled');
 xlabel('FR')
-ylabel('wavefrom')
+ylabel('wavefrom - ms')
 colormap parula; colorbar
