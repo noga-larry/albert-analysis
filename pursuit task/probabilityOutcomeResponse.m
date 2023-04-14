@@ -199,14 +199,15 @@ psthHigh = nan(length(cells),length(ts));
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
-    
+
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
-    
+
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
-    
-    baseline = mean(getPSTH(data,find(~boolFail),raster_params),1);
+
+    psth_baseline = getPSTH(data,find(~boolFail),raster_params);
+    baseline = mean(psth_baseline(raster_params.time_before:end));
     if  strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
@@ -214,10 +215,14 @@ for ii = 1:length(cells)
     for j=1:length(OUTCOMES)
         ind = find (match_o == OUTCOMES(j) & (~boolFail));
         psths{j} = getPSTH(data,ind,raster_params) - baseline;
-        rate(j) = mean(psths{j},1);
+        raster = getRaster(data,ind,raster_params);
+        raster = raster((raster_params.smoothing_margins+raster_params.time_before):...
+            (end-raster_params.smoothing_margins),:);
+        spks{j} = sum(raster);
+        rate(j) = mean(raster,'all')*1000;
     end
 
-    
+
     if rate(1)>rate(2)
         psthHigh(ii,:) = psths{1};
         psthLow(ii,:) = psths{2};
@@ -225,15 +230,17 @@ for ii = 1:length(cells)
         psthHigh(ii,:) = psths{2};
         psthLow(ii,:) = psths{1};
     end
+    h(ii) = ranksum(spks{1},spks{2});
 end
 
 %%
 figure;
 
+inx = find(h<0.05);
 
 for i = 1:length(req_params.cell_type)
-        
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
 
     subplot(length(req_params.cell_type),1,i); hold on
 
@@ -247,7 +254,8 @@ for i = 1:length(req_params.cell_type)
 
     xlabel('Time from cue (ms)')
     ylabel('\Delta Rate')
-    title([req_params.cell_type{i} ', n = ' num2str(length(indType))])
+        title([req_params.cell_type{i} ', n = ' num2str(length(indType))...
+        '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))])
     legend('Low','High')
 
 end

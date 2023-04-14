@@ -208,7 +208,9 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
 
-    baseline = mean(getPSTH(data,find(~boolFail),raster_params),1);
+    psth_baseline = getPSTH(data,find(~boolFail),raster_params);
+    baseline = mean(psth_baseline(raster_params.time_before:end));
+    
     if  strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
