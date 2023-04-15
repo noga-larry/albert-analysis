@@ -56,9 +56,15 @@ function [fracSig, ts] = fracSigInTimeBin(data,epoch)
 
 [response,ind,ts] = data2response(data,epoch);
 
-[groups, group_names] = createGroups(data,epoch,ind,false);
+switch epoch
+    case 'cue'
+        [~,groups] = getProbabilities(data,ind,'omitNonIndexed',true);
+    case 'reward'
+        groups = getOutcome(data,ind,'omitNonIndexed',true);
 
-unique_groups = unique(groups{1});
+end
+
+unique_groups = unique(groups);
 
 fracSig = nan(1,length(ts));
 
@@ -66,11 +72,11 @@ fracSig = nan(1,length(ts));
 for t=1:length(ts)
 
     
-    cond1 = response(t,find(groups{1}==unique_groups(1)));
+    cond1 = response(t,find(groups==unique_groups(1)));
 
-    cond2 = response(t,find(groups{1}==unique_groups(2)));
+    cond2 = response(t,find(groups==unique_groups(2)));
 
-    fracSig(1,t) = ranksum(cond1,cond2,tail="right")<0.05;
+    fracSig(1,t) = ranksum(cond1,cond2,tail="right")<0.05; % cond 1 is larger
     fracSig(2,t) = ranksum(cond1,cond2,tail="left")<0.05;
 
 end
