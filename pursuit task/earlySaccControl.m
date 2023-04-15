@@ -141,10 +141,10 @@ for ii = 1:length(lines)
     data = equateDistributions(data,windowEvent);
 
     
-    %[effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
-    % (data,EPOCH);
+    [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
+        (data,'reward');
 
-    %    [effects(ii)] = effectSizeInEpoch(dataNoSac,EPOCH);
+    [effects(ii)] = effectSizeInEpoch(data,'reward');
 
     saccadeRate(ii,:,:) = saccRate(data,behavior_params);
 end
@@ -153,16 +153,51 @@ end
 
 figure; hold on
 
-ts = -behavior_params.time_before:behavior_params.time_after;
+ts_behavior = -behavior_params.time_before:behavior_params.time_after;
 
 for i=1:size(saccadeRate,2)
     ave = squeeze(mean(saccadeRate(:,i,:)));
     sem = squeeze(nanSEM(saccadeRate(:,i,:)));
-    errorbar(ts,ave,sem)
+    errorbar(ts_behavior,ave,sem)
 end
 
 legend({'P=25 R','P=75 R','P=25 NR','P=75 NR'})
 xlabel('time from outcome'); ylabel('sacc rate')
+
+figure;
+f = 'reward_outcome';
+for i = 1:length(req_params.cell_type)
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    x = [effects(indType).(f)];
+    p = bootstrapTTest(x);
+    disp([req_params.cell_type{i} ': ' num2str(p)])
+end
+
+
+flds = fields(effectSizesSac);
+
+
+h = cellID<inf;% & rel
+
+for f = 1:length(flds)
+
+    subplot(length(flds),1,f); hold on
+
+    for i = 1:length(req_params.cell_type)
+
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+        a = reshape([effectSizesSac(indType,:).(flds{f})],length(indType),length(ts));
+
+        errorbar(ts,nanmean(a,1), nanSEM(a,1))
+
+    end
+    xlabel(['time from outcome (ms)' ])
+    title([flds{f}], 'Interpreter', 'none')
+  
+    legend(req_params.cell_type)
+end
 
 %%
 function data = equateDistributions(data,windowEvent)
@@ -184,13 +219,13 @@ saccDiff = sum(boolSacc & match_o) - sum(boolSacc & ~match_o);
 
 if saccDiff>0
     inx = find(boolSacc & match_o);
-    inx = inx(randperm(length(inx),round(saccDiff/2)));
+    inx = inx(randperm(length(inx),randRound(saccDiff/2)));
     for j=1:length(inx)
         data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'R','NR');
     end
 else
     inx = find(boolSacc & ~match_o);
-    inx = inx(randperm(length(inx),round(-saccDiff/2)));
+    inx = inx(randperm(length(inx),randRound(-saccDiff/2)));
     for j=1:length(inx)
         data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'NR','R');
     end
@@ -200,13 +235,13 @@ saccDiff = sum(~boolSacc & ~match_o) - sum(~boolSacc & match_o);
 
 if saccDiff>0
     inx = find(~boolSacc & ~match_o);
-    inx = inx(randperm(length(inx),round(saccDiff/2)));
+    inx = inx(randperm(length(inx),randRound(saccDiff/2)));
     for j=1:length(inx)
         data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'NR','R');
     end
 else
     inx = find(~boolSacc & match_o);
-    inx = inx(randperm(length(inx),round(-saccDiff/2)));
+    inx = inx(randperm(length(inx),randRound(-saccDiff/2)));
     for j=1:length(inx)
         data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'R','NR');
     end
@@ -231,16 +266,13 @@ function saccadeRate = saccRate(data,behavior_params)
 
 windowEvent = -behavior_params.time_before:behavior_params.time_after;
 
-[~,match_p] = getProbabilities (data);
 [match_o] = getOutcome (data);
 boolFail = [data.trials.fail];
 
-indLowR = find (match_p == 25 & match_o == 1 &(~boolFail));
-indHighR = find (match_p == 75 & match_o == 1 & (~boolFail));
-indLowNR = find (match_p == 25 & match_o == 0 &(~boolFail));
-indHighNR = find (match_p == 75 & match_o == 0 &(~boolFail));
+indR = find (match_o == 1 &(~boolFail));
+indNR = find (match_o == 0 &(~boolFail));
 
-inx = {indLowR,indHighR,indLowNR,indHighNR};
+inx = {indR,indNR};
 
 for j=1:length(inx)
 
