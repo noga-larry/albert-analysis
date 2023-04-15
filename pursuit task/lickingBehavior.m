@@ -132,7 +132,7 @@ PLOT_CELLS = false;
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("both","golda");
+req_params = reqParamsEffectSize("both","albert");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
@@ -210,7 +210,7 @@ xlabel('Time from outcome')
 ylabel('Fraction of trials with lick')
 ylim([0 1])
 title('R') 
-legend({'75' '25'})
+legend({'25' '75' })
 
 %% lick direcion dependency
 
