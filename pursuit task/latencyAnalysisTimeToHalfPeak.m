@@ -6,10 +6,9 @@ EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-req_params = reqParamsEffectSize("pursuit");
+TASK = "saccade";
+req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
-
-
 
 raster_params.time_before = 399;
 raster_params.time_after = 800;
@@ -25,9 +24,7 @@ cellID = nan(length(cells),1);
 
 switch EPOCH
     case 'targetMovementOnset'
-        latency = nan(length(cells),length(DIRECIONS));
-    case 'cue'
-        latency = nan(length(cells),length(PROBABILITIES));
+        latency = nan(length(cells),length(PROBABILITIES),length(DIRECIONS));
 end
 
 
@@ -40,26 +37,26 @@ for ii = 1:length(cells)
     boolFail = [data.trials.fail];
     [~,match_d] = getDirections(data);
     [~,match_p] = getProbabilities(data);
-
+    
     switch EPOCH
+        
         case 'targetMovementOnset'
-            for d=1:length(DIRECIONS)
-                inx{d} = find(match_d==DIRECIONS(d) & ~boolFail);
-            end
-        case 'cue'
             for p=1:length(PROBABILITIES)
-                inx{p} = find(match_p==PROBABILITIES(p) & ~boolFail);
+                for d=1:length(DIRECIONS)
+                    inx{d} = find(match_p==PROBABILITIES(p) & ...
+                        match_d==DIRECIONS(d) & ~boolFail);
+                end
+                for j=1:length(inx)
+                    latency(ii,p,j) = rateChange(data,inx,j,raster_params,PLOT_CELL);
+                end
             end
+            
     end
-
+    
     effects(ii) = effectSizeInEpoch(data,EPOCH);
-  
-
-    for j=1:length(inx)
-       latency(ii,j) = rateChange(data,inx{j},raster_params,PLOT_CELL);
+    
 
 
-    end
 
 end
 
@@ -70,15 +67,15 @@ figure; hold on
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    plotHistForFC([latency(indType,:)],0:10:800)
+    plotHistForFC([latency(indType,:,:)],0:5:800)
 
-    leg{i} = [req_params.cell_type{i} ' - ' num2str(mean(~isnan([latency(indType,:)]),"all"))];
+    leg{i} = [req_params.cell_type{i} ' - frac latency found: ' num2str(mean(~isnan([latency(indType,:)]),"all"))];
 end
 
 legend(leg)
 xlabel('Latency')
 ylabel('Frac cells')
-%%
+sgtitle(TASK)
 
 figure; hold on
 
@@ -110,6 +107,7 @@ xlabel('mean effect size')
 ylabel('median latency')
 end
 
+sgtitle(TASK)
 legend(req_params.cell_type)
 %%
 
@@ -150,9 +148,9 @@ end
 
 %%
 
-function lat = rateChange(data,inx,raster_params,plot_option)
+function lat = rateChange(data,trailInxArray,curGroup,raster_params,plotOption)
 
-SDThresh = 1;
+SDThresh = 5;
 TIME_BEFORE = 100;
 
 % get baseline 
@@ -163,11 +161,14 @@ baseline_params.time_before = raster_params.time_before;
 baseline_params.time_after = -TIME_BEFORE;
 baseline_params.smoothing_margins = raster_params.smoothing_margins;
 
-baselineInx = find(~[data.trials.fail]);
+baselinePsth = [];
+for i=1:length(trailInxArray)
+    baselinePsth = [baselinePsth;getPSTH(data,trailInxArray{i},baseline_params)];
 
-baselinePsth = getSTpsth(data,baselineInx,baseline_params);
-baselineSD = mean(std(baselinePsth),'omitnan');
-baselineAve = mean(baselinePsth,'all');
+end
+
+baselineSD = std(baselinePsth);
+baselineAve = mean(baselinePsth);
 
 bottomThresh = baselineAve - SDThresh*baselineSD;
 upperThresh = baselineAve + SDThresh*baselineSD;
@@ -180,7 +181,7 @@ response_params.time_before = 0;
 response_params.time_after =  raster_params.time_after;
 response_params.smoothing_margins = raster_params.smoothing_margins;
 
-response = getPSTH(data,inx,response_params);
+response = getPSTH(data,trailInxArray{curGroup},response_params);
 
 lat = find(response>upperThresh | response<bottomThresh,1);
 
@@ -191,20 +192,21 @@ if isempty(lat)
 end
 
 
-if plot_option
+if plotOption
     
-    ts = -response_params.time_before:response_params.time_after;
+    ts = -raster_params.time_before:raster_params.time_after;
     ax1= subplot(2,1,1);
-    plot(ts,response); hold on
+    psth = getPSTH(data,trailInxArray{curGroup},raster_params);
+    plot(ts,psth); hold on
     if ~isnan(lat)
-        plot(ts(lat),response( lat),'*')
+        plot(ts(raster_params.time_before+lat),psth(raster_params.time_before+lat),'*')
     end
     yline(bottomThresh)
     yline(upperThresh)
- 
+    xline(0)
 
     ax2 = subplot(2,1,2);
-    raster = getRaster(data,inx,raster_params);
+    raster = getRaster(data,trailInxArray{curGroup},raster_params);
     plotRaster(raster,raster_params,'k')
 
     pause
