@@ -104,7 +104,7 @@ for i = 1:length(req_params.cell_type)
 %errorbar(ave_effect,ave_latency,neg,pos)
 errorbar(ave_effect,ave_latency,sem_latency)
 xlabel('mean effect size')
-ylabel('median latency')
+ylabel('mean latency')
 end
 
 sgtitle(TASK)
