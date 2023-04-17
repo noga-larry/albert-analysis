@@ -10,12 +10,6 @@ TASK = "saccade";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
-raster_params.time_before = 399;
-raster_params.time_after = 800;
-raster_params.smoothing_margins = 100;
-raster_params.align_to = EPOCH;
-raster_params.SD = 20;
-
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -47,7 +41,7 @@ for ii = 1:length(cells)
                         match_d==DIRECIONS(d) & ~boolFail);
                 end
                 for j=1:length(inx)
-                    latency(ii,p,j) = rateChange(data,inx,j,raster_params,PLOT_CELL);
+                    latency(ii,p,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
                 end
             end
             
@@ -79,14 +73,13 @@ sgtitle(TASK)
 
 figure; hold on
 
-[~,edges] = discretize([effects.directions],5);
+ranks = quantileranks([effects.directions],5);
 
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    for j=1:length(edges)-1
-        inx = intersect(indType,  find([effects.directions]>=edges(j) &...
-            [effects.directions]<edges(j+1)));
+    for j=1:length(ranks)
+        inx = intersect(indType,  find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).directions]);
         x=latency(inx,:);
@@ -148,18 +141,23 @@ end
 
 %%
 
-function lat = rateChange(data,trailInxArray,curGroup,raster_params,plotOption)
+function lat = rateChange(data,trailInxArray,curGroup,epoch,plotOption)
 
-SDThresh = 5;
-TIME_BEFORE = 100;
+SDThresh = 3;
 
 % get baseline 
 
-baseline_params.SD = raster_params.SD;
-baseline_params.align_to = raster_params.align_to;
-baseline_params.time_before = raster_params.time_before;
-baseline_params.time_after = -TIME_BEFORE;
-baseline_params.smoothing_margins = raster_params.smoothing_margins;
+baseline_params.SD = 20;
+baseline_params.align_to = epoch;
+baseline_params.time_before = 500;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 100;
+
+response_params.time_before = 0;
+response_params.time_after = 800;
+response_params.smoothing_margins = 100;
+response_params.align_to = epoch;
+response_params.SD = 20;
 
 baselinePsth = [];
 for i=1:length(trailInxArray)
@@ -175,11 +173,11 @@ upperThresh = baselineAve + SDThresh*baselineSD;
 
 % get response
 
-response_params.SD = raster_params.SD;
-response_params.align_to = raster_params.align_to;
+response_params.SD = response_params.SD;
+response_params.align_to = response_params.align_to;
 response_params.time_before = 0;
-response_params.time_after =  raster_params.time_after;
-response_params.smoothing_margins = raster_params.smoothing_margins;
+response_params.time_after =  response_params.time_after;
+response_params.smoothing_margins = response_params.smoothing_margins;
 
 response = getPSTH(data,trailInxArray{curGroup},response_params);
 
@@ -194,20 +192,20 @@ end
 
 if plotOption
     
-    ts = -raster_params.time_before:raster_params.time_after;
+    ts = -response_params.time_before:response_params.time_after;
     ax1= subplot(2,1,1);
-    psth = getPSTH(data,trailInxArray{curGroup},raster_params);
+    psth = getPSTH(data,trailInxArray{curGroup},response_params);
     plot(ts,psth); hold on
     if ~isnan(lat)
-        plot(ts(raster_params.time_before+lat),psth(raster_params.time_before+lat),'*')
+        plot(ts(response_params.time_before+lat),psth(response_params.time_before+lat),'*')
     end
     yline(bottomThresh)
     yline(upperThresh)
     xline(0)
 
     ax2 = subplot(2,1,2);
-    raster = getRaster(data,trailInxArray{curGroup},raster_params);
-    plotRaster(raster,raster_params,'k')
+    raster = getRaster(data,trailInxArray{curGroup},response_params);
+    plotRaster(raster,response_params,'k')
 
     pause
     cla(ax1); cla(ax2);
