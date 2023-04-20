@@ -73,15 +73,18 @@ sgtitle(TASK)
 
 figure; hold on
 
-ranks = quantileranks([effects.directions],5);
+fld = 'time_and_interactions_with_time';
+fld = 'directions';
+ranks = quantileranks([effects.(fld)],10);
 
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
     for j=1:length(ranks)
+        
         inx = intersect(indType,  find(ranks == j));
 
-        ave_effect(j) = mean([effects(inx).directions]);
+        ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx,:);
 
         ave_latency(j) = mean(x(:),'all','omitnan');
@@ -96,7 +99,7 @@ for i = 1:length(req_params.cell_type)
     end
 %errorbar(ave_effect,ave_latency,neg,pos)
 errorbar(ave_effect,ave_latency,sem_latency)
-xlabel('mean effect size')
+xlabel(['mean effect size : ' fld],'interpreter','none')
 ylabel('mean latency')
 end
 
@@ -143,7 +146,7 @@ end
 
 function lat = rateChange(data,trailInxArray,curGroup,epoch,plotOption)
 
-SDThresh = 3;
+
 
 % get baseline 
 
@@ -154,7 +157,7 @@ baseline_params.time_after = 0;
 baseline_params.smoothing_margins = 100;
 
 response_params.time_before = 0;
-response_params.time_after = 800;
+response_params.time_after = 500;
 response_params.smoothing_margins = 100;
 response_params.align_to = epoch;
 response_params.SD = 20;
@@ -162,14 +165,7 @@ response_params.SD = 20;
 baselinePsth = [];
 for i=1:length(trailInxArray)
     baselinePsth = [baselinePsth;getPSTH(data,trailInxArray{i},baseline_params)];
-
 end
-
-baselineSD = std(baselinePsth);
-baselineAve = mean(baselinePsth);
-
-bottomThresh = baselineAve - SDThresh*baselineSD;
-upperThresh = baselineAve + SDThresh*baselineSD;
 
 % get response
 
@@ -181,14 +177,7 @@ response_params.smoothing_margins = response_params.smoothing_margins;
 
 response = getPSTH(data,trailInxArray{curGroup},response_params);
 
-lat = find(response>upperThresh | response<bottomThresh,1);
-
-if isempty(lat)
-    disp('Latency not found')
-    lat = nan;
-    
-end
-
+lat = latencyFromBaseline(baselinePsth,response);
 
 if plotOption
     
@@ -212,4 +201,74 @@ if plotOption
 end
 
 
+end
+
+
+%%
+
+function lat = rateChangeControl(data,trailInxArray,curGroup,epoch,plotOption)
+
+NUM_SETS = 8;
+
+partitions = getNonOverlappingPartions(trailInxArray,NUM_SETS);
+
+% get baseline 
+
+baseline_params.SD = 20;
+baseline_params.align_to = epoch;
+baseline_params.time_before = 500;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 100;
+
+
+baselinePsth = [];
+for i=1:length(partitions{1,2})
+    baselinePsth = [baselinePsth;getPSTH(data,partitions{1,2}{i},baseline_params)];
+end
+
+% get response
+
+response = getPSTH(data,partitions{1,1}{1},baseline_params);
+
+lat = latencyFromBaseline(baselinePsth,response);
+
+if plotOption
+    
+    ts = -response_params.time_before:response_params.time_after;
+    ax1= subplot(2,1,1);
+    psth = getPSTH(data,trailInxArray{curGroup},response_params);
+    plot(ts,psth); hold on
+    if ~isnan(lat)
+        plot(ts(response_params.time_before+lat),psth(response_params.time_before+lat),'*')
+    end
+    yline(bottomThresh)
+    yline(upperThresh)
+    xline(0)
+
+    ax2 = subplot(2,1,2);
+    raster = getRaster(data,trailInxArray{curGroup},response_params);
+    plotRaster(raster,response_params,'k')
+
+    pause
+    cla(ax1); cla(ax2);
+end
+end
+%%
+
+function lat = latencyFromBaseline(baseline,response)
+SD_THRESHOLD = 3;
+
+
+baselineSD = std(baseline);
+baselineAve = mean(baseline);
+
+bottomThresh = baselineAve - SD_THRESHOLD*baselineSD;
+upperThresh = baselineAve + SD_THRESHOLD*baselineSD;
+
+lat = find(response>upperThresh | response<bottomThresh,1);
+
+if isempty(lat)
+    disp('Latency not found')
+    lat = nan;    
+end
 end

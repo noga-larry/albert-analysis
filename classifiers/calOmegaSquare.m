@@ -81,8 +81,13 @@ if includeTime
         c=c+1;
     end
     
-    inx = setdiff(3:(length(tbl)-2),not_inter_inx);
+    inx = setdiff(2:(length(tbl)-2),not_inter_inx);
     omega(c).variable = 'Interactions';
+    omega(c).value = omegafun(tbl,inx);
+    
+    % time and interactions with time
+    inx = find(contains(tbl(:,1),'time'));
+    omega(c).variable = 'time_and_interactions_with_time';
     omega(c).value = omegafun(tbl,inx);
 else
     c=0;
@@ -97,7 +102,7 @@ else
         omega(c+1).variable = 'prediction error';
         c = c+1;
     end
-    if length(groups)>1
+    if length(groups)>1 % more than one group
         omega(c+1).variable = 'Interactions';
         omega(c+1).value = omegafun(tbl,[(length(groups)+2):(size(tbl,1)-2)]);
     end
