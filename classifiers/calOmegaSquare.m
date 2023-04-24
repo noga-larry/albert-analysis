@@ -1,4 +1,4 @@
-function [omega, tbl ] = calOmegaSquare(response,labels,label_names, varargin)
+function [omega, tbl, pVals] = calOmegaSquare(response,labels,labelNames, varargin)
 
 p = inputParser;
 
@@ -34,7 +34,7 @@ for i = 1:length(groups)
     groups{i} = tmp(:);
 end
 
-[~,tbl,~,~] = anovan(response(:),groups,'varnames',label_names,'model',model,'display','off','sstype',sstype);
+[~,tbl,~,~] = anovan(response(:),groups,'varnames',labelNames,'model',model,'display','off','sstype',sstype);
 %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
 
 %     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
@@ -48,25 +48,40 @@ msw = tbl{end-1,5};
 SSe = tbl{end-1,2};
 N = length(response(:));
 
+% Define function
 if partial
-%     omegafun = @(tbl,dim) (tbl{dim,3}*(tbl{dim,5}-msw))/...
-%         (tbl{dim,3}*tbl{dim,5}+(N-tbl{dim,3})*msw);
+    %     omegafun = @(tbl,dim) (tbl{dim,3}*(tbl{dim,5}-msw))/...
+    %         (tbl{dim,3}*tbl{dim,5}+(N-tbl{dim,3})*msw);
     omegafun = @(tbl,dim) (sum([tbl{dim,2}])-(sum([tbl{dim,3}])*msw))/...
         (sum([tbl{dim,2}])+(N-sum([tbl{dim,3}]))*msw);
-
+    
 else
     omegafun = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
 end
+
+% pVals
+pValFun = @(tbl,dim) 1-fcdf((sum([tbl{dim,2}])/sum([tbl{dim,3}]))/msw...
+    ,sum([tbl{dim,3}]),tbl{end-1,3});
+
+omega = creatingOutputStructure(tbl,groups,omegafun,labelNames,includeTime);
+
+pVals = creatingOutputStructure(tbl,groups,pValFun,labelNames,includeTime);
+
+end
+
+
+function outputStruct = creatingOutputStructure(tbl,groups,func,...
+    labelNames,includeTime)
 
 if includeTime
     c=0;
     not_inter_inx = [];
     for i = 1:length(groups)
-        inx1 = find(strcmp(tbl(:,1),label_names{i}));
-        inx2 = find(strcmp(tbl(:,1),['time*' label_names{i}]));        
+        inx1 = find(strcmp(tbl(:,1),labelNames{i}));
+        inx2 = find(strcmp(tbl(:,1),['time*' labelNames{i}]));
         c = c+1;
-        omega(c).value = omegafun(tbl,[inx1 inx2]);
-        omega(c).variable = tbl{inx1,1};
+        outputStruct(c).value = func(tbl,[inx1 inx2]);
+        outputStruct(c).variable = tbl{inx1,1};
         not_inter_inx = [not_inter_inx inx1 inx2];
     end
     
@@ -74,41 +89,40 @@ if includeTime
     inx1 = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
     inx2 = find(strcmp(tbl(:,1),'time*reward probability*reward outcome'));
     
-     
+    
     if ~isempty(inx1)||~isempty(inx2)
-        omega(c).variable = 'prediction_error';
-        omega(c).value = omegafun(tbl,[inx1 inx2]);
+        outputStruct(c).variable = 'prediction_error';
+        outputStruct(c).value = func(tbl,[inx1 inx2]);
         c=c+1;
     end
     
     inx = setdiff(2:(length(tbl)-2),not_inter_inx);
-    omega(c).variable = 'Interactions';
-    omega(c).value = omegafun(tbl,inx);
+    outputStruct(c).variable = 'Interactions';
+    outputStruct(c).value = func(tbl,inx);
     
     % time and interactions with time
     inx = find(contains(tbl(:,1),'time'));
-    omega(c).variable = 'time_and_interactions_with_time';
-    omega(c).value = omegafun(tbl,inx);
+    outputStruct(c).variable = 'time_and_interactions_with_time';
+    outputStruct(c).value = func(tbl,inx);
 else
     c=0;
     for i = 1:length(groups)
         c = c+1;
-        omega(c).value = omegafun(tbl,i+1);
-        omega(c).variable = tbl{i+1,1};
+        outputStruct(c).value = func(tbl,i+1);
+        outputStruct(c).variable = tbl{i+1,1};
     end
     if any(strcmp(tbl(:,1),'reward probability*reward outcome'))
         inx = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
-        omega(c+1).value = omegafun(tbl,inx);
-        omega(c+1).variable = 'prediction error';
+        outputStruct(c+1).value = func(tbl,inx);
+        outputStruct(c+1).variable = 'prediction error';
         c = c+1;
     end
     if length(groups)>1 % more than one group
-        omega(c+1).variable = 'Interactions';
-        omega(c+1).value = omegafun(tbl,[(length(groups)+2):(size(tbl,1)-2)]);
+        outputStruct(c+1).variable = 'Interactions';
+        outputStruct(c+1).value = func(tbl,[(length(groups)+2):(size(tbl,1)-2)]);
     end
+end
 end
 
 
-
-%omega = @(tbl,dim) (tbl{dim,2}-tbl{dim,3}*msw)/(msw+totVar);
 
