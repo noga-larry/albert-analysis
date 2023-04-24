@@ -1,4 +1,4 @@
-function [effectSizes, ts, low] = effectSizeInTimeBin(data,epoch,varargin)
+function [effectSizes, ts, low, pVals] = effectSizeInTimeBin(data,epoch,varargin)
 
 MINIMAL_RATE_IN_BIN = 0.001;
 
@@ -36,7 +36,7 @@ for t=1:length(ts)
     else
         model = 'full';
     end
-    omegas = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
+    [omegas, ~, pVals] = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
         'includeTime',false,'model',model);
     for i=1:length(omegas)
         effectSizes(t).(omegas(i).variable) = omegas(i).value;
