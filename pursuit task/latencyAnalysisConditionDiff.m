@@ -57,7 +57,7 @@ for i = 1:length(req_params.cell_type)
 
     plotHistForFC([latency(indType)],0:5:800)
 
-    leg{i} = [req_params.cell_type{i} ' - frac latency found: ' num2str(mean(~isnan([latency(indType,:)]),"all"))];
+    leg{i} = [req_params.cell_type{i} ' - frac latency found: ' num2str(mean(~isnan([latency(indType)]),"all"))];
 end
 
 legend(leg)
@@ -79,7 +79,7 @@ for i = 1:length(req_params.cell_type)
         inx = intersect(indType,  find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
-        x=latency(inx,:);
+        x=latency(inx);
 
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
