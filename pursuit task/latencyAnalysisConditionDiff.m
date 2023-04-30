@@ -80,7 +80,7 @@ for i = 1:length(req_params.cell_type)
 
     for j=1:length(unique_ranks)
         
-        inx = intersect(indType,  find(unique_ranks == j));
+        inx = intersect(indType,  find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx);
