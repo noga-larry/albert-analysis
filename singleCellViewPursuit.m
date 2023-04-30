@@ -111,10 +111,8 @@ for ii=1:length(cells)
     % direction
     raster_params.align_to = 'targetMovementOnset';
 
-    
-    
     inx = find (~boolFail);
-    [~,p] = sort(match_d(inx))
+    [~,p] = sort(match_d(inx));
     inx = inx(p);
     
     raster = getRaster(data,inx, raster_params);

@@ -10,6 +10,7 @@ TASK = "saccade";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
+
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
@@ -31,6 +32,8 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities(data);
     boolFail = [data.trials.fail];
     
+    effects(ii) = effectSizeInEpoch(data,EPOCH);
+    
     switch EPOCH
         
         case 'targetMovementOnset'
@@ -41,10 +44,11 @@ for ii = 1:length(cells)
             %
             %             end
             inx = find(~boolFail);
-            latency(ii) = pValLatency(data,inx);
+            latency(ii) = pValLatency...
+                (data,inx,PLOT_CELL,effects(ii).(fld));
     end
     
-    effects(ii) = effectSizeInEpoch(data,EPOCH);
+    
     
 end
 
@@ -67,16 +71,16 @@ sgtitle(TASK)
 
 figure; hold on
 
-fld = 'time_and_interactions_with_time';
-fld = 'directions';
-ranks = quantileranks([effects.(fld)],10);
 
+ranks = quantileranks([effects.(fld)],5);
+unique_ranks = unique(ranks);
 for i = 1:length(req_params.cell_type)
+    
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    for j=1:length(ranks)
+    for j=1:length(unique_ranks)
         
-        inx = intersect(indType,  find(ranks == j));
+        inx = intersect(indType,  find(unique_ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx);
@@ -103,7 +107,7 @@ legend(req_params.cell_type)
 
 %%
 
-function lat = pValLatency(data,inx)
+function lat = pValLatency(data,inx,plotOption,effectSize)
 
 FIRST_RUNNING_WINDOW = -50:50;
 SECOND_RUNNING_WINDOW = -25:25;
@@ -136,12 +140,14 @@ if consecutive_counter~=NUM_CONSECUTIVE
     return
 end
 
-first_localization_estimate = ts(max(1,t-NUM_CONSECUTIVE)):SECOND_INTERVALS:ts(t);
+first_localization_estimate = (ts(max(1,t-NUM_CONSECUTIVE))+min(FIRST_RUNNING_WINDOW))...
+    :SECOND_INTERVALS:...
+    (ts(t)+max(FIRST_RUNNING_WINDOW));
 
 consecutive_counter = 0;
 for t=1:length(first_localization_estimate)
     comparison_window = first_localization_estimate(t)+SECOND_RUNNING_WINDOW;
-    [~,~,h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
+    [~,p(t),h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
     if h(t)
         consecutive_counter = consecutive_counter+1;
     else
@@ -153,11 +159,38 @@ for t=1:length(first_localization_estimate)
     end
 end
 
+
 if consecutive_counter~=NUM_CONSECUTIVE
     lat=nan;
-    return
+    
+else
+    lat = first_localization_estimate(t-ceil(NUM_CONSECUTIVE/2));
 end
 
-lat = first_localization_estimate(t-ceil(NUM_CONSECUTIVE/2));
+
+if plotOption
+    
+    raster_params.time_before = TIME_BEFORE;
+    raster_params.time_after = TIME_AFTER;
+    raster_params.smoothing_margins = 0; 
+    raster_params.align_to = 'targetMovementOnset'; 
+    
+    [~,match_d] = getDirections(data,inx);
+    [~,p] = sort(match_d(inx));
+    inx = inx(p);
+    
+    raster = getRaster(data,inx, raster_params);
+    plotRaster(raster,raster_params,match_d(inx))
+    xlabel('Time from movement')
+    
+    if ~isnan(lat)
+        xline(lat)
+    end
+    
+    title(num2str(effectSize))
+    pause
+    cla
+end
+
 
 end

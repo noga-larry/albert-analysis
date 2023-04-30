@@ -75,17 +75,23 @@ figure; hold on
 
 fld = 'time_and_interactions_with_time';
 fld = 'directions';
-ranks = quantileranks([effects.(fld)],10);
+
+relEffectSize = [effects.(fld)];
+
+unique_ranks = unique(ranks);
 
 for i = 1:length(req_params.cell_type)
+    
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    for j=1:length(ranks)
+    ranks = quantileranks(relEffectSize(indType),5);
+    
+    for j=1:length(unique_ranks)
         
-        inx = intersect(indType,  find(ranks == j));
+        inx = indType(find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
-        x=latency(inx,:);
+        x=latency(inx,:,:);
 
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
