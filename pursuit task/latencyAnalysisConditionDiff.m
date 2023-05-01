@@ -6,7 +6,7 @@ EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-TASK = "saccade";
+TASK = "pursuit";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
@@ -23,7 +23,7 @@ switch EPOCH
 end
 
 
-for ii = 1:length(cells)
+for ii = 1 :length(cells)
 
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
@@ -44,18 +44,22 @@ for ii = 1:length(cells)
             %
             %             end
             inx = find(~boolFail);
+            
+%             p = randPermute({data.trials.name});
+%             for i = 1:length(p)
+%                 data.trials(i).name = p{i};
+%             end            
+            
             latency(ii) = pValLatency...
                 (data,inx,PLOT_CELL,effects(ii).(fld));
     end
-    
-    
     
 end
 
 %%
 
 figure; hold on
-
+clear ave_effect ave_latency sem_latency
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
@@ -72,7 +76,7 @@ sgtitle(TASK)
 figure; hold on
 
 
-ranks = quantileranks([effects.(fld)],5);
+ranks = quantileranks([effects.(fld)],20);
 unique_ranks = unique(ranks);
 for i = 1:length(req_params.cell_type)
     
