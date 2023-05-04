@@ -3,18 +3,14 @@ clear
 
 PROBABILITIES =[25,75];
 
-req_params.grade = 7;
-req_params.ID = 4000:6000;
-req_params.num_trials = 50;
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.remove_question_marks = 1;
+req_params = reqParamsEffectSize("both");
 
 lines = findCspkSspkPairs(task_info,req_params);
 
-raster_params.time_before = 300;
+raster_params.time_before = 0;
 raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
-raster_params.SD = 10;
+raster_params.SD = 20;
 
 comparison_window = raster_params.smoothing_margins + raster_params.time_before...
     +(100:500);
