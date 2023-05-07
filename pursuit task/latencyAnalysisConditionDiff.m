@@ -43,23 +43,34 @@ for ii = 1 :length(cells)
             %                 latency(ii,p) = pValLatency(data,inx);
             %
             %             end
-            inx = find(~boolFail);
-            
-%             p = randPermute({data.trials.name});
-%             for i = 1:length(p)
-%                 data.trials(i).name = p{i};
-%             end            
+            inx = find(~boolFail);        
             
             latency(ii) = pValLatency...
                 (data,inx,PLOT_CELL,effects(ii).(fld));
+            
+            
+            p = randPermute({data.trials.name});
+            for i = 1:length(p)
+                data.trials(i).name = p{i};
+            end
+            
+            
+            latencyControl(ii) = pValLatency...
+                (data,inx,PLOT_CELL,effects(ii).(fld));
+
     end
     
 end
 
 %%
+plotLatency(latencyControl,cellType,effects,req_params)
+%%
 
+function plotLatency(latency,cellType,effects,req_params)
 figure; hold on
-clear ave_effect ave_latency sem_latency n
+
+fld = 'directions';
+
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
@@ -71,11 +82,15 @@ end
 legend(leg)
 xlabel('Latency')
 ylabel('Frac cells')
-sgtitle(TASK)
+sgtitle(req_params.task,'Interpreter' ,'none')
+
+[p,tbl,stats] = kruskalwallis(latency(:),cellType(:))
+c = multcompare(stats)
+
 
 figure; hold on
 
-NUM_RANKS = 5;
+NUM_RANKS = 20;
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
@@ -108,10 +123,10 @@ xlabel(['mean effect size : ' fld],'interpreter','none')
 ylabel('mean latency')
 end
 
-sgtitle(TASK)
+sgtitle(req_params.task,'Interpreter' ,'none')
 legend(req_params.cell_type)
 
-
+end
 %%
 
 function lat = pValLatency(data,inx,plotOption,effectSize)

@@ -2,11 +2,11 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'saccadeLatency';
+EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-TASK = "saccade";
+TASK = "pursuit";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
@@ -42,6 +42,9 @@ for ii = 1:length(cells)
                 end
                 for j=1:length(inx)
                     latency(ii,p,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
+                    latencyControl(ii,p,j) = rateChangeControl(data,inx,j,EPOCH,PLOT_CELL);
+
+                
                 end
             end
         case {'saccadeLatency'}
@@ -68,48 +71,57 @@ for ii = 1:length(cells)
 
 end
 
+
+%%
+plotLatency(latencyControl,cellType,effects,req_params)
 %%
 
-clear ave_effect ave_latency sem_latency
+function plotLatency(latency,cellType,effects,req_params)
 
 figure; hold on
 
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-
+    
     plotHistForFC([latency(indType,:,:)],0:5:800)
-
+    
     leg{i} = [req_params.cell_type{i} ' - frac latency found: ' num2str(mean(~isnan([latency(indType,:)]),"all"))];
 end
 
 legend(leg)
 xlabel('Latency')
 ylabel('Frac cells')
-sgtitle(TASK)
+sgtitle(req_params.task,'Interpreter' ,'none')
+
+% test
+groups = repmat(cellType,[1 size(latency,[2,3])]);
+
+[p,tbl,stats] = kruskalwallis(latency(:),groups(:))
+c = multcompare(stats)
 
 figure; hold on
 
 fld = 'time_and_interactions_with_time';
-%fld = 'directions';
+fld = 'directions';
 
 relEffectSize = [effects.(fld)];
 NUM_RANKS = 20;
 
 
 for i = 1:length(req_params.cell_type)
-
+    
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-
+    
     ranks = quantileranks(relEffectSize(indType),NUM_RANKS);
     unique_ranks = unique(ranks);
-
+    
     for j=1:length(unique_ranks)
-
+        
         inx = indType(find(ranks == j));
-
+        
         ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx,:,:);
-
+        
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
         %         ave_latency(j) = median(x(:),'all','omitnan');
@@ -119,8 +131,8 @@ for i = 1:length(req_params.cell_type)
         %             ci = [nan nan];
         %         end
         %         pos(j) = ci(1); neg(j) = ci(2);
-
-         n(i,j) = sum(~isnan(x(:)));
+        
+        n(i,j) = sum(~isnan(x(:)));
     end
     %errorbar(ave_effect,ave_latency,neg,pos)
     errorbar(ave_effect,ave_latency,sem_latency)
@@ -128,8 +140,9 @@ for i = 1:length(req_params.cell_type)
     ylabel('mean latency')
 end
 
-sgtitle(TASK)
+sgtitle(req_params.task,'Interpreter' ,'none')
 legend(req_params.cell_type)
+end
 %%
 
 function lat = halfPeak(data,inx,raster_params,plot_option)
