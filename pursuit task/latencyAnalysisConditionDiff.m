@@ -6,7 +6,7 @@ EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-TASK = "pursuit";
+TASK = "saccade";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
@@ -59,7 +59,7 @@ end
 %%
 
 figure; hold on
-clear ave_effect ave_latency sem_latency
+clear ave_effect ave_latency sem_latency n
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
@@ -75,22 +75,25 @@ sgtitle(TASK)
 
 figure; hold on
 
-
-ranks = quantileranks([effects.(fld)],20);
-unique_ranks = unique(ranks);
+NUM_RANKS = 5;
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
+    ranks = quantileranks([effects(indType).(fld)],NUM_RANKS);
+    unique_ranks = unique(ranks);
 
     for j=1:length(unique_ranks)
-        
-        inx = intersect(indType,  find(ranks == j));
+
+        inx = indType(find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx);
 
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
+
+        n(i,j) = sum(~isnan(x(:)));
+
 %         ave_latency(j) = median(x(:),'all','omitnan');
 %         if ~isnan(ave_latency(j))
 %             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));

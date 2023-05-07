@@ -2,7 +2,7 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset';
+EPOCH = 'saccadeLatency';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
@@ -17,7 +17,7 @@ cellType = cell(length(cells),1);
 cellID = nan(length(cells),1);
 
 switch EPOCH
-    case 'targetMovementOnset'
+    case {'targetMovementOnset','saccadeLatency'}
         latency = nan(length(cells),length(PROBABILITIES),length(DIRECIONS));
 end
 
@@ -31,9 +31,9 @@ for ii = 1:length(cells)
     boolFail = [data.trials.fail];
     [~,match_d] = getDirections(data);
     [~,match_p] = getProbabilities(data);
-    
+
     switch EPOCH
-        
+
         case 'targetMovementOnset'
             for p=1:length(PROBABILITIES)
                 for d=1:length(DIRECIONS)
@@ -44,17 +44,33 @@ for ii = 1:length(cells)
                     latency(ii,p,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
                 end
             end
+        case {'saccadeLatency'}
+            data = getBehavior (data,supPath);
+            for p=1:length(PROBABILITIES)
+                for d=1:length(DIRECIONS)
+                    inx{d} = find(match_p==PROBABILITIES(p) & ...
+                        match_d==DIRECIONS(d) & ~boolFail);
+                end
+                for j=1:length(inx)
+                    latency(ii,p,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
+                end
+            end
             
+        otherwise
+            error('No case!')
+
     end
-    
+
     effects(ii) = effectSizeInEpoch(data,EPOCH);
-    
+
 
 
 
 end
 
 %%
+
+clear ave_effect ave_latency sem_latency
 
 figure; hold on
 
@@ -74,20 +90,21 @@ sgtitle(TASK)
 figure; hold on
 
 fld = 'time_and_interactions_with_time';
-fld = 'directions';
+%fld = 'directions';
 
 relEffectSize = [effects.(fld)];
+NUM_RANKS = 20;
 
-unique_ranks = unique(ranks);
 
 for i = 1:length(req_params.cell_type)
-    
+
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    ranks = quantileranks(relEffectSize(indType),5);
-    
+    ranks = quantileranks(relEffectSize(indType),NUM_RANKS);
+    unique_ranks = unique(ranks);
+
     for j=1:length(unique_ranks)
-        
+
         inx = indType(find(ranks == j));
 
         ave_effect(j) = mean([effects(inx).(fld)]);
@@ -95,18 +112,20 @@ for i = 1:length(req_params.cell_type)
 
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
-%         ave_latency(j) = median(x(:),'all','omitnan');
-%         if ~isnan(ave_latency(j))
-%             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
-%         else
-%             ci = [nan nan];
-%         end
-%         pos(j) = ci(1); neg(j) = ci(2);
+        %         ave_latency(j) = median(x(:),'all','omitnan');
+        %         if ~isnan(ave_latency(j))
+        %             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
+        %         else
+        %             ci = [nan nan];
+        %         end
+        %         pos(j) = ci(1); neg(j) = ci(2);
+
+         n(i,j) = sum(~isnan(x(:)));
     end
-%errorbar(ave_effect,ave_latency,neg,pos)
-errorbar(ave_effect,ave_latency,sem_latency)
-xlabel(['mean effect size : ' fld],'interpreter','none')
-ylabel('mean latency')
+    %errorbar(ave_effect,ave_latency,neg,pos)
+    errorbar(ave_effect,ave_latency,sem_latency)
+    xlabel(['mean effect size : ' fld],'interpreter','none')
+    ylabel('mean latency')
 end
 
 sgtitle(TASK)
@@ -154,7 +173,7 @@ function lat = rateChange(data,trailInxArray,curGroup,epoch,plotOption)
 
 
 
-% get baseline 
+% get baseline
 
 baseline_params.SD = 20;
 baseline_params.align_to = epoch;
@@ -186,7 +205,7 @@ response = getPSTH(data,trailInxArray{curGroup},response_params);
 lat = latencyFromBaseline(baselinePsth,response);
 
 if plotOption
-    
+
     ts = -response_params.time_before:response_params.time_after;
     ax1= subplot(2,1,1);
     psth = getPSTH(data,trailInxArray{curGroup},response_params);
@@ -218,7 +237,7 @@ NUM_SETS = 8;
 
 partitions = getNonOverlappingPartions(trailInxArray,NUM_SETS);
 
-% get baseline 
+% get baseline
 
 baseline_params.SD = 20;
 baseline_params.align_to = epoch;
@@ -239,7 +258,7 @@ response = getPSTH(data,partitions{1,1}{1},baseline_params);
 lat = latencyFromBaseline(baselinePsth,response);
 
 if plotOption
-    
+
     ts = -response_params.time_before:response_params.time_after;
     ax1= subplot(2,1,1);
     psth = getPSTH(data,trailInxArray{curGroup},response_params);
@@ -275,6 +294,6 @@ lat = find(response>upperThresh | response<bottomThresh,1);
 
 if isempty(lat)
     disp('Latency not found')
-    lat = nan;    
+    lat = nan;
 end
 end
