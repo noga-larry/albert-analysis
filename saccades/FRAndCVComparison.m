@@ -7,7 +7,7 @@ TIME_AFTER = 800;
 FEILD = 'directions';
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'CRB'};
+req_params.cell_type = {'PC ss'};
 req_params.remove_question_marks = true;
 
 lines = findLinesInDB (task_info, req_params);
@@ -149,22 +149,6 @@ xlabel('FR')
 ylabel('CV')
 zlabel('Effect size')
 
-%%
-
-figure;
-scatter(WFW(inx),[CRB_effect_epoch.(FEILD)])
-[r,p] = corr(WFW(inx)',[CRB_effect_epoch.(FEILD)]',...
-    'type','spearman','rows','pairwise');
-title(['Spearman: r = ' num2str(r) ', p = ' num2str(p) ',n = ' num2str(length(scores(:,1)'))])
-ylabel([ FEILD 'effect size'])
-xlabel('wavefrom')
-
-
-view(3)
-grid on
-hold on
-
-idx = kmeans(X,K);
 
 %%
 
@@ -213,7 +197,7 @@ figure; imagesc(M); colorbar
 yticks([1 2]); yticklabels({'Below FR median', 'Above FR median'})
 xticks([1 2]); xticklabels({'Below WFW median', 'Above WFW median'})
 
-title(['kruskalwallis p val = ' num2str(p) ])
+title(['Anova p val = ' num2str(p) ])
 
 %%
 
