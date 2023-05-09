@@ -99,7 +99,8 @@ if includeTime
     inx = setdiff(2:(length(tbl)-2),not_inter_inx);
     outputStruct(c).variable = 'Interactions';
     outputStruct(c).value = func(tbl,inx);
-    
+    c=c+1;
+
     % time and interactions with time
     inx = find(contains(tbl(:,1),'time'));
     outputStruct(c).variable = 'time_and_interactions_with_time';
