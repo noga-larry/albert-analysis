@@ -1,7 +1,12 @@
 function req_params = reqParamsEffectSize(task,monkey)
 
 if nargin<2 || monkey=="both"
-    req_params.ID = 4000:6000;
+    if task=="floc"
+        req_params.ID = 3000:4000;
+    else
+        req_params.ID = 4000:6000;
+    end
+    
 elseif monkey=="albert"
     req_params.ID = 4000:5000;
 elseif monkey=="golda"
@@ -16,6 +21,8 @@ elseif task=="pursuit"
     req_params.task = 'pursuit_8_dir_75and25';
 elseif task=="both"
     req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
+elseif  task=="floc"
+    req_params.task = 'rwd_direction_tuning';
 end
 
 req_params.grade = 7;

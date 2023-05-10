@@ -18,7 +18,7 @@ lines = findLinesInDB (task_info, req_params);
 paths = findPathsToCells (supPath,task_info,lines);
 
 c=0;
-for ii = 80:length(paths)
+for ii = 1:length(paths)
     
     file_name = [WAVEFORMS_PATH '\ID' ...
         num2str(task_info(lines(ii)).cell_ID) ...
@@ -53,11 +53,7 @@ for ii = 80:length(paths)
     [~,t_trough] = min(ave);
     [~,t_peak] = findpeaks(ave(t_trough:end),'NPeaks',1,'SortStr','descend');
     t_peak = t_trough+t_peak-1;
-    
-    if ~isempty(t_peak)
-        continue
-    end
-    
+       
     if isempty(t_peak)
         t_peak = length(ave);
     end
