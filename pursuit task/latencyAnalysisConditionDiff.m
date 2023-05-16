@@ -73,9 +73,9 @@ fld = 'directions';
 
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-
+    
     plotHistForFC([latency(indType)],0:5:800)
-
+    
     leg{i} = [req_params.cell_type{i} ' - frac latency found: ' num2str(mean(~isnan([latency(indType)]),"all"))];
 end
 
@@ -96,34 +96,34 @@ for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     ranks = quantileranks([effects(indType).(fld)],NUM_RANKS);
     unique_ranks = unique(ranks);
-
+    
     for j=1:length(unique_ranks)
-
+        
         inx = indType(find(ranks == j));
-
+        
         ave_effect(j) = mean([effects(inx).(fld)]);
         x=latency(inx);
-
+        
         ave_latency(j) = mean(x(:),'all','omitnan');
         sem_latency(j) = nanSEM(x(:));
-
+        
         n(i,j) = sum(~isnan(x(:)));
         frac_detected(i,j) = mean(~isnan(x(:)));
         %         ave_latency(j) = median(x(:),'all','omitnan');
-%         if ~isnan(ave_latency(j))
-%             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
-%         else
-%             ci = [nan nan];
-%         end
-%         pos(j) = ci(1); neg(j) = ci(2);
+        %         if ~isnan(ave_latency(j))
+        %             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
+        %         else
+        %             ci = [nan nan];
+        %         end
+        %         pos(j) = ci(1); neg(j) = ci(2);
     end
-%errorbar(ave_effect,ave_latency,neg,pos)
-errorbar(ave_effect,ave_latency,sem_latency)
-xlabel(['mean effect size : ' fld],'interpreter','none')
-ylabel('mean latency')
+    %errorbar(ave_effect,ave_latency,neg,pos)
+    errorbar(ave_effect,ave_latency,sem_latency)
+    xlabel(['mean effect size : ' fld],'interpreter','none')
+    ylabel('mean latency')
 end
 
-sgtitle(req_params.task,'Interpreter' ,'none')
+sgtitle(req_params.task, 'Interpreter' ,'none')
 legend(req_params.cell_type)
 
 end

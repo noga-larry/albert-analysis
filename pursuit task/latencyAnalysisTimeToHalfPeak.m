@@ -18,7 +18,7 @@ cellID = nan(length(cells),1);
 
 switch EPOCH
     case {'targetMovementOnset','saccadeLatency'}
-        latency = nan(length(cells),length(PROBABILITIES),length(DIRECIONS));
+        latency = nan(length(cells),length(DIRECIONS));
 end
 
 
@@ -35,18 +35,16 @@ for ii = 1:length(cells)
     switch EPOCH
 
         case 'targetMovementOnset'
-            for p=1:length(PROBABILITIES)
                 for d=1:length(DIRECIONS)
-                    inx{d} = find(match_p==PROBABILITIES(p) & ...
-                        match_d==DIRECIONS(d) & ~boolFail);
+                    inx{d} = find(match_d==DIRECIONS(d) & ~boolFail);
                 end
-                for j=1:length(inx)
-                    latency(ii,p,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
-                    latencyControl(ii,p,j) = rateChangeControl(data,inx,j,EPOCH,PLOT_CELL);
-
                 
+                for j=1:length(inx)
+                    latency(ii,j) = rateChange(data,inx,j,EPOCH,PLOT_CELL);
+                    latencyControl(ii,j) = rateChangeControl(data,inx,j,EPOCH,PLOT_CELL);              
                 end
-            end
+            
+            
         case {'saccadeLatency'}
             data = getBehavior (data,supPath);
             for p=1:length(PROBABILITIES)
