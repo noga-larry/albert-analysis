@@ -6,7 +6,7 @@ EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-TASK = "saccade";
+TASK = "pursuit";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 
@@ -23,7 +23,7 @@ switch EPOCH
 end
 
 
-for ii = 140:length(cells)
+for ii = 1:length(cells)
 
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
@@ -53,17 +53,17 @@ for ii = 140:length(cells)
             for i = 1:length(p)
                 data.trials(i).name = p{i};
             end
-% 
-% 
-%             latencyControl(ii) = pValLatency...
-%                 (data,inx,PLOT_CELL,effects(ii).(fld));
+
+
+            latencyControl(ii) = pValLatency...
+                (data,inx,PLOT_CELL,effects(ii).(fld));
 
     end
 
 end
 
 %%
-plotLatency(latency,cellType,effects,req_params)
+plotLatency(latencyControl,cellType,effects,req_params)
 %%
 
 function plotLatency(latency,cellType,effects,req_params)
@@ -108,8 +108,8 @@ for i = 1:length(req_params.cell_type)
         sem_latency(j) = nanSEM(x(:));
 
         n(i,j) = sum(~isnan(x(:)));
-
-%         ave_latency(j) = median(x(:),'all','omitnan');
+        frac_detected(i,j) = mean(~isnan(x(:)));
+        %         ave_latency(j) = median(x(:),'all','omitnan');
 %         if ~isnan(ave_latency(j))
 %             ci = bootci(1000,@(x) median(x,'omitnan'),x(:));
 %         else

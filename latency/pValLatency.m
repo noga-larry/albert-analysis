@@ -38,7 +38,7 @@ else
     consecutive_counter = 0;
     for t=1:length(first_localization_estimate)
         comparison_window = first_localization_estimate(t)+SECOND_RUNNING_WINDOW;
-        [~,p(t),h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
+        [~,pvals(t),h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
         if h(t)
             consecutive_counter = consecutive_counter+1;
         else
@@ -58,7 +58,7 @@ if consecutive_counter~=NUM_CONSECUTIVE_SECOND
 end
 
 
-if effectSize>0.07 | lat<50
+if plotOption
     
     raster_params.time_before = TIME_BEFORE;
     raster_params.time_after = TIME_AFTER;
