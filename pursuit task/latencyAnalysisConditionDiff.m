@@ -23,19 +23,19 @@ switch EPOCH
 end
 
 
-for ii = 1 :length(cells)
+for ii = 140:length(cells)
 
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
-    
+
     [~,match_p] = getProbabilities(data);
     boolFail = [data.trials.fail];
-    
+
     effects(ii) = effectSizeInEpoch(data,EPOCH);
-    
+
     switch EPOCH
-        
+
         case 'targetMovementOnset'
             %             for p=1:length(PROBABILITIES)
             %
@@ -43,23 +43,23 @@ for ii = 1 :length(cells)
             %                 latency(ii,p) = pValLatency(data,inx);
             %
             %             end
-            inx = find(~boolFail);        
-            
+            inx = find(~boolFail);
+
             latency(ii) = pValLatency...
                 (data,inx,PLOT_CELL,effects(ii).(fld));
-            
-            
+
+
             p = randPermute({data.trials.name});
             for i = 1:length(p)
                 data.trials(i).name = p{i};
             end
-            
-            
-            latencyControl(ii) = pValLatency...
-                (data,inx,PLOT_CELL,effects(ii).(fld));
+% 
+% 
+%             latencyControl(ii) = pValLatency...
+%                 (data,inx,PLOT_CELL,effects(ii).(fld));
 
     end
-    
+
 end
 
 %%

@@ -1,13 +1,15 @@
 function lat = pValLatency(data,inx,plotOption,effectSize)
 
 FIRST_RUNNING_WINDOW = -50:50;
-SECOND_RUNNING_WINDOW = -25:25;
-TIME_BEFORE = 100;
+SECOND_RUNNING_WINDOW = -10:10;
+TIME_BEFORE = 0;
 TIME_AFTER = 800;
 DIRECTIONS = 0:45:315;
 FIRST_INTERVALS = 5;
 SECOND_INTERVALS = 3;
-NUM_CONSECUTIVE = 4;
+NUM_CONSECUTIVE_FIRST = 4;
+NUM_CONSECUTIVE_SECOND = 4;
+
 
 ts = -TIME_BEFORE:FIRST_INTERVALS:TIME_AFTER;
 consecutive_counter = 0;
@@ -21,45 +23,42 @@ for t=1:length(ts)
         consecutive_counter=0;
     end
     
-    if consecutive_counter==NUM_CONSECUTIVE
+    if consecutive_counter==NUM_CONSECUTIVE_FIRST
         break
     end
 end
 
-if consecutive_counter~=NUM_CONSECUTIVE
+if consecutive_counter~=NUM_CONSECUTIVE_FIRST
     lat=nan;
-    return
-end
-
-first_localization_estimate = (ts(max(1,t-NUM_CONSECUTIVE))+min(FIRST_RUNNING_WINDOW))...
-    :SECOND_INTERVALS:...
-    (ts(t)+max(FIRST_RUNNING_WINDOW));
-
-consecutive_counter = 0;
-for t=1:length(first_localization_estimate)
-    comparison_window = first_localization_estimate(t)+SECOND_RUNNING_WINDOW;
-    [~,p(t),h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
-    if h(t)
-        consecutive_counter = consecutive_counter+1;
-    else
-        consecutive_counter=0;
-    end
-    
-    if consecutive_counter==NUM_CONSECUTIVE
-        break
-    end
-end
-
-
-if consecutive_counter~=NUM_CONSECUTIVE
-    lat=nan;
-    
 else
-    lat = first_localization_estimate(t-ceil(NUM_CONSECUTIVE/2));
+    first_localization_estimate = (ts(max(1,t-NUM_CONSECUTIVE_FIRST))+min(FIRST_RUNNING_WINDOW))...
+        :SECOND_INTERVALS:...
+        (ts(t)+max(FIRST_RUNNING_WINDOW));
+
+    consecutive_counter = 0;
+    for t=1:length(first_localization_estimate)
+        comparison_window = first_localization_estimate(t)+SECOND_RUNNING_WINDOW;
+        [~,p(t),h(t)] = getTC(data, DIRECTIONS, inx, comparison_window);
+        if h(t)
+            consecutive_counter = consecutive_counter+1;
+        else
+            consecutive_counter=0;
+        end
+
+        if consecutive_counter==NUM_CONSECUTIVE_SECOND
+            break
+        end
+    end
+end
+
+if consecutive_counter~=NUM_CONSECUTIVE_SECOND
+    lat=nan;
+    else
+    lat = first_localization_estimate(t-ceil(NUM_CONSECUTIVE_SECOND/2));
 end
 
 
-if plotOption
+if effectSize>0.07 | lat<50
     
     raster_params.time_before = TIME_BEFORE;
     raster_params.time_after = TIME_AFTER;
@@ -79,7 +78,7 @@ if plotOption
     end
     
     title(num2str(effectSize))
-    pause
+    %pause
     cla
 end
 
