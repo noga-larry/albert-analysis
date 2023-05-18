@@ -6,7 +6,7 @@ EPOCH = 'targetMovementOnset';
 DIRECIONS = 0:45:315;
 PROBABILITIES = [25,75];
 PLOT_CELL = false;
-TASK = "pursuit";
+TASK = "saccade";
 req_params = reqParamsEffectSize(TASK);
 %req_params.cell_type = {'BG msn'};
 

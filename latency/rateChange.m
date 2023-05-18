@@ -11,7 +11,7 @@ baseline_params.time_after = 0;
 baseline_params.smoothing_margins = 100;
 
 response_params.time_before = 0;
-response_params.time_after = 500;
+response_params.time_after = 800;
 response_params.smoothing_margins = 100;
 response_params.align_to = epoch;
 response_params.SD = 20;
