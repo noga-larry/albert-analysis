@@ -164,6 +164,12 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 %%
 
 figure;
-
+subplot(2,1,1)
 gscatter(log(sse),log(ssb),cellType')
 corr(log(sse)',log(ssb)','type','spearman')
+xlabel('log sse'); ylabel('log ssb')
+
+subplot(2,1,1)
+gscatter(log(sse),log(rate),cellType')
+corr(log(sse)',log(rate)','type','spearman')
+xlabel('log sse'); ylabel('log rate')
