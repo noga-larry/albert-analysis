@@ -34,6 +34,9 @@ for ii = 1:length(cells)
         'velocityInsteadReward',false);
     time_significance(ii) = tbl{2,end}<0.05; %time
     
+    sse(ii) = tbl{end-1,2};
+    ssb(ii) = tbl{3,2};
+    
     task_info(lines(ii)).time_sig_motion = time_significance(ii);
     
 end
@@ -158,4 +161,9 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x_floc(find(strcmp('PC ss', floc_type))))
 
 
+%%
 
+figure;
+
+gscatter(log(sse),log(ssb),cellType')
+corr(log(sse)',log(ssb)','type','spearman')
