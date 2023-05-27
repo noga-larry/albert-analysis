@@ -1,13 +1,13 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("pursuit");
-req_params.cell_type = {'SNR'};
+req_params = reqParamsEffectSize("both");
+%req_params.cell_type = {'SNR'};
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','targetMovementOnset'};
+EPOCHS = {'targetMovementOnset','cue'};
 
 for ii = 1:length(cells)
 
@@ -18,7 +18,7 @@ for ii = 1:length(cells)
     effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
     effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
         'velocityInsteadReward',false,...
-        'numCorrectiveSaccadesInsteadOfReward',true);
+        'numCorrectiveSaccadesInsteadOfReward',false);
 end
 
 %
@@ -37,9 +37,9 @@ for j = 1:length(f)
 
         scatter([effects1(indType).(f{j})],[effects2(indType).(f{j})],'filled','k'); hold on
         p_sign = bootstraspWelchTTest([effects1(indType).(f{j})],[effects2(indType).(f{j})]);
-        [r,p] = corr([effects1(indType).(f{j})]',[effects2(indType).(f{j})]',type="Spearman");
+        [r,p_comp] = corr([effects1(indType).(f{j})]',[effects2(indType).(f{j})]',type="Spearman");
         title({[f{j} ': ' req_params.cell_type{i} '- signrank p = '], [num2str(p_sign,2)...
-        ' , Spearman: r = ' num2str(r,2) ', p =' num2str(p,2)]},'FontSize',8)
+        ' , Spearman: r = ' num2str(r,2) ', p =' num2str(p_comp,2)]},'FontSize',8)
         equalAxis()
         refline(1,0)
 
@@ -53,8 +53,8 @@ end
 %%
 figure;
 N = length(req_params.cell_type);
-f1 = 'reward_probability';
-f2 = 'num_corrective_saccades';
+f1 = 'directions';
+f2 = 'reward_probability';
 c=1;
 
 for i = 1:N
@@ -63,9 +63,13 @@ for i = 1:N
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
     scatter([effects1(indType).(f1)],[effects2(indType).(f2)],'filled','k'); hold on
-    p = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
+    p_comp = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
+    [r,p] = corr([effects1(indType).(f1)]',[effects2(indType).(f2)]',type="Spearman");
+    %% 
 
-    subtitle(['p = ' num2str(p)])
+
+    title(['bootstraspWelchTTest - p = ' num2str(p_comp)])
+    subtitle(['Spearman: r = ' num2str(r) ', p = ' num2str(p)])
     equalAxis()
     refline(1,0)
 

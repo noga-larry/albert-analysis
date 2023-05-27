@@ -173,3 +173,20 @@ subplot(2,1,1)
 gscatter(log(sse),log(rate),cellType')
 corr(log(sse)',log(rate)','type','spearman')
 xlabel('log sse'); ylabel('log rate')
+
+figure;
+log_rate = log(rate);
+
+% Scatter plot with color-coded dots
+scatter(ssb, sse, [], log_rate, 'filled');
+colorbar;
+
+% Set labels and title
+xlabel('SSB');
+ylabel('SSE');
+title('SSE vs SSB with Log Rate');
+
+% Adjust figure properties
+set(gca, 'XScale', 'log', 'YScale', 'log');
+c = colorbar;
+c.Label.String = 'Log Rate';
