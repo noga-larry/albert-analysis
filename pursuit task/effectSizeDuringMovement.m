@@ -4,7 +4,7 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("both");
 
 % 
 % %pursuit
