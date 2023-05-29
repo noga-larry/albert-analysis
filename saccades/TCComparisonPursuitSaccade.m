@@ -30,10 +30,11 @@ for ii = 1:length(lines)
 
 
     [TC_sacc,~,h_sacc(ii)] = getTC(data_sacc, DIRECTIONS,1:length(data_sacc.trials), comparison_window);
-    [PD,indPD] = centerOfMass (TC_sacc, DIRECTIONS);
+    [~,indPD,PD_sacc(ii)] = centerOfMass (TC_sacc, DIRECTIONS);
     TC_pop_sacc(ii,:) = circshift(TC_sacc,5-indPD) - mean(TC_sacc);
 
-    [TC_pur,~,h_pur(ii)] = getTC(data_pur, DIRECTIONS,1:length(data_pur.trials), comparison_window);
+    [TC_pur,~,h_pur(ii),] = getTC(data_pur, DIRECTIONS,1:length(data_pur.trials), comparison_window);
+    [~,~,PD_pur(ii)] = centerOfMass (TC_pur, DIRECTIONS);
     TC_pop_pur(ii,:) = circshift(TC_pur,5-indPD) - mean(TC_pur);
 
 end
@@ -68,4 +69,18 @@ for i = 1:N
         '/' num2str(sum(strcmp(req_params.cell_type{i}, cellType)))]);
 
 
+end
+
+%% PD correlation
+
+figure; hold on
+inx = find(h_sacc | h_pur);
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
+    
+    scatter(PD_pur(indType),PD_sacc(indType))
+    [rho, pval] = circ_corrcc(PD_pur(indType),PD_sacc(indType));
+    disp([req_params.cell_type{i} ': r = ' num2str(rho) ' , p = ' num2str(pval)])
 end
