@@ -84,3 +84,19 @@ for i = 1:length(req_params.cell_type)
     [rho, pval] = circ_corrcc(PD_pur(indType),PD_sacc(indType));
     disp([req_params.cell_type{i} ': r = ' num2str(rho) ' , p = ' num2str(pval)])
 end
+
+xlabel('Pursuit');ylabel('Saccade')
+legend(req_params.cell_type)
+%%
+
+figure; hold on
+inx = find(h_sacc | h_pur);
+
+for i = 1:length(req_params.cell_type)
+    
+    indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
+    disp(['n = ' num2str(length(indType))])
+    plotHistForFC(mod(abs(PD_pur(indType)-PD_sacc(indType)),180),0:20:180);
+end
+xlabel('Pursuit-Sacc');ylabel('Frac')
+legend(req_params.cell_type)
