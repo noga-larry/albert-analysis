@@ -137,7 +137,7 @@ req_params = reqParamsEffectSize("both","albert");
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 behavior_params.align_to = 'reward';
 
 ts = -behavior_params.time_before:behavior_params.time_after;
@@ -191,6 +191,7 @@ end
 aveLicks = squeeze(mean(licks));
 semLicks = squeeze(nanSEM(licks));
 
+%%
 figure
 subplot(2,1,1); hold on
 
@@ -211,6 +212,23 @@ ylabel('Fraction of trials with lick')
 ylim([0 1])
 title('R') 
 legend({'25' '75' })
+
+
+%% first diff between R\NR
+
+BIN_SIZE = 10;
+averageOnProb = squeeze(mean(licks,2));
+
+sampledTime = -behavior_params.time_before:BIN_SIZE:behavior_params.time_after-1 ;
+notRewarded = downSampleToBins(squeeze(averageOnProb(:,1,:)),BIN_SIZE);
+rewarded = downSampleToBins(squeeze(averageOnProb(:,2,:)),BIN_SIZE);
+
+for t=1:size(rewarded,2)
+    [p(t)]= signrank(rewarded(:,t),notRewarded(:,t))
+end
+
+h= p<0.001
+find(h,1)*10 - behavior_params.time_before
 
 %% lick direcion dependency
 

@@ -53,7 +53,7 @@ end
 %%
 figure;
 N = length(req_params.cell_type);
-f1 = 'directions';
+f1 = 'reward_probability';
 f2 = 'reward_probability';
 c=1;
 
@@ -65,7 +65,7 @@ for i = 1:N
     scatter([effects1(indType).(f1)],[effects2(indType).(f2)],'filled','k'); hold on
     p_comp = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
     [r,p] = corr([effects1(indType).(f1)]',[effects2(indType).(f2)]',type="Spearman");
-    %% 
+    
 
 
     title(['bootstraspWelchTTest - p = ' num2str(p_comp)])
@@ -73,8 +73,8 @@ for i = 1:N
     equalAxis()
     refline(1,0)
 
-    xlabel(f1,'Interpreter','none')
-    ylabel(f2,'Interpreter','none')
+    xlabel([EPOCHS{1} '-' f1],'Interpreter','none')
+    ylabel([EPOCHS{2} '-' f2],'Interpreter','none')
 
     title([req_params.cell_type{i}])
 
