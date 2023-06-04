@@ -5,14 +5,7 @@ clear
 PLOT_CELL = false;
 EPOCH = 'cue'; 
 
-req_params.grade = 7;
-req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
-req_params.ID = 4000:6000;
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-%req_params.task = 'saccade_8_dir_75and25';
-%req_params.task = 'rwd_direction_tuning';
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
+req_params = reqParamsEffectSize("both","albert");
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -42,10 +35,11 @@ for ii = 1:length(cells)
     end
 end
 
-save ([task_DB_path],'task_info')
+%save ([task_DB_path],'task_info')
 
 
 %%
+clc
 figure;
 N = length(req_params.cell_type);
 for i = 1:length(req_params.cell_type)
@@ -55,10 +49,10 @@ for i = 1:length(req_params.cell_type)
     
     disp('Frac cell with insignificant time effect:')
     disp ([req_params.cell_type{i} ': ' num2str(mean(time_significance(indType)))...
-        ', n = ' num2str(sum(time_significance(indType)))])
+        ', n = ' num2str(sum(time_significance(indType))) ,'/' num2str(length(indType))])
     
-    scatter([effects(indType).time],[effects(indType).reward],'filled','k'); hold on
-    p = signrank([effects(indType).time],[effects(indType).reward]);
+    scatter([effects(indType).time],[effects(indType).reward_probability],'filled','k'); hold on
+    p = signrank([effects(indType).time],[effects(indType).reward_probability]);
     xlabel('time')
     ylabel('reward+time*reward')
     equalAxis()
