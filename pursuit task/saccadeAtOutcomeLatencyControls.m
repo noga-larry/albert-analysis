@@ -25,7 +25,6 @@ for ii = 1:length(cells)
 
     data = importdata(cells{ii});
     data = getExtendedBehavior(data,supPath);
-
     cellID(ii) = data.info.cell_ID;
 
     % direction distribution of saccade
@@ -123,10 +122,19 @@ for d=1:length(DIRECTIONS)
     for t=1:length(indDir)
         saccInx = findFirstSacc(data,indDir(t));
         if isnan(saccInx)
+            
+            plot(vPos); hold on; plot(hPos);
+            xline(data.trials(indDir(t)).rwd_time_in_extended);
+            xline(data.trials(indDir(t)).rwd_time_in_extended + 400);
+            hold off
+
             continue
         end
         hPos = data.trials(indDir(t)).hPos;
         vPos = data.trials(indDir(t)).vPos;
+        
+
+
         tb = data.trials(indDir(t)).extended_saccade_begin(saccInx);
         te = data.trials(indDir(t)).extended_saccade_end(saccInx);
         ampDir(t) = sqrt((hPos(te)-hPos(tb))^2+(vPos(te)-vPos(tb))^2);

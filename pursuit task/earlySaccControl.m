@@ -123,7 +123,7 @@ clear
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 windowEvent = 0:400;
 
 req_params = reqParamsEffectSize("both");
@@ -135,18 +135,18 @@ for ii = 1:length(lines)
     data = importdata(cells{ii});
     data = getExtendedBehavior(data,supPath);
 
-    cellType{ii} = task_info(lines(ii)).cell_type;
-    cellID(ii) = data.info.cell_ID;
-
-    data = equateDistributions(data,windowEvent);
-
-    
-    [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
-        (data,'reward');
-
-    [effects(ii)] = effectSizeInEpoch(data,'reward');
-
-    saccadeRate(ii,:,:) = saccRate(data,behavior_params);
+%     cellType{ii} = task_info(lines(ii)).cell_type;
+%     cellID(ii) = data.info.cell_ID;
+% 
+%     data = equateDistributions(data,windowEvent);
+% 
+%     
+%     [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
+%         (data,'reward');
+% 
+%     [effects(ii)] = effectSizeInEpoch(data,'reward');
+% 
+%     saccadeRate(ii,:,:) = saccRate(data,behavior_params);
 end
 
 %%
@@ -201,6 +201,7 @@ end
 
 %%
 function data = equateDistributions(data,windowEvent)
+
 boolFail = [data.trials.fail];
 
 data.trials(find(boolFail))=[];
@@ -212,22 +213,22 @@ boolSacc = zeros(1,length(data.trials));
 boolSacc((sum(mat,2)>0)) = 1; % sacc
 
 
-ratio_before = sum(boolSacc & match_o)/sum(match_o)...
+ratioBefore = sum(boolSacc & match_o)/sum(match_o)...
     /(sum(boolSacc & ~match_o)/sum(~match_o));
 
 saccDiff = sum(boolSacc & match_o) - sum(boolSacc & ~match_o);
 
 if saccDiff>0
     inx = find(boolSacc & match_o);
-    inx = inx(randperm(length(inx),randRound(saccDiff/2)));
+    inx = inx(randperm(length(inx),saccDiff));
     for j=1:length(inx)
-        data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'R','NR');
+        data.trials(inx(j)).fail = 1;
     end
 else
     inx = find(boolSacc & ~match_o);
-    inx = inx(randperm(length(inx),randRound(-saccDiff/2)));
+    inx = inx(randperm(length(inx),-saccDiff));
     for j=1:length(inx)
-        data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'NR','R');
+        data.trials(inx(j)).fail= 1;
     end
 end
 
@@ -235,27 +236,31 @@ saccDiff = sum(~boolSacc & ~match_o) - sum(~boolSacc & match_o);
 
 if saccDiff>0
     inx = find(~boolSacc & ~match_o);
-    inx = inx(randperm(length(inx),randRound(saccDiff/2)));
+    inx = inx(randperm(length(inx),saccDiff));
     for j=1:length(inx)
-        data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'NR','R');
+        data.trials(inx(j)).fail= 1;
     end
 else
     inx = find(~boolSacc & match_o);
-    inx = inx(randperm(length(inx),randRound(-saccDiff/2)));
+    inx = inx(randperm(length(inx),-saccDiff));
     for j=1:length(inx)
-        data.trials(inx(j)).name = replace(data.trials(inx(j)).name,'R','NR');
+        data.trials(inx(j)).fail= 1;
     end
 end
 
+boolFail = [data.trials.fail];
+data.trials(find(boolFail))=[];
 match_o = getOutcome(data);
+
 [~,mat] = eventRate(data,'extended_saccade_begin','reward',...
     1:length(data.trials),windowEvent,[]);
 boolSacc = zeros(1,length(data.trials));
 boolSacc((sum(mat,2)>0)) = 1; % sacc
+
 ratio_after = sum(boolSacc & match_o)/sum(match_o)...
     /(sum(boolSacc & ~match_o)/sum(~match_o));
 
-disp([num2str(ratio_before) ' - ' num2str(ratio_after)])
+disp([num2str(ratioBefore) ' - ' num2str(ratio_after)])
 
 end
 
