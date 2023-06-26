@@ -78,9 +78,9 @@ for f = 1:length(flds)
 
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-        a = reshape([effectSizesSac(indType,:).(flds{f})],length(indType),length(ts));
+        x = reshape([effectSizesSac(indType,:).(flds{f})],length(indType),length(ts));
 
-        errorbar(ts,nanmean(a,1), nanSEM(a,1))
+        errorbar(ts,nanmean(x,1), nanSEM(x,1))
 
     end
     xlabel(['time from ' EPOCH ' (ms)' ])
@@ -91,8 +91,8 @@ for f = 1:length(flds)
 
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-        a = reshape([effectSizesNoSac(indType,:).(flds{f})],length(indType),length(ts));
-        errorbar(ts,nanmean(a,1), nanSEM(a,1))
+        x = reshape([effectSizesNoSac(indType,:).(flds{f})],length(indType),length(ts));
+        errorbar(ts,nanmean(x,1), nanSEM(x,1))
 
     end
 
@@ -120,6 +120,7 @@ clear
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
+REPEATS = 10;
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
@@ -135,18 +136,23 @@ for ii = 1:length(lines)
     data = importdata(cells{ii});
     data = getExtendedBehavior(data,supPath);
 
-%     cellType{ii} = task_info(lines(ii)).cell_type;
-%     cellID(ii) = data.info.cell_ID;
-% 
-%     data = equateDistributions(data,windowEvent);
-% 
-%     
-%     [effectSizesSac(ii,:),ts] = effectSizeInTimeBin...
-%         (data,'reward');
-% 
-%     [effects(ii)] = effectSizeInEpoch(data,'reward');
-% 
-%     saccadeRate(ii,:,:) = saccRate(data,behavior_params);
+    cellType{ii} = task_info(lines(ii)).cell_type;
+    cellID(ii) = data.info.cell_ID;
+
+    for r = 1:REPEATS
+        dataEqual = equateDistributions(data,windowEvent);
+       
+        [effectSizesSac(ii,r,:),ts] = effectSizeInTimeBin...
+            (dataEqual,'reward');
+        
+        [effects(ii,r)] = effectSizeInEpoch(dataEqual,'reward');        
+        
+    end
+    
+    saccadeRate(ii,:,:) = saccRate(dataEqual,behavior_params);
+    
+
+    
 end
 
 %%
@@ -169,11 +175,17 @@ f = 'reward_outcome';
 for i = 1:length(req_params.cell_type)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-    x = [effects(indType).(f)];
+    x = [effects(indType,:).(f)];
+    x = reshape(x,length(indType),REPEATS);
+    x = mean(x,2);
     p = bootstrapTTest(x);
     disp([req_params.cell_type{i} ': ' num2str(p)])
 end
 
+x = [effects.(f)];
+x = reshape(x,length(effects),REPEATS);
+x = mean(x,2);
+p = bootstraspWelchANOVA(x, cellType')
 
 flds = fields(effectSizesSac);
 
@@ -188,9 +200,11 @@ for f = 1:length(flds)
 
         indType = find(strcmp(req_params.cell_type{i}, cellType));
 
-        a = reshape([effectSizesSac(indType,:).(flds{f})],length(indType),length(ts));
+        x = reshape([effectSizesSac(indType,:).(flds{f})]...
+            ,length(indType),REPEATS,length(ts));
+        x = squeeze((mean(x,2,'omitnan')));
 
-        errorbar(ts,nanmean(a,1), nanSEM(a,1))
+        errorbar(ts,mean(x,'omitnan'), nanSEM(x))
 
     end
     xlabel(['time from outcome (ms)' ])
@@ -202,7 +216,12 @@ end
 %%
 function data = equateDistributions(data,windowEvent)
 
-boolFail = [data.trials.fail];
+[~,mat] = eventRate(data,'extended_blink_begin','reward',...
+    1:length(data.trials),windowEvent,10);
+boolBlink = sum(mat,2)>0;
+boolFail = [data.trials.fail] | boolBlink';
+
+
 
 data.trials(find(boolFail))=[];
 
@@ -260,7 +279,8 @@ boolSacc((sum(mat,2)>0)) = 1; % sacc
 ratio_after = sum(boolSacc & match_o)/sum(match_o)...
     /(sum(boolSacc & ~match_o)/sum(~match_o));
 
-disp([num2str(ratioBefore) ' - ' num2str(ratio_after)])
+disp([num2str(ratioBefore) ' - ' num2str(ratio_after) ' - n = ' ...
+    num2str(sum(~[data.trials.fail]))])
 
 end
 

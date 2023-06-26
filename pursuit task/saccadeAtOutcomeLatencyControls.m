@@ -9,7 +9,7 @@ req_params = reqParamsEffectSize(TASK,MONKEY);
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 
 ts = -behavior_params.time_before:behavior_params.time_after;
 DIRECTIONS = 0:45:360;
@@ -42,12 +42,25 @@ for ii = 1:length(cells)
     inx = {indLowR,indHighR,indLowNR,indHighNR};
 
     for j=1:length(inx)
-
-        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',inx{j},windowEvent,behavior_params.SD);
-        saccadeRate(ii,j,:) = eventRate(data,'extended_saccade_begin','reward',inx{j},windowEvent,behavior_params.SD);
-
+        
+        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',...
+            inx{j},windowEvent,behavior_params.SD);
+        
+        
+        [~,mat] = eventRate(data,'extended_blink_begin','reward',...
+            inx{j},0:500,behavior_params.SD);
+        
+        % change blink to fail in these cases
+        inxNoBlink = inx{j}(find(sum(mat,2)==0));
+        
+        rateBlink(ii,j,:) = eventRate(data,'extended_blink_begin','reward',...
+            inx{j},windowEvent,behavior_params.SD);
+        
+        saccadeRate(ii,j,:) = eventRate(data,'extended_saccade_begin','reward',...
+            inx{j},windowEvent,behavior_params.SD);
+        
         [ampitudes(ii,j,:),endPoints(ii,j,:,:)] = saccParams(data,inx{j});
-
+        
     end
 
 end
@@ -123,10 +136,10 @@ for d=1:length(DIRECTIONS)
         saccInx = findFirstSacc(data,indDir(t));
         if isnan(saccInx)
             
-            plot(vPos); hold on; plot(hPos);
-            xline(data.trials(indDir(t)).rwd_time_in_extended);
-            xline(data.trials(indDir(t)).rwd_time_in_extended + 400);
-            hold off
+%             plot(vPos); hold on; plot(hPos);
+%             xline(data.trials(indDir(t)).rwd_time_in_extended);
+%             xline(data.trials(indDir(t)).rwd_time_in_extended + 400);
+%             hold off
 
             continue
         end

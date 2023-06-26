@@ -169,7 +169,7 @@ gscatter(log(sse),log(ssb),cellType')
 corr(log(sse)',log(ssb)','type','spearman')
 xlabel('log sse'); ylabel('log ssb')
 
-subplot(2,1,1)
+subplot(2,1,2)
 gscatter(log(sse),log(rate),cellType')
 [r,p] = corr(log(sse)',log(rate)','type','spearman')
 xlabel('log sse'); ylabel('log rate')
@@ -189,3 +189,6 @@ title('SSE vs SSB with Log Rate');
 % Adjust figure properties
 c = colorbar;
 c.Label.String = 'Log Rate';
+
+
+[rho,pval]  = partialcorr(log(sse)',log(ssb)',log(rate)','type','spearman','Rows','pairwise')
