@@ -4,11 +4,7 @@ clear
 PLOT_INDIVIDUAL = 0;
 runningWindow = -300:300; %ms  
 
-req_params.grade = 7;
-req_params.ID = 4000:6000;
-req_params.remove_question_marks = 1;
-req_params.num_trials = 50;
-req_params.remove_repeats = false;
+req_params = reqParamsEffectSize("both");
 
 lines = findCspkSspkPairs(task_info,req_params);
 
@@ -41,11 +37,7 @@ clear
 PLOT_INDIVIDUAL = 0;
 runningWindow = -300:300; %ms  
 
-req_params.grade = 7;
-req_params.ID = 4000:6000;
-req_params.remove_question_marks = 1;
-req_params.num_trials = 50;
-req_params.remove_repeats = false;
+req_params = reqParamsEffectSize("both");
 req_params.cell_type = 'PC cs';
 
 lines = findLinesInDB(task_info,req_params);

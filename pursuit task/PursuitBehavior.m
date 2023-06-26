@@ -4,18 +4,18 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-SINGLE_SESSION = false;
+SINGLE_SESSION = true;
 PROBABITIES = [25,75];
 COL ={'r','b'}';
 SCATTER_TIME = 200:250;
-MONKEY = "golda";
+MONKEY = "albert";
 
-req_params = reqParamsEffectSize("pursuit",MONKEY);
+req_params = reqParamsEffectSize("saccade",MONKEY);
 
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 
 SCATTER_TIME = -behavior_params.time_before + SCATTER_TIME;
 
@@ -32,7 +32,7 @@ numCorrective = nan(length(cells),length(PROBABITIES));
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
-    data = getExtendedBehavior(data,supPath);
+    data = getBehavior(data,supPath);
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
 
@@ -43,16 +43,16 @@ for ii = 1:length(cells)
         ind = find (match_p == PROBABITIES(p) & (~boolFail));
 
         vel(ii,p,:) = meanVelocitiesRotated(data,behavior_params,...
-            ind,'removeSaccades',true,'takeFromExtended',true);
+            ind,'removeSaccades',true);
         
         numCorrective(ii,p) = mean(numCorrectiveSaccades(data,ind));
 
         if SINGLE_SESSION
 
-            [~,~,hVel,~] = ...
+            [~,~,h,~] = ...
                 meanPositionsRotated(data,behavior_params,ind(10:20),...
                 'smoothIndividualTrials',true,'removeSaccades',false);
-            plot(hVel',COL{p})
+            plot(h',COL{p})
 
         end
     end
