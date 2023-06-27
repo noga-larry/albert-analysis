@@ -11,7 +11,7 @@ req_params.remove_repeats = false;
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 20; % ms
 
 
 f = @(x) length(x)==5 | length(x)==4;

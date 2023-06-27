@@ -5,7 +5,8 @@ clear
 PLOT_CELL = false;
 EPOCH = 'cue'; 
 
-req_params = reqParamsEffectSize("both","albert");
+req_params = reqParamsEffectSize("saccade");
+req_params.ID = 4778;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);

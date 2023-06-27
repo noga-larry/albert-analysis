@@ -2,12 +2,12 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset';
-PLOT_CELL = false;
+EPOCH = 'cue';
+PLOT_CELL = true;
 
 
 req_params = reqParamsEffectSize("both");
-
+req_params.ID = 5287;
 
 % req_params.grade = 7;
 % req_params.cell_type = {'PC ss','CRB','SNR','BG msn'};
@@ -56,14 +56,16 @@ for ii = 1:length(cells)
     if PLOT_CELL
         
         flds = fields(effectSizes);
-        sgtitle([task_info(lines(ii)).cell_type num2str(data.info.cell_ID)])
+        sgtitle([task_info(lines(ii)).cell_type num2str(data.info.cell_ID)...
+            '- ' data.info.task],...
+             'interpreter','none')
         for f = 1:length(flds)
             
             subplot(1,length(flds),f); hold on
                         
             plot(ts,[effectSizes(ii,:).(flds{f})])
-            xlabel(['time from ' raster_params.align_to ' (ms)' ])
-            title(flds{f})
+            xlabel(['time from ' EPOCH ' (ms)' ])
+            title(flds{f}, 'interpreter','none')
         end
         
         pause
