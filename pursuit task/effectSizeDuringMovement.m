@@ -114,7 +114,7 @@ sgtitle('Motion','Interpreter', 'none');
 
 %% tests
 
-x = [effects.direction];
+x = [effects.directions];
 
 p = bootstraspWelchANOVA(x', cellType');
 

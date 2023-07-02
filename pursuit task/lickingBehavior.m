@@ -50,7 +50,7 @@ PROBABILITIES = [25,75];
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("both","albert");
+req_params = reqParamsEffectSize("both","golda");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
@@ -82,47 +82,29 @@ for ii = 1:length(cells)
 
     
     for p = 1:length(PROBABILITIES)
-        for j=1:2
+  
             ind = find (match_p == PROBABILITIES(p) & ...
-                (~boolFail) & match_po == j-1 );
-            licks(ii,p,j,:) = meanLicking(data,behavior_params,ind);
-        end
+                (~boolFail));
+            licks(ii,p,:) = meanLicking(data,behavior_params,ind);               
+ 
     end
     
 end
 
 
-%%
 
 aveLicks = squeeze(mean(licks));
 semLicks = squeeze(nanSEM(licks));
-col = {'r','b'}
-figure
-for j=1:2
-    subplot(2,1,j); hold on
-    for i=1:length(PROBABILITIES)
-        errorbar(ts,squeeze(aveLicks(i,j,:)),squeeze(semLicks(i,j,:)),col{i})
-    end
-    ylim([0,1])
-    title(['Previous outcome: ' num2str(j-1)])
-    xlabel(['Time from  ' behavior_params.align_to])
-    ylabel('Fraction of trials with lick')
-end
-
-%%
-
-h = cellID<5000;
-aveLicks = squeeze(mean(licks(h,:,:,:),[1,3]));
-semLicks = squeeze(nanSEM(licks(h,:,:,:),[1,3]));
 col = {'r','b'};
 figure; hold on
-for i=1:length(PROBABILITIES)
-    errorbar(ts,squeeze(aveLicks(i,:)),squeeze(semLicks(i,:)),col{i})
+for p=1:length(PROBABILITIES)
+    errorbar(ts,squeeze(aveLicks(p,:)),semLicks(p,:),col{p})
 end
 ylim([0,1])
+legend('25', '75')
 xlabel(['Time from  ' behavior_params.align_to])
 ylabel('Fraction of trials with lick')
-
+    
 
 %% reward epoch
 clear
