@@ -83,11 +83,13 @@ figure;
 
 N = length(req_params.cell_type);
 
+fld = 'reward_probability';
+
 for i = 1:length(req_params.cell_type)
     subplot(2,ceil(N/2),i)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    scatter([effects(indType).reward],accuracy(indType));
-    [r,p] = corr([effects(indType).reward]',accuracy(indType)','type','spearman');
+    scatter([effects(indType).(fld)],accuracy(indType));
+    [r,p] = corr([effects(indType).(fld)]',accuracy(indType)','type','spearman');
     title([req_params.cell_type{i} ': r = ' num2str(r) ', p = '  num2str(p)...
         ' ,n = ' num2str(length(indType))])
     ylabel('Accuracy')

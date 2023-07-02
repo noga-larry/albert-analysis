@@ -50,12 +50,12 @@ PROBABILITIES = [25,75];
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("both");
+req_params = reqParamsEffectSize("both","albert");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 behavior_params.align_to = 'cue';
 
 ts = -behavior_params.time_before:behavior_params.time_after;

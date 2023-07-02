@@ -5,8 +5,8 @@ clear
 PLOT_CELL = false;
 EPOCH = 'cue'; 
 
-req_params = reqParamsEffectSize("saccade");
-req_params.ID = 4778;
+req_params = reqParamsEffectSize("both");
+%req_params.ID = 4778;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -65,7 +65,9 @@ end
 
 %% tests
 
-x = [effects.reward];
+x = [effects.reward_probability];
+
+inputOutputFig(x,cellType)
 
 p = bootstraspWelchANOVA(x', cellType');
 
@@ -77,7 +79,7 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
     x(find(strcmp('BG msn', cellType))))
 
 
-x = [effects.reward];
+x = [effects.reward_probability];
 
 for i = 1:length(req_params.cell_type)
     
@@ -132,6 +134,7 @@ end
 legend(req_params.cell_type)
 sgtitle('Cue','Interpreter', 'none');
 
+
 %% correlation with rate
 
 figure;
@@ -146,9 +149,9 @@ for j =1:length(flds)
 
         scatter(rate(indType),[effects(indType).(flds{j})],'filled','k'); hold on
         [r,p] = corr([effects(indType).(flds{j})]',rate(indType)','type','Spearman','rows','pairwise');
-        xlabel(flds{j})
-        ylabel('rate')
-        title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)])
+        ylabel(flds{j})
+        xlabel('rate')
+        title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)], 'Interpreter','none')
     end
 end
 

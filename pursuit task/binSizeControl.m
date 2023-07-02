@@ -3,6 +3,7 @@ clear
 
 PLOT_CELL = false;
 EPOCH = 'cue'; 
+BIN_SIZES = [100, 20];
 
 req_params = reqParamsEffectSize("both");
 
@@ -17,15 +18,15 @@ for ii = 1:length(cells)
     cellID(ii) = data.info.cell_ID;    
     
     effects(1,ii) = effectSizeInEpoch(data,EPOCH);
-    effects(2,ii) = effectSizeInEpoch(data,EPOCH,'binSize',100);
-    effects(3,ii) = effectSizeInEpoch(data,EPOCH,'binSize',20);
+    effects(2,ii) = effectSizeInEpoch(data,EPOCH,'binSize',BIN_SIZES(1));
+    effects(3,ii) = effectSizeInEpoch(data,EPOCH,'binSize',BIN_SIZES(2));
 
 
 end
 
 %%
 
-
+fld = 'reward_probability';
 figure;
 N = length(req_params.cell_type);
 
@@ -35,28 +36,31 @@ for i = 1:length(req_params.cell_type)
     subplot(N,2,c)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
-    scatter([effects(1,indType).reward],[effects(2,indType).reward],'filled','k'); hold on
-    [r,p] = corr([effects(1,indType).reward]',[effects(2,indType).reward]','type','spearman');
+    scatter([effects(1,indType).(fld)],[effects(2,indType).(fld)],'filled','k'); hold on
+    [r,p] = corr([effects(1,indType).(fld)]',[effects(2,indType).(fld)]','type','spearman');
+    p_positive = bootstrapTTest([effects(2,indType).(fld)])
+
     title([req_params.cell_type{i} ': r = ' num2str(r) ', p = '  num2str(p)...
         ' ,n = ' num2str(length(indType))])
-    xlabel('effect size - 50')
-    ylabel('effect size - 100')
+    xlabel('effect size - 50' )
+    ylabel(['effect size - ' num2str(BIN_SIZES(1))])
     
     c=c+1;
     
     subplot(N,2,c)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     
-    scatter([effects(1,indType).reward],[effects(3,indType).reward],'filled','k'); hold on
-    [r,p] = corr([effects(1,indType).reward]',[effects(3,indType).reward]','type','spearman');
+    scatter([effects(1,indType).(fld)],[effects(3,indType).(fld)],'filled','k'); hold on
+    [r,p] = corr([effects(1,indType).(fld)]',[effects(3,indType).(fld)]','type','spearman');
+    p_positive = bootstrapTTest([effects(3,indType).(fld)])
     title([req_params.cell_type{i} ': r = ' num2str(r) ', p = '  num2str(p)...
         ' ,n = ' num2str(length(indType))])
     xlabel('effect size - 50')
-    ylabel('effect size - 20')
+    ylabel(['effect size - ' num2str(BIN_SIZES(2))])
     
     c=c+1;
 end
 
 
-inputOutputFig([effects(3,:).reward],cellType); sgtitle('20 ms')
-inputOutputFig([effects(2,:).reward],cellType); sgtitle('100 ms')
+inputOutputFig([effects(2,:).(fld)],cellType); sgtitle([num2str(BIN_SIZES(1))])
+inputOutputFig([effects(3,:).(fld)],cellType); sgtitle([num2str(BIN_SIZES(2))])

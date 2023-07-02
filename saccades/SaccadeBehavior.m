@@ -5,11 +5,12 @@ clear
 [task_info,supPath] = ...
     loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("saccade","albert");
 
 lines = findLinesInDB(task_info,req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 DIRECTIONS = [0:45:315];
+
 for ii = 1:length(cells)
     data = importdata(cells{ii});
     data = getBehavior(data,supPath);
@@ -44,8 +45,8 @@ for ii = 1:length(cells)
     RT_ave(ii) = nanmean(RT);
 end
 
-%%
 
+%%
 ind = find(cellID < inf);
 figure;
 subplot(2,2,1)
@@ -62,6 +63,7 @@ ylabel('RT')
 xlabel('Direction')
 legend('25','75')
 title('RT')
+
 subplot(2,2,2)
 aveLow = nanmean(LenLow(ind,:));
 semLow = nanSEM(LenLow(ind,:));
@@ -90,6 +92,7 @@ ylabel('Vel (deg/s)')
 xlabel('Direction')
 legend('25','75')
 title('Velocity on the target direction')
+
 subplot(2,2,4)
 aveLow = nanmean(OverShootLow(ind,:));
 semLow = nanSEM(OverShootLow(ind,:));
@@ -137,6 +140,7 @@ title(['Over Shoot: p = ' num2str(p)])
 xlabel('P=75')
 ylabel('P=25')
 
+sgtitle(['n = ' num2str(length(ind))])
 %% by previous cond
 
 clear 

@@ -4,13 +4,13 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-SINGLE_SESSION = true;
+SINGLE_SESSION = false;
 PROBABITIES = [25,75];
 COL ={'r','b'}';
 SCATTER_TIME = 200:250;
-MONKEY = "albert";
+MONKEY = "both";
 
-req_params = reqParamsEffectSize("saccade",MONKEY);
+req_params = reqParamsEffectSize("pursuit",MONKEY);
 
 behavior_params.time_after = 1000;
 behavior_params.time_before = 0;
@@ -65,7 +65,6 @@ end
 ave = squeeze(mean(vel,1));
 sem = squeeze(nanSEM(vel,1));
 
-%%
 
 figure;
 subplot(2,1,1); hold on
@@ -97,12 +96,12 @@ clear
 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("pursuit","albert");
+req_params = reqParamsEffectSize("pursuit","golda");
 
 behavior_params.time_after = 300;
 behavior_params.time_before = 0;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 15; % ms
+behavior_params.SD = 20; % ms
 
 SCATTER_TIME = -behavior_params.time_before + 200:250;
 
@@ -118,7 +117,6 @@ for ii = 1:length(cells)
 
     cellID(ii) = data.info.cell_ID;
 
-
     [~,match_p] = getProbabilities (data);
     [~,match_d] = getDirections (data);
     boolFail = [data.trials.fail];
@@ -132,15 +130,15 @@ for ii = 1:length(cells)
     end
     
 end
-%%
 
 
+%% 
 figure
 errorbar(DIRECTIONS,nanmean(mean(velHigh(:,:,SCATTER_TIME),3)),nanSEM(mean(velHigh(:,:,SCATTER_TIME),3)),'b');
 hold on
 errorbar(DIRECTIONS,nanmean(mean(velLow(:,:,SCATTER_TIME),3)),nanSEM(mean(velLow(:,:,SCATTER_TIME),3)),'r')
 xlabel('Vel');ylabel('Direction 200:25 ms')
-legend('P=25','P=75')
+legend('P=75','P=25')
 
 
 %% by previous cond

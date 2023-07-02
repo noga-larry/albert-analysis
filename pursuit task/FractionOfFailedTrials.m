@@ -77,7 +77,7 @@ unique_tasks = uniqueRowsCA(tasks')
 
 c=1;
 for i = 1:length(unique_tasks)
-    ind = find(strcmp(tasks,unique_tasks{i}) & cellID<5000)
+    ind = find(strcmp(tasks,unique_tasks{i}) & cellID<5001)
 
     subplot(length(unique_tasks),2,c)
     errorbar(prob, mean(fracCompletedOnFirstTry(ind,:)),nanSEM(fracCompletedOnFirstTry(ind,:))); hold on

@@ -18,7 +18,6 @@ for ii = 1:length(cells)
     cellID(ii) = data.info.cell_ID;
 
 
-
     [fracSig(ii,:,:), ts] = fracSigInTimeBin(data,EPOCH);
 
 
