@@ -96,7 +96,7 @@ if includeTime
         c=c+1;
     end
     
-    inx = setdiff(2:(length(tbl)-2),not_inter_inx);
+    inx = setdiff(2:(size(tbl,1)-2),not_inter_inx);
     outputStruct(c).variable = 'Interactions';
     outputStruct(c).value = func(tbl,inx);
     c=c+1;
