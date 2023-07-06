@@ -45,7 +45,6 @@ end
 
 totVar = tbl{end,2};
 msw = tbl{end-1,5};
-SSe = tbl{end-1,2};
 N = length(response(:));
 
 % Define function
@@ -86,8 +85,8 @@ if includeTime
     end
     
     c=c+1;
-    inx1 = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
-    inx2 = find(strcmp(tbl(:,1),'time*reward probability*reward outcome'));
+    inx1 = find(strcmp(tbl(:,1),'reward_probability*reward_outcome'));
+    inx2 = find(strcmp(tbl(:,1),'time*reward_probability*reward_outcome'));
     
     
     if ~isempty(inx1)||~isempty(inx2)
@@ -112,10 +111,10 @@ else
         outputStruct(c).value = func(tbl,i+1);
         outputStruct(c).variable = tbl{i+1,1};
     end
-    if any(strcmp(tbl(:,1),'reward probability*reward outcome'))
-        inx = find(strcmp(tbl(:,1),'reward probability*reward outcome'));
+    if any(strcmp(tbl(:,1),'reward_probability*reward_outcome'))
+        inx = find(strcmp(tbl(:,1),'reward_probability*reward_outcome'));
         outputStruct(c+1).value = func(tbl,inx);
-        outputStruct(c+1).variable = 'prediction error';
+        outputStruct(c+1).variable = 'prediction_error';
         c = c+1;
     end
     if length(groups)>1 % more than one group
