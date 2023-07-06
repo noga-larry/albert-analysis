@@ -23,19 +23,14 @@ numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfR
 [groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward,...
     numCorrectiveSaccadesInsteadOfReward);
 
-
+model = 'full';
 
 for t=1:length(ts)
 
     if mean(response(t,:))<MINIMAL_RATE_IN_BIN
         low = 1;
     end
-    
-    if strcmp(epoch,'reward')
-        model = 'interaction';
-    else
-        model = 'full';
-    end
+
     [omegas, ~, pVals] = calOmegaSquare(response(t,:),groups, group_names,'partial',true,...
         'includeTime',false,'model',model);
     for i=1:length(omegas)

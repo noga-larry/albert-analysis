@@ -54,12 +54,7 @@ rate = mean(raster,"all")*1000;
 
 response = downSampleToBins(raster',binSz)'*(binSz);
 
-if strcmp(epoch,'reward')
-    model = 'interaction';
-else
-    model = 'full';
-end
-
+model = 'full';
 
 [omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true...
     ,'model',model);
