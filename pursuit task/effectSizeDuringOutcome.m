@@ -3,7 +3,9 @@ clear
 
 EPOCH = 'reward';
 
+
 req_params = reqParamsEffectSize("both");
+%req_params.cell_type = {'PC cs'};
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -68,7 +70,7 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 
 
 
-x = [effects.reward_probability];
+x = [effects.reward_outcome];
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));

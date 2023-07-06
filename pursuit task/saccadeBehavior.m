@@ -74,16 +74,12 @@ clear
 
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params.grade = 7;
-req_params.ID = 5000:6000;
-req_params.cell_type = {'PC ss', 'CRB','SNR','BG msn'};
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
+req_params = reqParamsEffectSize("both","albert");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
 behavior_params.smoothing_margins = 100; % ms
-behavior_params.SD = 10; % ms
+behavior_params.SD = 20; % ms
 
 raster_params.align_to = 'reward';
 raster_params.time_before = -100;
@@ -106,7 +102,7 @@ removeSaccadesCounter = 0;
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
-    data = getExtendedBehavior(data,supPath,MaestroPath);
+    data = getExtendedBehavior(data,supPath);
     
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
@@ -126,14 +122,14 @@ for ii = 1:length(cells)
     for t=find(~boolFail)
         
         if data.trials(t).extended_trial_begin<1000 |...
-                (length(data.trials(t).extended_vPos)-data.trials(t).trial_length...
+                (length(data.trials(t).vPos)-data.trials(t).trial_length...
                 -data.trials(t).extended_trial_begin <2000)
             continue
         end
         
         % rate
-        saccadeTrace = zeros(1,length(data.trials(t).extended_hVel));
-        blinkTrace = zeros(1,length(data.trials(t).extended_hVel));
+        saccadeTrace = zeros(1,length(data.trials(t).hVel));
+        blinkTrace = zeros(1,length(data.trials(t).hVel));
         
         saccadeTrace(data.trials(t).extended_saccade_begin) = 1;
         blinkTrace(data.trials(t).extended_blink_begin) = 1;

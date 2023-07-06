@@ -1,15 +1,11 @@
 clear 
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'cue'; 
+EPOCH = 'targetMovementOnset'; 
 
-req_params.grade = 7;
-req_params.task = 'saccade_8_dir_75and25|pursuit_8_dir_75and25';
-req_params.task = 'saccade_8_dir_75and25';
-req_params.num_trials = 100;
-req_params.remove_question_marks = 1;
-req_params.grade = 7;
-req_params.ID = 4000:5000;
+
+req_params = reqParamsEffectSize("pursuit");
+
 
 lines = findCspkSspkPairs(task_info,req_params);
 
@@ -49,7 +45,7 @@ for j = 1:length(flds)
     scatter([effects(2,:).(flds{j})], [effects(1,:).(flds{j})])
     
     ind = find(significance);
-    scatter([effects(2,ind).(flds{j})], [effects(1,ind).(flds{j})])
+    %scatter([effects(2,ind).(flds{j})], [effects(1,ind).(flds{j})])
 
     ylabel('Simple')
     xlabel('Complex')
