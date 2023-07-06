@@ -3,7 +3,6 @@ clear
 
 EPOCH = 'reward';
 
-
 req_params = reqParamsEffectSize("both");
 
 lines = findLinesInDB (task_info, req_params);
@@ -56,7 +55,7 @@ legend(req_params.cell_type)
 %% comparisoms fron input-output figure
 figure
 
-x = [effects.outcome];
+x = [effects.directions];
 
 p = bootstraspWelchANOVA(x', cellType')
 
@@ -69,16 +68,17 @@ p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
 
 
 
-x = [effects.prediction];
+x = [effects.reward_probability];
 for i = 1:length(req_params.cell_type)
     
     indType = find(strcmp(req_params.cell_type{i}, cellType));
     p = bootstrapTTest(x(indType));
-    disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' num2str(length(indType)) ] )
+    disp([req_params.cell_type{i} ': p = ' num2str(p) ', n = ' ...
+        num2str(length(indType)) ] )
         
 end
 
-x = [effects.outcome];
+x = [effects.reward_outcome];
 
 p = bootstraspWelchANOVA(x', cellType')
 
@@ -100,9 +100,9 @@ for i = 1:length(req_params.cell_type)
     
     
     subplot(2,ceil(N/2),i)
-    scatter([effects(indType).outcome],[effects(indType).prediction],'filled','k'); hold on
-    p = bootstrapTTest ([effects(indType).outcome],...
-        [effects(indType).prediction]);
+    scatter([effects(indType).reward_outcome],[effects(indType).prediction_error],'filled','k'); hold on
+    p = bootstrapTTest ([effects(indType).reward_outcome],...
+        [effects(indType).prediction_error]);
 
     xlabel('outcome+time*outcome')
     ylabel('prediction')

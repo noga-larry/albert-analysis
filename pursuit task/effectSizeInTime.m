@@ -2,7 +2,7 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset';
+EPOCH = 'reward';
 PLOT_CELL = false;
 
 req_params = reqParamsEffectSize("both");
