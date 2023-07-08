@@ -9,8 +9,8 @@ OUTCOMES =[0,1];
 
 figure 
 req_params = reqParamsEffectSize("both");
-req_params.ID =  4055;
-%req_params.cell_type = {'SNR'};
+% req_params.cell_type = {'PC cs'};
+req_params.ID =  4153;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -97,12 +97,12 @@ for ii=1:length(cells)
             psth = raster2psth(raster,raster_params);
             plot(ax2,ts,psth,[col{p} marker{i}] )
         end
-        legend('R','NR')
+        
     end
     
-    
+    legend(ax2,'25NR','57NR','25R','75R')
 
-    
+
     % direction
     raster_params.align_to = 'targetMovementOnset';
 
