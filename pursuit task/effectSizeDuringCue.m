@@ -106,16 +106,16 @@ p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),..
     x(find(time_significance & strcmp('BG msn', cellType))))
 
 
-% floc
+%% floc
 load('floc data cue.mat')
 
-x = [effects.reward];
-x_floc = [floc_effects.reward];
+x = [effects.reward_probability];
+x_floc = [floc_eff.reward_probability];
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
-    x_floc(find(strcmp('CRB', floc_type))))
+    x_floc(find(strcmp('CRB', floc_types))))
 
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
-    x_floc(find(strcmp('PC ss', floc_type))))
+    x_floc(find(strcmp('PC ss', floc_types))))
 %%
 figure;
 

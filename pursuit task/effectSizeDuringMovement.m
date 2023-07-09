@@ -4,19 +4,9 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
+req_params = reqParamsEffectSize("pursuit");
+%req_params.ID =  5666;
 
-req_params = reqParamsEffectSize("both");
-% req_params.cell_type = {'PC cs'};
-req_params.ID =  5666;
-% 
-% %pursuit
-% ID_cs_sig = [4322	4328	4455	4457	4582	4610	4810	4825	4851	4942	5156	5358	5381	5434	5458	5620	5696];
-% %saccades
-% ID_cs_sig = [4238	4239	4243	4328	4457	4535	4610	4810	5214	5358	5381	5434	5458	5620	5725];
-% 
-% req_params.cell_type = {'SNR'}; lines_snr = findLinesInDB (task_info, req_params);
-% req_params.cell_type = {'PC ss','SNR'};req_params.ID = ID_cs_sig;  lines_ss = findLinesInDB (task_info, req_params);
-%lines = union(lines_snr,lines_ss);
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -151,16 +141,17 @@ p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),..
     x(find(time_significance & strcmp('BG msn', cellType))))
 
 
-% floc
+%% floc
 load('floc data motion.mat')
 
-x = [effects.reward];
-x_floc = [floc_eff.direction];
+fld = 'directions';
+x = [effects.(fld)];
+x_floc = [floc_eff.(fld)];
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
-    x_floc(find(strcmp('CRB', floc_type))))
+    x_floc(find(strcmp('CRB', floc_types))))
 
 p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
-    x_floc(find(strcmp('PC ss', floc_type))))
+    x_floc(find(strcmp('PC ss', floc_types))))
 
 
 %%
