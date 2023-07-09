@@ -1,22 +1,14 @@
 
 clear
-[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Floc');
 
 EPOCH = 'targetMovementOnset';
 PLOT_CELL = false;
+ONLY_TIME_SIG = false;
 
-req_params = reqParamsEffectSize("pursuit");
-req_params.cell_type = {'PC cs'};
-
-
-%pursuit
-ID_cs_sig = [4322	4328	4455	4457	4582	4610	4810	4825	4851	4942	5156	5358	5381	5434	5458	5620	5696];
-%saccades
-ID_cs_sig = [4238	4239	4243	4328	4457	4535	4610	4810	5214	5358	5381	5434	5458	5620	5725];
-
-% req_params.cell_type = {'SNR'}; lines_snr = findLinesInDB (task_info, req_params);
-% req_params.cell_type = {'PC ss','SNR'};req_params.ID = ID_cs_sig;  lines_ss = findLinesInDB (task_info, req_params);
-% lines = union(lines_snr,lines_ss);
+req_params = reqParamsEffectSize("floc");
+%req_params.cell_type = {'PC cs'};
+%req_params.ID =  5666;
 
 
 lines = findLinesInDB (task_info, req_params);
@@ -29,19 +21,17 @@ list = [];
 for ii = 1:length(cells)
     
     data = importdata(cells{ii});
+
+%     data = getBehavior (data,supPath);
+
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;  
     
-    
-    switch EPOCH
-        case 'targetMovementOnset'
-            
-            rel(ii) = task_info(lines(ii)).time_sig_motion;
-        case {'pursuitLatencyRMS','saccadeLatency'}
-            data = getBehavior (data,supPath);
+    if ONLY_TIME_SIG
+       [~, ~,~,~,pVals] = effectSizeInEpoch(data,EPOCH);
+       rel(ii) = pVals.time<0.05;
     end
     
-
     [effectSizes(ii,:),ts] = effectSizeInTimeBin...
         (data,EPOCH,'prevOut',false,...
         'velocityInsteadReward',false);
@@ -73,7 +63,7 @@ end
 flds = fields(effectSizes);
 
 
-h = cellID<inf% & rel
+%h = rel';
 
 figure
 for f = 1:length(flds)
@@ -84,11 +74,16 @@ for f = 1:length(flds)
         
         indType = find(strcmp(req_params.cell_type{i}, cellType));
         
-        a = reshape([effectSizes(indType,:).(flds{f})],length(indType),length(ts));
+       a = reshape([effectSizes(indType,:).(flds{f})],length(indType),length(ts));
         
         errorbar(ts,nanmean(a,1), nanSEM(a,1))
         xlabel(['time from ' EPOCH ' (ms)' ])
         title(flds{f}, 'Interpreter', 'none')
+
+        disp([req_params.cell_type{i} ': n = ' num2str(length(indType))...
+            '/ ' num2str(sum(strcmp(req_params.cell_type{i}, cellType))) ...
+            '   - ' num2str(length(indType)...
+            /sum(strcmp(req_params.cell_type{i}, cellType)))])
         
     end
     legend(req_params.cell_type)

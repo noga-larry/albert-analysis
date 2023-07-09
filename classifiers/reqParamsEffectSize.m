@@ -6,7 +6,6 @@ if nargin<2 || monkey=="both"
     else
         req_params.ID = 4000:6000;
     end
-    
 elseif monkey=="albert"
     req_params.ID = 4000:5000;
 elseif monkey=="golda"

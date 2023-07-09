@@ -4,8 +4,10 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
+
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+% req_params.cell_type = {'PC cs'};
+req_params.ID =  5666;
 % 
 % %pursuit
 % ID_cs_sig = [4322	4328	4455	4457	4582	4610	4810	4825	4851	4942	5156	5358	5381	5434	5458	5620	5696];

@@ -5,7 +5,8 @@ EPOCH = 'reward';
 
 
 req_params = reqParamsEffectSize("both");
-%req_params.cell_type = {'PC cs'};
+% req_params.cell_type = {'PC cs'};
+req_params.ID =  4153;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
