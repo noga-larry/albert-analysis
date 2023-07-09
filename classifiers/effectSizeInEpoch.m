@@ -1,4 +1,5 @@
-function [effectSizes, tbl, rate, numTrials] = effectSizeInEpoch(data,epoch,varargin)
+function [effectSizes, tbl, rate, numTrials, pValsOutput] = ...
+    effectSizeInEpoch(data,epoch,varargin)
 
 
 p = inputParser;
@@ -56,9 +57,10 @@ response = downSampleToBins(raster',binSz)'*(binSz);
 
 model = 'full';
 
-[omegas, tbl] = calOmegaSquare(response,groups,group_names,'partial',true...
+[omegas, tbl, pVals] = calOmegaSquare(response,groups,group_names,'partial',true...
     ,'model',model);
 
 for i=1:length(omegas)
     effectSizes.(omegas(i).variable) = omegas(i).value;
+    pValsOutput.(pVals(i).variable) = pVals(i).value;
 end

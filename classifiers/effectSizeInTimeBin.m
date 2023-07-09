@@ -35,6 +35,7 @@ for t=1:length(ts)
         'includeTime',false,'model',model);
     for i=1:length(omegas)
         effectSizes(t).(omegas(i).variable) = omegas(i).value;
+        pVals(t).(pVals(i).variable) = pVals(i).value;
     end
 end
 
