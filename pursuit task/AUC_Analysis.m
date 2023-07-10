@@ -105,8 +105,8 @@ N = length(req_params.cell_type);
 for i = 1:length(req_params.cell_type)
     subplot(2,ceil(N/2),i)
     indType = find(strcmp(req_params.cell_type{i}, cellType));
-    scatter([effects(indType).reward],AUC(indType));
-    [r,p] = corr([effects(indType).reward]',AUC(indType)','type','spearman');
+    scatter([effects(indType).reward_probability],AUC(indType));
+    [r,p] = corr([effects(indType).reward_probability]',AUC(indType)','type','spearman');
     title([req_params.cell_type{i} ': r = ' num2str(r) ', p = '  num2str(p)...
         ' ,n = ' num2str(length(indType))])
     ylabel('AUC')
@@ -123,7 +123,7 @@ function [AUCs, ts] = AUCInTimeBin(data,epoch)
 
 [response,ind,ts] = data2response(data,epoch);
 
-[groups, group_names] = createGroups(data,epoch,ind,false);
+[groups, group_names] = createGroups(data,epoch,ind,false,false,false);
 
 unique_groups = unique(groups{1});
 
@@ -153,7 +153,7 @@ function AUC = AUCInEpoch(data,epoch)
 
 response = mean(response,1);
 
-[groups, group_names] = createGroups(data,epoch,ind,false);
+[groups, group_names] = createGroups(data,epoch,ind,false,false,false);
 
 unique_groups = unique(groups{1});
 

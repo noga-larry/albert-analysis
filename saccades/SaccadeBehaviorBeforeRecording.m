@@ -2,7 +2,7 @@ clear
 [task_info,supPath,MaestroPath] = ...
     loadDBAndSpecifyDataPaths('Albert behavior before recording');
 
-PROBABILITIES = [0:25:100];
+PROBABILITIES = 0:25:100;
 
 req_params.task = 'pursuit_8_dir_75and25';
 req_params.num_trials = 50;
@@ -24,6 +24,12 @@ cells = findPathsToCells (supPath,task_info,lines);
 
 for ii = 1:length(cells)
     data = importdata(cells{ii});
+   
+getVelocities(data)
+
+    if length(getVelocities(data))>1
+        continue
+    end
     
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail];
@@ -50,9 +56,9 @@ errorbar(PROBABILITIES,ave,sem)
 
 clear
 [task_info,supPath,MaestroPath] = ...
-    loadDBAndSpecifyDataPaths('Golda behavior before recording');
+    loadDBAndSpecifyDataPaths('Albert behavior before recording');
 
-PROBABILITIES = [0:25:100];
+PROBABILITIES = 0:25:100;
 
 req_params.task = 'saccade_8_dir_75and25';
 req_params.num_trials = 50;
@@ -80,7 +86,7 @@ for ii = 1:length(cells)
     
 end
 
-%%
+
 figure
 ave = squeeze(nanmean(RT))';
 sem = squeeze(nanSEM(RT))';

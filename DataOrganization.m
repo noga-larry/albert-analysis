@@ -206,9 +206,9 @@ clear
 
 req_params = reqParamsEffectSize("both");
 req_params.remove_question_marks = 0;
-req_params.remove_repeats = 0;
+req_params.remove_repeats = 1;
 req_params.cell_type = {'PC ss','CRB','SNR','BG msn','PC cs'};
-%req_params.ID = 5000:6000;
+req_params.ID = 5793;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (dataPath,task_info,lines);

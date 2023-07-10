@@ -5,6 +5,7 @@ clear; clc
     loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
+req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'reward';
 raster_params.time_before = -100;
@@ -28,7 +29,7 @@ for ii = 1:length(cells )
     raster = getRaster(data,find(~boolFail),raster_params);
     spikes = sum(raster,1);
 
-    p = kruskalwallis(spikes,group,'off');
+    p(ii) = kruskalwallis(spikes,group,'off');
 
     task_info(lines(ii)).outcome_differentiating = p<0.05;
 
@@ -41,7 +42,7 @@ clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-%req_params.cell_type = {'PC cs'};
+req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;

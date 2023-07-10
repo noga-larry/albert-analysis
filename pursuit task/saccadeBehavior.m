@@ -74,7 +74,7 @@ clear
 
 [task_info,supPath,MaestroPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("both","albert");
+req_params = reqParamsEffectSize("both","golda");
 
 behavior_params.time_after = 1500;
 behavior_params.time_before = 1000;
