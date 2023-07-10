@@ -1,52 +1,10 @@
-% Probability Cue Response
-clear; clc
-[task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
-
-% Make list of significant cells
-
-
-req_params = reqParamsEffectSize("both");
-%req_params.cell_type = {'PC cs'};
-
-raster_params.align_to = 'cue';
-raster_params.time_before = -100;
-raster_params.time_after = 300;
-raster_params.smoothing_margins = 0;
-
-lines = findLinesInDB (task_info, req_params);
-cells = findPathsToCells (supPath,task_info,lines);
-
-for ii = 1:length(cells )
-    data = importdata(cells{ii});
-    [~,match_p] = getProbabilities (data);
-    boolFail = [data.trials.fail] |~[data.trials.previous_completed] ;
-
-
-    indLow = find (match_p == 25 & (~boolFail));
-    indHigh = find (match_p == 75 & (~boolFail));
-
-    psthLow = getRaster(data,indLow,raster_params);
-    rasterHigh = getRaster(data,indHigh,raster_params);
-
-    spikesLow = sum(psthLow,1);
-    spikesHigh = sum(rasterHigh,1);
-
-    [p,h(ii)] = ranksum(spikesLow,spikesHigh);
-    task_info(lines(ii)).cue_differentiating = h(ii);
-
-
-end
-
-save (task_DB_path,'task_info')
-
-
 %% PSTHs
 
 clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-%req_params.cell_type = {'PC cs'};
+req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'cue';
 raster_params.time_before = 399;
@@ -54,7 +12,11 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 20;
 
-comparisonWindow = raster_params.time_before + [100:400];
+if ~strcmp(req_params.cell_type,'PC cs')
+    comparisonWindow = raster_params.time_before + [0:800];
+else
+    comparisonWindow = raster_params.time_before + [100:300];
+end
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -69,6 +31,10 @@ cellID = nan(length(cells),1);
 for ii = 1:length(cells)
 
     data = importdata(cells{ii});
+
+    [~, ~, ~, ~,pValsOutput] = effectSizeInEpoch(data,raster_params.align_to); 
+    h(ii) = pValsOutput.time<0.05; %time
+
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
 
@@ -88,7 +54,14 @@ for ii = 1:length(cells)
 
     psthLow(ii,:) = getPSTH(data,indLow,raster_params)-baseline;
     psthHigh(ii,:) = getPSTH(data,indHigh,raster_params)-baseline;
-    h(ii) = task_info(lines(ii)).cue_differentiating;
+
+    % significance:
+%     
+%     rasterLow = getRaster(data,indLow,raster_params);
+%     spkLow = sum(rasterLow(comparisonWindow,:),1);
+%     rasterHigh = getRaster(data,indHigh,raster_params);
+%     spkHigh = sum(rasterHigh(comparisonWindow,:),1);
+%     [~,h(ii)] = ranksum(spkLow,spkHigh);
 end
 
 %%

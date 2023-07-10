@@ -4,7 +4,7 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("saccade");
 %req_params.ID =  5666;
 
 
@@ -22,10 +22,11 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;
     
-    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH,...
+    [effects(ii), tbl, rate(ii), ~,pValsOutput] = effectSizeInEpoch(data,EPOCH,...
         'velocityInsteadReward',false);
-    time_significance(ii) = tbl{2,end}<0.05; %time
-    
+   
+    time_significance(ii) = pValsOutput.time<0.05; %time
+
     sse(ii) = tbl{end-1,2};
     ssb(ii) = tbl{3,2};
     
@@ -128,8 +129,9 @@ for i = 1:length(req_params.cell_type)
     
 end
 
-%
-x = [effects.direction];
+%%
+
+x = [effects.directions];
 
 p = bootstraspWelchANOVA(x(time_significance)', cellType(time_significance)')
 

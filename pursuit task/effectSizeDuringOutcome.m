@@ -3,10 +3,9 @@ clear
 
 EPOCH = 'reward';
 
-
 req_params = reqParamsEffectSize("both");
 % req_params.cell_type = {'PC cs'};
-req_params.ID =  4153;
+%req_params.ID =  4153;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -16,9 +15,8 @@ for ii = 1:length(cells)
     data = importdata(cells{ii});
     cellType{ii} = task_info(lines(ii)).cell_type;
     
-    [effects(ii), tbl, rate(ii)] = effectSizeInEpoch(data,EPOCH); 
-    task_info(lines(ii)).time_sig_outcome = tbl{2,end}<0.05; %time
-
+    [effects(ii), tbl, rate(ii), ~,pValsOutput] =  effectSizeInEpoch(data,EPOCH);
+    time_significance(ii) = pValsOutput.time<0.05; %time
     
     if mod(ii,50)==0
         disp(ii)
@@ -93,6 +91,19 @@ p = bootstraspWelchTTest(x(find(strcmp('BG msn', cellType))),...
 
 p = bootstraspWelchTTest(x(find(strcmp('CRB', cellType))),...
     x(find(strcmp('PC ss', cellType))))
+
+%%
+
+x = [effects.reward_outcome];
+
+p = bootstraspWelchANOVA(x(time_significance)', cellType(time_significance)')
+
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('SNR', cellType))),...
+    x(find(time_significance & (strcmp('PC ss', cellType) | strcmp('CRB', cellType)))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('BG msn', cellType))),...
+    x(find(time_significance & (strcmp('PC ss', cellType) | strcmp('CRB', cellType)))))
+p = bootstraspWelchTTest(x(find(time_significance & strcmp('PC ss', cellType))),...
+    x(find(time_significance & strcmp('CRB', cellType))))
 
 %%
 N = length(req_params.cell_type);

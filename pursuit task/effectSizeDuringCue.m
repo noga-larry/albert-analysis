@@ -23,9 +23,9 @@ for ii = 1:length(cells)
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;    
     
-    [effects(ii), tbl, rate(ii), num_trials(ii)] = effectSizeInEpoch(data,EPOCH); 
-    time_significance(ii) = tbl{2,end}<0.05; %time
-    task_info(lines(ii)).time_sig_cue = time_significance(ii);
+    [effects(ii), tbl, rate(ii), num_trials(ii),pValsOutput] = effectSizeInEpoch(data,EPOCH); 
+    time_significance(ii) = pValsOutput.time<0.05; %time
+ 
     
     if PLOT_CELL
         prob = unique(match_p);
@@ -92,9 +92,9 @@ for i = 1:length(req_params.cell_type)
 end
 
 
-% time-significant
+%% time-significant
 
-x = [effects.reward];
+x = [effects.reward_probability];
 
 p = bootstraspWelchANOVA(x(time_significance)', cellType(time_significance)')
 
