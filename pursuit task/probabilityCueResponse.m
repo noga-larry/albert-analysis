@@ -4,7 +4,7 @@ clear
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'cue';
 raster_params.time_before = 399;
@@ -55,20 +55,21 @@ for ii = 1:length(cells)
     psthLow(ii,:) = getPSTH(data,indLow,raster_params)-baseline;
     psthHigh(ii,:) = getPSTH(data,indHigh,raster_params)-baseline;
 
-    % significance:
-%     
-%     rasterLow = getRaster(data,indLow,raster_params);
-%     spkLow = sum(rasterLow(comparisonWindow,:),1);
-%     rasterHigh = getRaster(data,indHigh,raster_params);
-%     spkHigh = sum(rasterHigh(comparisonWindow,:),1);
-%     [~,h(ii)] = ranksum(spkLow,spkHigh);
+   % significance:
+    
+    rasterLow = getRaster(data,indLow,raster_params);
+    spkLow = sum(rasterLow(comparisonWindow,:),1);
+    rasterHigh = getRaster(data,indHigh,raster_params);
+    spkHigh = sum(rasterHigh(comparisonWindow,:),1);
+    [~,h(ii)] = ranksum(spkLow,spkHigh);
 end
 
 %%
 
 figure;
 for i = 1:length(req_params.cell_type)
-    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
     
     subplot(length(req_params.cell_type),1,i)
     aveLow = mean(psthLow(indType,:));
@@ -79,7 +80,9 @@ for i = 1:length(req_params.cell_type)
     errorbar(ts,aveHigh,semHigh,'b'); hold on
     xlabel('Time from cue (ms)')
     title ([req_params.cell_type{i} ', n = ' num2str(length(indType))])
-legend({'25','75'})
+    legend({'25','75'})
+    
+    disp([req_params.cell_type{i} ', n = ' num2str(length(indType)) ])
 end
 
 %%

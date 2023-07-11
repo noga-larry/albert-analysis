@@ -2,7 +2,7 @@
 clear; clc; close all
 [task_info, supPath ,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("saccade");
 
 raster_params.align_to = 'targetMovementOnset';
 raster_params.time_before = 399;

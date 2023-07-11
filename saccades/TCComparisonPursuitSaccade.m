@@ -95,7 +95,8 @@ inx = find(h_sacc | h_pur);
 for i = 1:length(req_params.cell_type)
     
     indType = intersect(inx,find(strcmp(req_params.cell_type{i}, cellType)));
-    disp(['n = ' num2str(length(indType))])
+    disp(['n = ' num2str(length(indType)) '/' ...
+        num2str(sum(strcmp(req_params.cell_type{i}, cellType)))])
     plotHistForFC(mod(abs(PD_pur(indType)-PD_sacc(indType)),180),0:20:180);
 end
 xlabel('Pursuit-Sacc');ylabel('Frac')
