@@ -1,12 +1,12 @@
 
 clear
-[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Floc');
+[task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'targetMovementOnset';
+EPOCH = 'pursuitLatencyRMS';
 PLOT_CELL = false;
 ONLY_TIME_SIG = false;
 
-req_params = reqParamsEffectSize("floc");
+req_params = reqParamsEffectSize("pursuit");
 %req_params.cell_type = {'PC cs'};
 %req_params.ID =  5666;
 
@@ -22,7 +22,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
 
-%     data = getBehavior (data,supPath);
+    data = getBehavior (data,supPath);
 
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;  

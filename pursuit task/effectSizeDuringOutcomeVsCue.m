@@ -1,13 +1,13 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("both");
+req_params = reqParamsEffectSize("saccade");
 %req_params.cell_type = {'SNR'};
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','cue'};
+EPOCHS = {'targetMovementOnset','saccadeLatency'};
 
 for ii = 1:length(cells)
 
@@ -54,7 +54,7 @@ end
 figure;
 N = length(req_params.cell_type);
 f1 = 'reward_probability';
-f2 = 'reward_probability';
+f2 = 'num_corrective_saccades';
 c=1;
 
 for i = 1:N
@@ -68,7 +68,7 @@ for i = 1:N
     
 
 
-    title(['bootstraspWelchTTest - p = ' num2str(p_comp)])
+    title([req_params.cell_type{i} ': bootstraspWelchTTest - p = ' num2str(p_comp)])
     subtitle(['Spearman: r = ' num2str(r) ', p = ' num2str(p)])
     equalAxis()
     refline(1,0)
@@ -76,7 +76,6 @@ for i = 1:N
     xlabel([EPOCHS{1} '-' f1],'Interpreter','none')
     ylabel([EPOCHS{2} '-' f2],'Interpreter','none')
 
-    title([req_params.cell_type{i}])
 
     c=c+1;
     disp([req_params.cell_type{i} ': ' num2str(signrank([effects1(indType).(f1)]))])
