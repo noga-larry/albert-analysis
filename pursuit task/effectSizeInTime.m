@@ -2,7 +2,7 @@
 clear
 [task_info,supPath,~,task_DB_path] = loadDBAndSpecifyDataPaths('Vermis');
 
-EPOCH = 'pursuitLatencyRMS';
+EPOCH = 'cue';
 PLOT_CELL = false;
 ONLY_TIME_SIG = false;
 

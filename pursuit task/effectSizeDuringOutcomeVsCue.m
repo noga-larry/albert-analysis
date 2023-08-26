@@ -1,13 +1,13 @@
 clear
 [task_info,supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("both");
 %req_params.cell_type = {'SNR'};
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
 
-EPOCHS = {'targetMovementOnset','saccadeLatency'};
+EPOCHS = {'cue','targetMovementOnset'};
 
 for ii = 1:length(cells)
 
@@ -15,8 +15,8 @@ for ii = 1:length(cells)
     data = getBehavior(data,supPath);
     cellType{ii} = task_info(lines(ii)).cell_type;
 
-    effects1(ii) = effectSizeInEpoch(data,EPOCHS{1});
-    effects2(ii) = effectSizeInEpoch(data,EPOCHS{2},...
+    [effects1(ii),~,~,~,pVals1(ii)] = effectSizeInEpoch(data,EPOCHS{1});
+    [effects2(ii),~,~,~,pVals2(ii)] = effectSizeInEpoch(data,EPOCHS{2},...
         'velocityInsteadReward',false,...
         'numCorrectiveSaccadesInsteadOfReward',false);
 end
@@ -54,8 +54,9 @@ end
 figure;
 N = length(req_params.cell_type);
 f1 = 'reward_probability';
-f2 = 'num_corrective_saccades';
+f2 = 'directions';
 c=1;
+
 
 for i = 1:N
 
@@ -66,7 +67,6 @@ for i = 1:N
     p_comp = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
     [r,p] = corr([effects1(indType).(f1)]',[effects2(indType).(f2)]',type="Spearman");
     
-
 
     title([req_params.cell_type{i} ': bootstraspWelchTTest - p = ' num2str(p_comp)])
     subtitle(['Spearman: r = ' num2str(r) ', p = ' num2str(p)])
@@ -80,4 +80,30 @@ for i = 1:N
     c=c+1;
     disp([req_params.cell_type{i} ': ' num2str(signrank([effects1(indType).(f1)]))])
     
+end
+
+
+%%
+clc
+
+h1 = [pVals1.(f1)]<0.05;
+h2 = [pVals2.(f2)]<0.05;
+h_1and2 = h1&h2;
+
+for i = 1:N
+
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+    disp([req_params.cell_type{i} ':'])
+
+    disp([EPOCHS{1} '-' f1 ':' num2str(sum(h1(indType))) '/' ...
+        num2str(length(h1(indType))) '=' num2str(mean(h1(indType)))])
+
+    disp([EPOCHS{2} '-' f2 ':' num2str(sum(h2(indType))) '/' ...
+        num2str(length(h2(indType))) '=' num2str(mean(h2(indType)))])
+    
+   
+    disp(['Both' ':' num2str(sum(h_1and2(indType))) '/' ...
+        num2str(length(h_1and2(indType))) '=' num2str(mean(h_1and2(indType)))])
+
 end
