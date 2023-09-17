@@ -42,7 +42,7 @@ clear; clc
 [task_info, supPath] = loadDBAndSpecifyDataPaths('Vermis');
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 
 raster_params.align_to = 'reward';
 raster_params.time_before = 399;
@@ -237,7 +237,7 @@ end
 %%
 figure;
 
-inx = find(h<0.05);
+inx = find(h<inf);
 
 for i = 1:length(req_params.cell_type)
 

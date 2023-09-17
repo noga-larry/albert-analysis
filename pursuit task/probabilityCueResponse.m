@@ -69,7 +69,7 @@ end
 figure;
 for i = 1:length(req_params.cell_type)
     
-    indType = find(strcmp(req_params.cell_type{i}, cellType) & h);
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
     
     subplot(length(req_params.cell_type),1,i)
     aveLow = mean(psthLow(indType,:));
@@ -147,7 +147,7 @@ errorbar(ts,mean(psthLow(~late_mod_direction,:)),nanSEM(psthLow(~late_mod_direct
 errorbar(ts,mean(psthHigh(~late_mod_direction,:)),nanSEM(psthHigh(~late_mod_direction,:)),'b')
 xlabel('time for cue'); ylabel('rate (Hz)')
 
-%% seperation to tails
+%% seperation to tails - large response versus low response
 
 clear
 
@@ -214,10 +214,10 @@ for ii = 1:length(cells)
     
     h(ii) = ranksum(spks{1},spks{2});
 end
-%%
 
+%%
 figure;
-inx = find(h<0.05);
+inx = find(h<inf);
 
 for i = 1:length(req_params.cell_type)
         

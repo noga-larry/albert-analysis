@@ -207,7 +207,7 @@ legend( '25','75')
 %% By type
 
 figure
-inx = find(h)
+inx = find(h<inf)
 DIRECTIONS = [-180:45:180];
 
 for i = 1:length(req_params.cell_type)
@@ -229,6 +229,7 @@ for i = 1:length(req_params.cell_type)
     legend( '25','75')
 
 end
+
 
 figure
 

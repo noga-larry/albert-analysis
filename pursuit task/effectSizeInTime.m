@@ -22,7 +22,7 @@ for ii = 1:length(cells)
     
     data = importdata(cells{ii});
 
-    data = getBehavior (data,supPath);
+    %data = getBehavior (data,supPath);
 
     cellType{ii} = task_info(lines(ii)).cell_type;
     cellID(ii) = data.info.cell_ID;  

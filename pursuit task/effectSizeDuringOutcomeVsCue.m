@@ -66,7 +66,7 @@ for i = 1:N
     scatter([effects1(indType).(f1)],[effects2(indType).(f2)],'filled','k'); hold on
     p_comp = bootstraspWelchTTest([effects1(indType).(f1)],[effects2(indType).(f2)]);
     [r,p] = corr([effects1(indType).(f1)]',[effects2(indType).(f2)]',type="Spearman");
-    
+    [r,p] = distcorr([effects1(indType).(f1)]',[effects2(indType).(f2)]')
 
     title([req_params.cell_type{i} ': bootstraspWelchTTest - p = ' num2str(p_comp)])
     subtitle(['Spearman: r = ' num2str(r) ', p = ' num2str(p)])
@@ -106,4 +106,8 @@ for i = 1:N
     disp(['Both' ':' num2str(sum(h_1and2(indType))) '/' ...
         num2str(length(h_1and2(indType))) '=' num2str(mean(h_1and2(indType)))])
 
+    
+
 end
+
+
