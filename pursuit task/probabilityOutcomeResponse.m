@@ -234,7 +234,6 @@ for ii = 1:length(cells)
     h(ii) = ranksum(spks{1},spks{2});
 end
 
-%%
 figure;
 
 inx = find(h<inf);
