@@ -8,7 +8,7 @@ EPOCH = 'targetMovementOnset';
 DIRECTIONS = 0:45:315;
 
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("saccade");
 %req_params.ID = [4797];
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -123,6 +123,10 @@ legend(leg)
 
 [p,tbl,stats] = kruskalwallis(width(h>THRESH),cellType(h>THRESH)) 
 
+%%
+[results,~,~,gnames] = multcompare(stats)
+tbl = array2table(results,"VariableNames", ...
+    ["Group","Control Group","Lower Limit","Difference","Upper Limit","P-value"])
 
 
 %%
@@ -152,10 +156,6 @@ figure;
 gscatter(effectSize(h),width(h),cellType(h))
 [r,p] = corr(effectSize(h)',width(h)')
 
-%%
-[results,~,~,gnames] = multcompare(stats)
-tbl = array2table(results,"VariableNames", ...
-    ["Group","Control Group","Lower Limit","Difference","Upper Limit","P-value"]);
 
 %%
 
