@@ -199,6 +199,11 @@ xticks([1 2]); xticklabels({'Below WFW median', 'Above WFW median'})
 
 title(['Anova p val = ' num2str(p) ])
 
+%% regression
+
+X = [log(FR);log(WFW);log(WFW).*log(FR)];
+mdl = fitlm(X',[effectsEpoch.(FEILD)])
+mdl.Coefficients
 %%
 
 % Define bin edges based on x and y
