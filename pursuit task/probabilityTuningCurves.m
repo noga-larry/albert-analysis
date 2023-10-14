@@ -10,6 +10,11 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 20;
 
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 0;
+
 comparison_window = 0:800; % for TC
 
 ts = -raster_params.time_before:raster_params.time_after;
@@ -46,18 +51,19 @@ for ii = 1:length(cells)
     data.info.directionally_tuned = h(ii);
     save (cells{ii},'data');
     
-    psth_baseline = mean(getPSTH(data,find(~boolFail),raster_params));
-    
+    indBaseline = find(~boolFail);
+    baseline = mean(getRaster(data,indBaseline,baseline_params),"all")*1000;
+   
     if strcmp(req_params.cell_type,'PC cs')
-        psth_baseline = 0;
+        baseline = 0;
     end
     
     % rotate tuning curves
 
-    baseline_TC = mean(getTC(data, DIRECTIONS,1:length(data.trials), comparison_window));
-
-    TC_High(ii,:) =  circshift(getTC(data, DIRECTIONS,inxHigh, comparison_window),5-indPD)-baseline_TC;
-    TC_Low(ii,:)= circshift(getTC(data, DIRECTIONS, inxLow, comparison_window),5-indPD)-baseline_TC;
+    TC_High(ii,:) =  circshift(getTC(data, DIRECTIONS,inxHigh, ...
+        comparison_window),5-indPD)-baseline;
+    TC_Low(ii,:)= circshift(getTC(data, DIRECTIONS, inxLow,...
+        comparison_window),5-indPD)-baseline;
    
    
     for d = 1:length(ANGLES)
@@ -67,8 +73,10 @@ for ii = 1:length(cells)
         raster_High = getRaster(data,intersect(inx,inxHigh), raster_params);
         raster_Low = getRaster(data, intersect(inx,inxLow), raster_params);
                 
-        psth_High(ii,d,:) = raster2psth(raster_High,raster_params) - psth_baseline;
-        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params)- psth_baseline;
+        psth_High(ii,d,:) = raster2psth(raster_High,raster_params) ...
+            - baseline;
+        psth_Low(ii,d,:) = raster2psth(raster_Low,raster_params) ...
+            - baseline;
         
     end
     
@@ -207,7 +215,7 @@ legend( '25','75')
 %% By type
 
 figure
-inx = find(h<inf)
+inx = find(h<inf);
 DIRECTIONS = [-180:45:180];
 
 for i = 1:length(req_params.cell_type)

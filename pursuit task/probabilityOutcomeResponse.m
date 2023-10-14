@@ -50,7 +50,10 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 20;
 
-compsrison_window = raster_params.time_before + (100:500);
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 0;
 
 ts = -raster_params.time_before:raster_params.time_after;
 
@@ -82,6 +85,7 @@ for ii = 1:length(cells)
     [~,match_p] = getProbabilities (data);
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail];
+    
 
     indLowR = find (match_p == 25 & match_o & (~boolFail));
     indLowNR = find (match_p == 25 & (~match_o) & (~boolFail));
@@ -92,9 +96,10 @@ for ii = 1:length(cells)
     rasterLowNR = getRaster(data,indLowNR,raster_params);
     rasterHighR = getRaster(data,indHighR,raster_params);
     rasterHighNR = getRaster(data,indHighNR,raster_params);
-
-    baseline = mean(getPSTH(data,find(~boolFail),raster_params));
-
+   
+    indBaseline = find(~boolFail);
+    baseline = mean(getRaster(data,indBaseline,baseline_params),"all")*1000;
+    
     if strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end
@@ -107,7 +112,7 @@ for ii = 1:length(cells)
 
 end
 
-%%
+
 
 for i = 1:length(req_params.cell_type)
 
@@ -187,6 +192,13 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 20;
 
+
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 0;
+
+
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
@@ -207,8 +219,10 @@ for ii = 1:length(cells)
     [match_o] = getOutcome (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
 
-    psth_baseline = getPSTH(data,find(~boolFail),raster_params);
-    baseline = mean(psth_baseline(raster_params.time_before:end));
+
+    indBaseline = find(~boolFail);
+    baseline = mean(getRaster(data,indBaseline,baseline_params),"all")*1000;
+    
     if  strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
     end

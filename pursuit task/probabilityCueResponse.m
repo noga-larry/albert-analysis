@@ -12,6 +12,11 @@ raster_params.time_after = 800;
 raster_params.smoothing_margins = 100;
 raster_params.SD = 20;
 
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 0;
+
 if ~strcmp(req_params.cell_type,'PC cs')
     comparisonWindow = raster_params.time_before + [0:800];
 else
@@ -47,7 +52,7 @@ for ii = 1:length(cells)
     indBaseline = find(~boolFail);
 
     if ~strcmp(req_params.cell_type,'PC cs')
-        baseline = mean(raster2psth(getRaster(data,indBaseline,raster_params),raster_params));
+        baseline = mean(getRaster(data,indBaseline,baseline_params),"all")*1000;
     else
         baseline = 0;
     end
@@ -164,6 +169,11 @@ raster_params.smoothing_margins = 100;
 raster_params.align_to = 'cue';
 raster_params.SD = 20;
 
+baseline_params.align_to = raster_params.align_to;
+baseline_params.time_before = raster_params.time_before;
+baseline_params.time_after = 0;
+baseline_params.smoothing_margins = 0;
+
 ts = -raster_params.time_before:raster_params.time_after;
 
 lines = findLinesInDB (task_info, req_params);
@@ -183,9 +193,10 @@ for ii = 1:length(cells)
 
     [~,match_p] = getProbabilities (data);
     boolFail = [data.trials.fail] | ~[data.trials.previous_completed];
+    indBaseline = find(~boolFail);
 
-    psth_baseline = getPSTH(data,find(~boolFail),raster_params);
-    baseline = mean(psth_baseline(raster_params.time_before:end));
+    baseline = mean(getRaster(data,indBaseline,baseline_params),"all")*1000;
+
     
     if  strcmp(req_params.cell_type,'PC cs')
         baseline = 0;
