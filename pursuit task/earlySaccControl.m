@@ -214,6 +214,23 @@ for f = 1:length(flds)
 end
 
 %%
+clc
+x = [effects.reward_outcome];
+x = reshape(x,length(effects),REPEATS);
+x = mean(x,2)';
+inputOutputFig(x, cellType)
+
+
+p = bootstraspWelchTTest(x(find(strcmp('SNR', cellType))),...
+    x(find(strcmp('PC ss', cellType) | strcmp('CRB', cellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('BG msn', cellType))),...
+    x(find(strcmp('PC ss', cellType) | strcmp('CRB', cellType))))
+
+p = bootstraspWelchTTest(x(find(strcmp('CRB', cellType))),...
+    x(find(strcmp('PC ss', cellType))))
+
+%%
 function data = equateDistributions(data,windowEvent)
 
 [~,mat] = eventRate(data,'extended_blink_begin','reward',...
