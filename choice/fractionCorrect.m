@@ -12,7 +12,7 @@ req_params.ID = 5000:6000;
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
-PROBABILITIES  = [0:25:100];
+PROBABILITIES  = 0:25:100;
 
 fracChoice = nan(length(lines),length(PROBABILITIES),length(PROBABILITIES));
 
@@ -49,6 +49,14 @@ colorbar
 % subplot(2,1,2)
 % imagesc(PROBABILITIES,PROBABILITIES,squeeze(nanSEM(fracChoice)))
 % colorbar
+
+%% distributions for 25/75
+
+figure;
+INX25 = 2; INX75 = 4;
+x = squeeze(fracChoice(:,INX25,INX75));
+plot(3*ones(1,size(fracChoice,1)),squeeze(fracChoice(:,INX25,INX75)),'*')
+signrank(x-0.5)
 %%
 clear all
 [task_info,supPath,MaestroPath] = ...
