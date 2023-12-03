@@ -6,7 +6,7 @@ EPOCH = 'reward';
 PLOT_CELL = false;
 
 
-req_params = reqParamsEffectSize("both","albert");
+req_params = reqParamsEffectSize("both","both");
 
 lines = findLinesInDB (task_info, req_params);
 cells = findPathsToCells (supPath,task_info,lines);
@@ -41,6 +41,26 @@ for i = 1:length(req_params.cell_type)
 end
 legend(req_params.cell_type)
 xlabel(['time from ' EPOCH ' (ms)' ])
+
+
+%%
+
+figure; hold on
+
+for i = 1:length(req_params.cell_type)
+
+    indType = find(strcmp(req_params.cell_type{i}, cellType));
+    
+    for t=1:length(ts)
+        x = effectSizes(indType,t);
+        pval(i,t) = bootstrapTTest(x)<(0.05/16/4);
+    end
+    
+    plot(ts,pval(i,:),'*')
+
+end
+legend(req_params.cell_type)
+xlabel(['time from ' EPOCH ' (ms)' ])
 %%
 
 function [effectSizes, ts, low] = contrastInTimeBin(data,epoch,varargin)
@@ -68,14 +88,14 @@ numCorrectiveSaccadesInsteadOfReward = p.Results.numCorrectiveSaccadesInsteadOfR
 [groups, group_names] = createGroups(data,epoch,ind,prevOut,velocityInsteadReward,...
     numCorrectiveSaccadesInsteadOfReward);
 
-groups{1} = randPermute(groups{1});
-groups{3} = randPermute(groups{3});
+% groups{1} = randPermute(groups{1});
+% groups{3} = randPermute(groups{3});
 
 inxForXAve = {...
-    find(groups{1}==25 & groups{3}==0),...
-    find(groups{1}==25 & groups{3}==1),...
-    find(groups{1}==75 & groups{3}==0),...
-    find(groups{1}==75 & groups{3}==1)};
+    find(groups{2}==25 & groups{3}==0),...
+    find(groups{2}==25 & groups{3}==1),...
+    find(groups{2}==75 & groups{3}==0),...
+    find(groups{2}==75 & groups{3}==1)};
 
 contrastWeights = [1,0,-1,0];
 ns = cellfun(@length,inxForXAve);
@@ -104,4 +124,3 @@ end
 
 
 end
-
