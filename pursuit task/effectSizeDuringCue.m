@@ -6,7 +6,7 @@ PLOT_CELL = false;
 EPOCH = 'cue'; 
 
 req_params = reqParamsEffectSize("both");
-req_params.cell_type = {'PC cs'};
+%req_params.cell_type = {'PC cs'};
 
 %req_params.ID = 4778;
 
@@ -26,6 +26,8 @@ for ii = 1:length(cells)
     [effects(ii), tbl, rate(ii), num_trials(ii),pValsOutput] = effectSizeInEpoch(data,EPOCH); 
     time_significance(ii) = pValsOutput.time<0.05; %time
  
+    [CV(ii)] = getCV(data,find(~[data.trials.fail]),'cue',-500,800);
+
     
     if PLOT_CELL
         prob = unique(match_p);
@@ -159,3 +161,44 @@ end
 
 
 inputOutputFig(rate,cellType)
+
+
+%%
+figure;
+flds = fields(effects);
+N = length(req_params.cell_type);
+
+for j =1:length(flds)
+    for i = 1:N
+
+        subplot(length(flds),N,(j-1)*N+i)
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+
+        scatter(CV(indType),[effects(indType).(flds{j})],'filled','k'); hold on
+        [r,p] = corr([effects(indType).(flds{j})]',CV(indType)','type','Spearman','rows','pairwise');
+        ylabel(flds{j})
+        xlabel('CV')
+        title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)], 'Interpreter','none')
+    end
+end
+
+
+inputOutputFig(CV,cellType)
+
+
+figure
+for j =1:length(flds)
+    for i = 1:N
+
+        subplot(length(flds),N,(j-1)*N+i)
+        indType = find(strcmp(req_params.cell_type{i}, cellType));
+        scatter(rate(indType), CV(indType), [],[effects(indType).(flds{j})] , 'filled');
+        xlabel('FR')
+        ylabel('CV')
+        title([flds{j} ' ' req_params.cell_type{i}, ': r= ' num2str(r) ', p = ' num2str(p)], 'Interpreter','none')
+
+        colormap parula; colorbar
+    end
+end
+
+sgtitle(EPOCH)

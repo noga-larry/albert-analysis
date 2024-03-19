@@ -17,11 +17,13 @@ for ii = 1:length(cells)
     
     [effects(ii), tbl, rate(ii), ~,pValsOutput] =  effectSizeInEpoch(data,EPOCH);
     time_significance(ii) = pValsOutput.time<0.05; %time
-    
+
+    [CV(ii)] = getCV(data,find(~[data.trials.fail]),'cue',-500,800);
+
     if mod(ii,50)==0
         disp(ii)
     end
-    
+
 end
 
 save ([task_DB_path '.mat'],'task_info')

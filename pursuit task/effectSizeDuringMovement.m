@@ -4,7 +4,7 @@ clear
 EPOCH =  'targetMovementOnset'; 
 
 
-req_params = reqParamsEffectSize("saccade");
+req_params = reqParamsEffectSize("both");
 %req_params.ID =  5666;
 
 
@@ -31,7 +31,8 @@ for ii = 1:length(cells)
     ssb(ii) = tbl{3,2};
     
     task_info(lines(ii)).time_sig_motion = time_significance(ii);
-    
+    CV(ii) = getCV(data,find(~[data.trials.fail]),'cue',-500,800);
+
 end
 %save ([task_DB_path],'task_info')
 
