@@ -6,9 +6,10 @@ EPOCH = 'cue';
 PLOT_CELL = false;
 ONLY_TIME_SIG = false;
 
-req_params = reqParamsEffectSize("pursuit");
+req_params = reqParamsEffectSize("both");
 %req_params.cell_type = {'PC cs'};
-%req_params.ID =  5666;
+req_params.ID = 4778;
+
 
 
 lines = findLinesInDB (task_info, req_params);

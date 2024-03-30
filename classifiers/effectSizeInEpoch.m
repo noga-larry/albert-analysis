@@ -41,17 +41,9 @@ numTrials = length(ind);
 [groups, group_names] = createGroups(data,epoch,ind,...
     prevOut,velocityInsteadReward,numCorrectiveSaccadesInsteadOfReward);
 
-group_names = {'time', group_names{:}};
-
 raster = getRaster(data,ind,raster_params);
 rate = mean(raster,"all")*1000;
 
-% p = randperm(size(raster,2));
-% raster = raster(:,p);
-% raster = [binornd(1,0.01,100, size(raster,2)); binornd(1,0.04, 100, size(raster,2));...
-%     binornd(1,0.07,100, size(raster,2)); binornd(1,0.1, 100, size(raster,2));...
-%     binornd(1,0.15,100, size(raster,2)); binornd(1,0.2, 100, size(raster,2));...
-%     binornd(1,0.23,100, size(raster,2)); binornd(1,0.3, 101, size(raster,2))];
 
 response = downSampleToBins(raster',binSz)'*(binSz);
 

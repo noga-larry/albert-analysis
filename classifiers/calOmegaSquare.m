@@ -1,8 +1,37 @@
-function [omega, tbl, pVals] = calOmegaSquare(response,labels,labelNames, varargin)
+
+
+function [omega, tbl, pVals] = calOmegaSquare(response, labels, label_names, varargin)
+% calOmegaSquare - Calculate omega squared effect size over the entire epoch or as a function of time.
+%
+% Syntax:
+%   [omega, tbl, pVals] = calOmegaSquare(response, labels, labelNames, varargin)
+%
+% Inputs:
+%   response - Matrix with the responses of neurons in different conditions.
+%              The size should be TxN, where T is the number of time bins
+%              and N is the number of trials.
+%   labels - Cell array in which each element is a vector with the condition
+%            on trial t corresponding to the t column in response.
+%   label_names - Cell array of strings with the names of the variable in 
+%                labels.
+% Optional Inputs:
+%   'partial' - A logical indicating whether to calculate partial omega
+%               squared (default: true).
+%   'sstype' - An integer indicating the sum of squares type for ANOVA 
+%              (default: 2).
+%   'includeTime' - A logical indicating whether to include time in the 
+%               analysis (default: true, i.e, one number for entire epoch).
+%   'model' - A character vector specifying the ANOVA model (default: 
+%             'full').
+%
+% Outputs:
+%   omega - Structure containing omega squared effect sizes.
+%   tbl - ANOVA table.
+%   pVals - p-values corresponding to omega squared effect sizes.
 
 p = inputParser;
 
-defaultPartial = false;
+defaultPartial = true;
 addOptional(p,'partial',defaultPartial,@islogical);
 
 defaultSstype = 2;
@@ -21,20 +50,23 @@ model = p.Results.model;
 sstype = p.Results.sstype;
 
 if includeTime
-    groups{1} = repmat((1:size(response,1))',1,size(response,2));
+    labels_for_model{1} = repmat((1:size(response,1))',1,size(response,2));
+    label_names_for_model = {'time', label_names{:}};
     c = 1;
 else
     c=0;
+    label_names_for_model = label_names;
 end
 for i = 1:length(labels)
-    groups{i+c} = repmat(labels{i},size(response,1),1);
+    labels_for_model{i+c} = repmat(labels{i},size(response,1),1);
+
 end
-for i = 1:length(groups)
-    tmp = groups{i};
-    groups{i} = tmp(:);
+for i = 1:length(labels_for_model)
+    tmp = labels_for_model{i};
+    labels_for_model{i} = tmp(:);
 end
 
-[~,tbl,~,~] = anovan(response(:),groups,'varnames',labelNames,'model',model,'display','off','sstype',sstype);
+[~,tbl,~,~] = anovan(response(:),labels_for_model,'varnames',label_names_for_model,'model',model,'display','off','sstype',sstype);
 %ss = sumsOfSquares(response(:),{groupT(:),groupR(:)});
 
 %     ss_error(ii,1) = tbl{5,2};ss_error(ii,2) = ss.error;
@@ -62,9 +94,9 @@ end
 pValFun = @(tbl,dim) 1-fcdf((sum([tbl{dim,2}])/sum([tbl{dim,3}]))/msw...
     ,sum([tbl{dim,3}]),tbl{end-1,3});
 
-omega = creatingOutputStructure(tbl,groups,omegafun,labelNames,includeTime);
+omega = creatingOutputStructure(tbl,labels_for_model,omegafun,label_names_for_model,includeTime);
 
-pVals = creatingOutputStructure(tbl,groups,pValFun,labelNames,includeTime);
+pVals = creatingOutputStructure(tbl,labels_for_model,pValFun,label_names_for_model,includeTime);
 
 end
 
